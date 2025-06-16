@@ -1,0 +1,135 @@
+﻿@model IEnumerable<BusinessObjects.Models.OrderItem>
+
+
+<link rel="stylesheet" href="/css/cart.css">
+
+<!-- breadcrumb part start-->
+<section class="breadcrumb_part">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="breadcrumb_iner">
+                    <h2>Giỏ hàng</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- breadcrumb part end-->
+<!--================Cart Area =================-->
+<section class="cart_area section_padding">
+    <div class="container">
+        <div class="cart_inner">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th scope="col">Sản phẩm</th>
+                            <th scope="col">Giá</th>
+                            <th scope="col" style="text-align:center;">Số lượng</th>
+                            <th scope="col">Tổng tiền</th>
+                            <th scope="col">Xoá</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+
+                        @{
+                            double? subtotal = 0;
+                        }
+                        @foreach (var item in Model)
+                        {
+                            string productName = "";
+                            string productImg = "";
+                            @foreach (var product in (IEnumerable<BusinessObjects.Models.Product>)ViewData["Product"])
+                            {
+                                if (product != null && product.Id == item.Product.ProductId)
+                                {
+                                    productName = product.Name;
+                                    productImg = product.Image;
+                                    break;
+                                }
+                            }
+                            <tr id="item_@item.Id">
+                                <td>
+                                    <div class="media">
+                                        <div class="d-flex">
+                                            <img src="@productImg" alt="" />
+                                        </div>
+                                        <div class="media-body">
+                                            <h4>@productName (Size: @item.Product.Size)</h4>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <h5>@($"{@item.Product.Price:N0}đ")</h5>
+                                </td>
+
+                                <td style="padding:25px;text-align:center;">
+                                    <div class="product_count">
+                                        <span class="decrement" data-id="@item.Id" data-target="#quantity_@item.Id"><i class="ti-minus"></i></span>
+                                        <input class="qq product_count_item" type="text" name="quantity" id="quantity_@item.Id" value="@item.Quantity"
+                                               min="1" max="@item.Product.Quantity" data-id="@item.Id" onchange="check(@item.Id)"
+                                               data-max="@item.Product.Quantity">
+                                        <span class="increment" data-id="@item.Id" data-target="#quantity_@item.Id"><i class="ti-plus"></i></span>
+                                    </div>
+                                </td>
+                                @{
+                                    var total = @item.Product.Price * item.Quantity;
+                                    subtotal += total;
+                                }
+                                <td>
+                                    <h5 id="total_@item.Id">@($"{total:N0}đ")</h5>
+
+                                </td>
+                                <td>
+                                    <a class="del_cart" data-id="@item.Id" style="color:slategrey;">
+                                        <i class="ti-trash" style="font-size:20px;"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                        }
+
+                        @if (Model.Count() == 0)
+                        {
+                            <tr>
+                                <td colspan="5">
+                                    <h3 style="text-align:center;color:lightpink;font-family:Arial;">Giỏ hàng trống!</h3>
+                                </td>
+
+                            </tr>
+                        }
+
+                        <tr>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td>
+                                <h4>Tổng tiền: </h4>
+                            </td>
+                            <td>
+                                <h4 id="subtotal">@($"{subtotal:N0}đ")</h4>
+                            </td>
+                        </tr>
+
+                    </tbody>
+                </table>
+                <div class="checkout_btn_inner float-right">
+                    <a class="btn_1" asp-controller="Home" asp-action="ProductList">Tiếp tục mua hàng</a>
+                    @if (Model.Count() == 0)
+                    {
+                        <a class="btn_1 checkout_btn_1" href="javascript:void(0)">Mua ngay</a>
+                    }
+                    else
+                    {
+                        <a class="btn_1 checkout_btn_1" href="/Checkout">Mua ngay</a>
+                    }
+                </div>
+            </div>
+        </div>
+</section>
+
+<!-- jquery plugins here-->
+<script src="/js/jquery-1.12.1.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="/js/updatecart.js"></script>

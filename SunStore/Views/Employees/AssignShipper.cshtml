@@ -1,0 +1,101 @@
+﻿@model IEnumerable<BusinessObjects.Models.Order>
+@{
+}
+<link rel="stylesheet" href="/css//styletk.css" />
+
+<section class="checkout_area" style="padding: 50px;">
+    <h1 style="text-align:center; font-family:Arial;font-weight:bolder; margin:50px auto;">Gán shipper</h1>
+    <div class="container">
+        <table class="table" style="font-family:Arial">
+            <thead class="thead-light">
+                <tr>
+                    <th scope="col">Mã đơn hàng</th>
+                    <th scope="col">Tổng tiền</th>
+                    <th scope="col">Ngày tạo</th>
+                    <th scope="col">Gán Shipper</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    if (item.Id != 0)
+                    {
+                        <tr>
+                            <th scope="row">@item.Id</th>
+                            @{
+                                double? price = item.TotalPrice;
+                                string formattedPrice = price.HasValue ? price.Value.ToString("#,##0") + "đ" : "N/A";
+                            }
+                            <td>@formattedPrice</td>
+                            <td>@item.DateTime</td>
+                            <td style="width:150px;text-align:center;">
+                                <button class="btn btn-primary assign-shipper-btn" data-order-id="@item.Id">Gán Shipper</button>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<!-- jquery plugins here-->
+<script src="/js/jquery-1.12.1.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    $(document).ready(function () {
+        // Event listener for assign shipper button click
+        $('.assign-shipper-btn').click(function () {
+            var orderId = $(this).data('order-id');
+
+            Swal.fire({
+                title: 'Chọn Shipper',
+                html: `
+                                <select id="shipperSelect" class="swal2-input">
+                                    <option value="">Chọn shipper</option>
+    @foreach (var shipper in ViewBag.Shippers)
+    {
+                                            <option value="@shipper.Id">@shipper.FullName</option>
+    }
+                                </select>
+                            `,
+                focusConfirm: false,
+                preConfirm: () => {
+                    return {
+                        shipperId: document.getElementById('shipperSelect').value,
+                        orderId: orderId
+                    }
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    var selectedShipperId = result.value.shipperId;
+                    var orderId = result.value.orderId;
+
+                    $.ajax({
+                        url: '@Url.Action("Assign", "Employees")',
+                        type: 'POST',
+                        data: {
+                            orderId: orderId,
+                            shipperId: selectedShipperId
+                        },
+                        success: function (response) {
+                            if (response.success) {
+                                Swal.fire('Thành công!', 'Shipper đã được gán.', 'success').then(() => {
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire('Lỗi!', 'Không thể gán shipper.', 'error');
+                            }
+                        },
+                        error: function (error) {
+                            Swal.fire('Lỗi!', 'Có lỗi xảy ra.', 'error');
+                        }
+                    });
+                }
+            });
+        });
+    });
+</script>
+
+

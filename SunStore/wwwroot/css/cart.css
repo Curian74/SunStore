@@ -1,0 +1,26 @@
+﻿.increment {
+    position: absolute;
+    top: 0;
+    height: 25px;
+    display: flex;
+    align-items: center;
+    right: 0;
+    padding: 10px;
+    padding-top: 4px;
+    border-left: 1px solid #dddddd;
+    border-bottom: 1px solid #dddddd;
+    display: inline-block;
+}
+
+.decrement {
+    position: absolute;
+    top: 25px;
+    height: 25px;
+    display: flex;
+    align-items: center;
+    right: 0;
+    padding: 10px;
+    padding-top: 4px;
+    border-left: 1px solid #dddddd;
+    display: inline-block;
+}

@@ -1,0 +1,113 @@
+﻿@using X.PagedList.Mvc.Core
+@model X.PagedList.IPagedList<Order>
+
+<!-- breadcrumb part start-->
+<section class="breadcrumb_part">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="breadcrumb_iner">
+                    <h2 style="font-family:Arial">Lịch sử mua hàng</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- breadcrumb part end-->
+<!-- Date range filter form -->
+<div class="container" style="margin-top:40px;">
+    <form method="get" action="/Bills/Index">
+        <div class="row">
+            <div class="col-md-3">
+                <label for="fromDate">Từ ngày:</label>
+                <input type="date" id="fromDate" value="@ViewBag.From" name="fromDate" class="form-control" />
+            </div>
+            <div class="col-md-3">
+                <label for="toDate">Đến ngày:</label>
+                <input type="date" id="toDate" value="@ViewBag.To" name="toDate" class="form-control" />
+            </div>
+            <div class="col-md-3 align-self-end">
+                <button type="submit" class="btn btn-primary">Lọc</button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!--================Bill Area =================-->
+<section class="checkout_area" style="padding: 20px 0;">
+    <div class="container">
+
+        <table class="table" style="font-family:Arial">
+            <thead class="thead-light">
+                <tr>
+                    <th scope="col">Mã đơn hàng</th>
+                    <th scope="col">Tổng tiền</th>
+                    <th scope="col">Ngày tạo</th>
+                    <th scope="col">Trạng thái</th>
+                    <th scope="col"></th>
+                    <th scope="col"></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    if (item.Id != 0)
+                    {
+                        var color = "red";
+                        if (item.Status == "Đã đặt hàng" || item.Status == "Đang giao hàng") color = "#71BD5D";
+                        if (item.Status == "Đã giao hàng") color = "#ACBF96";
+                        <tr>
+                            <th scope="row">@item.Id</th>
+                            @{
+                                double? price = item.TotalPrice;
+                                string formattedPrice = price.HasValue ? price.Value.ToString("#,##0") + "đ" : "N/A";
+                            }
+                            <td>@formattedPrice</td>
+                            <td>@item.DateTime?.ToString("dd/MM/yyyy HH:mm:ss")</td>
+                            <td style="position:relative;">
+                                <p style="color:white; background-color:@color; font-weight:bold; position:absolute; padding:auto 5px;
+                                          border:none; border-radius:4px;text-align:center; width:80%; height:40px; display:flex;align-items:center;">
+                                    <span style="width:100%;text-align:center;" id="stt_@item.Id">@item.Status</span>
+                                </p>
+                            </td>
+                            <td style="width:150px;text-align:center;">
+                                <a asp-controller="Bills" asp-action="Detail" asp-route-id="@item.Id" class="genric-btn success-border radius">Xem chi tiết</a>
+                            </td>
+
+                            @if (item.Status == "Đã đặt hàng")
+                            {
+                                <td style="text-align:center;width:160px;">
+                                    <a href="javascript:void(0)" data-id="@item.Id" id="canc_@item.Id" class="genric-btn success-border radius canc">Huỷ đơn hàng</a>
+                                </td>
+                            }
+                            else
+                            @if (item.Status == "Bị từ chối")
+                            {
+                                <td style="text-align:center;width:160px;">
+                                    <a href="javascript:void(0)" data-id="@item.Id" class="genric-btn success-border radius reason" style="width:100%;">Xem lí do</a>
+                                </td>
+                            }
+
+                        </tr>
+                    }
+                }
+
+
+            </tbody>
+        </table>
+
+        @Html.PagedListPager(Model, page => Url.Action("Index", new { page = page, fromDate = ViewBag.From, toDate = ViewBag.To }),
+                 new PagedListRenderOptions()
+        {
+            LiElementClasses = new List<String> { "page-item" },
+            PageClasses = new List<String> { "page-link" }
+        })
+
+    </div>
+</section>
+
+<!-- jquery plugins here-->
+<script src="/js/jquery-1.12.1.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="~/js/bills.js"></script>

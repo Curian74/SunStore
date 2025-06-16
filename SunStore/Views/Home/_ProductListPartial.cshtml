@@ -1,0 +1,48 @@
+﻿@using X.PagedList.Mvc.Core
+@model X.PagedList.IPagedList<Product>
+
+<div class="col-md-12" id="product" style="margin-top: 50px;">
+
+    <div class="product_list">
+        <div class="row justify-content-center">
+            @foreach (var product in Model)
+            {
+                @if (product.IsDeleted == false)
+                {
+                    var minPrice = product.ProductOptions.Any() ? product.ProductOptions.Min(bo => bo.Price) : 0;
+                    @* <div class="col-lg-4 col-sm-4" style="margin-top: 20px;">
+                        <div class="single_product_item">
+                            <img style="width:95%;height:300px;" src="@product.Image" alt="#" class="img-fluid">
+                            <h3 style="color:black; font-weight:bold">
+                                <a asp-controller="Products" asp-action="Details" asp-route-id="@product.Id">
+                                    @product.Name
+                                </a>
+                            </h3>
+                            <p>@($"Price: {minPrice:N0}đ")</p>
+
+                        </div>
+                    </div> *@
+                    <div class="product col-lg-4">
+                        <a asp-controller="Products" asp-action="Details" asp-route-id="@product.Id" style="text-decoration: none;">
+                            <div class="pr-image">
+                                <img src="@product.Image" alt="">
+                            </div>
+                            <p class="pr-name">@product.Name</p>
+                            <div class="pr-rom">
+                                <p class="pr-rom-op">@($"Price: {minPrice:N0}đ")</p>
+                            </div>
+                        </a>
+                    </div>
+                }
+            }
+        </div>
+    </div>
+
+    @Html.PagedListPager(Model, page => Url.Action("ProductList", "Home", new { page = page, keyword = @ViewData["keyword"], categoryID = @ViewData["categoryID"], priceRange = @ViewData["priceRange"] }),
+            new PagedListRenderOptions()
+    {
+        LiElementClasses = new List<String> { "page-item" },
+        PageClasses = new List<String> { "page-link" }
+    }
+            )
+</div>

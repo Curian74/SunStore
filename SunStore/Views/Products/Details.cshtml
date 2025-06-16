@@ -1,0 +1,244 @@
+﻿@model BusinessObjects.Models.Product
+@inject IHttpContextAccessor HttpContextAccessor
+
+<link rel="stylesheet" href="/css/detail.css" />
+<style>
+    .sh-image {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        margin: 40px 0;
+    }
+
+        .sh-image img {
+            width: 80%;
+        }
+
+    .sh-dt-head {
+        width: 100%;
+        text-align: center;
+        margin-top: 20px;
+    }
+
+    .sh-detail {
+        font-size: 18px;
+        margin: 20px auto;
+        width:100%;
+        text-align: center justify;
+    }
+</style>
+
+@*
+<!-- breadcrumb part start-->
+<section class="breadcrumb_part single_product_breadcrumb">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="breadcrumb_iner">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- breadcrumb part end-->
+<!--================Single Product Area =================-->
+<div class="product_image_area">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-9" style="margin-top:10px;">
+
+                <div class="single_product_img" style="width:100%;">
+                    <img src="@Model.Image" alt="#" class="img-fluid" style="border-radius:20px; width:100%; max-height:700px; border: solid 2px #A0B3DF;">
+                </div>
+
+            </div>
+            <div class="col-lg-12">
+                <div class="single_product_text text-center">
+                    <h3>
+                        @Model.Name
+                    </h3>
+
+                    @if (Model.ProductOptions != null)
+                    {
+                        <p class="sizepart">Kích cỡ của sản phẩm:</p>
+                        var count = 1;
+                        @foreach (var option in Model.ProductOptions)
+                        {
+                            if (count == 1)
+                            {
+                                <a asp-controller="ProductOptions" asp-action="Details" asp-route-id="@option.Id"
+                                   class="size_option active">
+                                    @option.Size
+                                </a>
+                                count++;
+                            }
+                            else
+                            {
+                                <a asp-controller="ProductOptions" asp-action="Details" asp-route-id="@option.Id"
+                                   class="size_option">
+                                    @option.Size
+                                </a>
+                            }
+
+                        }
+
+
+                        <p>
+                            @Model.Description
+                        </p>
+                        <div class="card_area">
+                            <div class="product_count_area">
+                                <p>Còn @ViewData["Quantity"] SP</p>
+                                <div class="product_count d-inline-block" style="background-color:transparent">
+                                    <span class="product_count_item inumber-decrement" onclick="decreaseQuantity()"><i class="ti-minus"></i></span>
+                                    <input class="qq product_count_item" type="text" name="quantity" id="quantity" value="1" min="1" max="@ViewBag.Quantity">
+                                    <span class="product_count_item number-increment" onclick="increaseQuantity()"> <i class="ti-plus"></i></span>
+
+                                    <script type="text/javascript">
+                                        var maxQuantity = @ViewBag.Quantity;
+                                    </script>
+                                </div>
+                                <p>Giá: @($"{@ViewBag.Price.ToString("#,##0")}đ")</p>
+                            </div>
+                            @{
+                                var userId = HttpContextAccessor.HttpContext!.Session.GetString("UserId");
+                                var userRole = HttpContextAccessor.HttpContext.Session.GetString("UserRole");
+                            }
+                            @if (userId != null)
+                            {
+                                @if (userRole != "2")
+                                {
+                                    <div class="add_to_cart">
+                                        <button type="button" class="btn_3" disabled>Thêm vào giỏ hàng</button>
+                                    </div>
+                                    <p style="color:red;font-style:italic">Đăng nhập bằng tài khoản khách hàng để mua hàng.</p>
+                                }
+                                else
+                                {
+                                    <div class="add_to_cart">
+                                        <button type="button" class="atc btn_3" data-id="@Model.ProductOptions.ElementAt(0).Id">Thêm vào giỏ hàng</button>
+                                    </div>
+                                }
+
+                            }
+                            else
+                            {
+                                <div class="add_to_cart">
+                                    <button type="submit" class="btn_3" disabled>Thêm vào giỏ hàng</button>
+                                </div>
+                                <p style="color:red;font-style:italic">Vui lòng đăng nhập để mua hàng.</p>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+*@
+
+<h1 style="text-align:center;padding:10px 40px;background-color:aqua;margin:0;font-family:Arial;font-weight:bolder">THÔNG TIN SẢN PHẨM</h1>
+
+<div class="container" style="padding-top: 70px;">
+
+    <div class="row">
+
+        <h4 class="sh-name">@Model.Name</h4>
+        <hr style="color: rgb(57, 56, 56);height: 3px;">
+
+        <div class="sh-l col-lg-8">
+            <div class="sh-image">
+                <img src="@Model.Image" alt="">
+            </div>
+
+        </div>
+
+        <div class="sh-r col-lg-4">
+            @if (Model.ProductOptions != null)
+            {
+                <p class="sh-detail">@Model.Description</p>
+
+                <p class="sizepart">Kích cỡ của sản phẩm:</p>
+                var count = 1;
+                @foreach (var option in Model.ProductOptions)
+                {
+                    if (count == 1)
+                    {
+                        <a asp-controller="ProductOptions" asp-action="Details" asp-route-id="@option.Id"
+                           class="size_option active">
+                            @option.Size
+                        </a>
+                        count++;
+                    }
+                    else
+                    {
+                        <a asp-controller="ProductOptions" asp-action="Details" asp-route-id="@option.Id"
+                           class="size_option">
+                            @option.Size
+                        </a>
+                    }
+
+                }
+
+                <h3 class="pr-price" style="margin: 30px 0; margin-bottom: 30px;">
+                    Giá: @($"{@ViewBag.Price.ToString("#,##0")}đ")
+                </h3>
+
+                <div class="card_area">
+                    <div class="product_count d-inline-block" style="background-color:transparent; margin: 0;">
+                        <span class="product_count_item inumber-decrement" onclick="decreaseQuantity()"><i class="ti-minus"></i></span>
+                        <input class="qq product_count_item" type="text" name="quantity" id="quantity" value="1" min="1" max="@ViewBag.Quantity">
+                        <span class="product_count_item number-increment" onclick="increaseQuantity()"> <i class="ti-plus"></i></span>
+
+                        <script type="text/javascript">
+                            var maxQuantity = @ViewBag.Quantity;
+                        </script>
+                    </div>
+                </div>
+                <p style="margin-bottom:50px;">Còn @ViewData["Quantity"] SP</p>
+
+
+                var userId = HttpContextAccessor.HttpContext!.Session.GetString("UserId");
+                var userRole = HttpContextAccessor.HttpContext.Session.GetString("UserRole");
+
+                @if (userId != null)
+                {
+                    @if (userRole != "2")
+                    {
+                        <div class="add_to_cart">
+                            <button type="button" class="btn_3" disabled>Thêm vào giỏ hàng</button>
+                        </div>
+                        <p style="color:red;font-style:italic">Đăng nhập bằng tài khoản khách hàng để mua hàng.</p>
+                    }
+                    else
+                    {
+                        <div class="add_to_cart">
+                            <button type="button" class="atc btn_3" data-id="@Model.ProductOptions.ElementAt(0).Id">Thêm vào giỏ hàng</button>
+                        </div>
+                    }
+
+                }
+                else
+                {
+                    <div class="add_to_cart">
+                        <button type="submit" class="btn_3" disabled>Thêm vào giỏ hàng</button>
+                    </div>
+                    <p style="color:red;font-style:italic">Vui lòng đăng nhập để mua hàng.</p>
+                }
+            }
+
+        </div>
+
+    </div>
+
+
+</div>
+
+
+<!-- jquery plugins here-->
+<script src="/js/jquery-1.12.1.min.js"></script>
+
+
+<script src="/js/quantitybt.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="/js/noti.addtocart.js"></script>

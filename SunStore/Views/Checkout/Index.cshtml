@@ -1,0 +1,211 @@
+﻿@model IEnumerable<BusinessObjects.Models.OrderItem>
+
+<style>
+    .ip::placeholder {
+        opacity: 0.5;
+    }
+</style>
+
+
+<!-- breadcrumb part start-->
+<section class="breadcrumb_part">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="breadcrumb_iner">
+                    <h2>Checkout</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- breadcrumb part end-->
+<!--================Checkout Area =================-->
+<section class="checkout_area" style="padding: 50px 0;">
+    <div class="container">
+
+        <div class="billing_details">
+            <div class="row">
+                <div class="col-lg-8">
+                    <h2 style="margin-bottom:20px;">Thông tin chi tiết</h2>
+                    <form class="row contact_form" asp-action="CreateBill" asp-controller="Checkout">
+                        <div class="check_title" style="margin-bottom:20px;">
+                            <h2>
+                                Thông tin nhận hàng
+                            </h2>
+                        </div>
+                        <div class="col-md-12 form-group p_star">
+                            <label for="name" style="font-weight:bold;">Tên người mua hàng</label>
+                            <input type="text" class="form-control ip" value="@ViewBag.FullName" id="name" name="name" placeholder="Nhập tên" readonly />
+                        </div>
+                        <div class="col-md-12 form-group p_star">
+                            <label for="add" style="font-weight:bold;">Địa chỉ nhận hàng</label>
+                            <input type="text" class="form-control ip adr" value="@ViewBag.Address" id="add" name="address" placeholder="Nhập địa chỉ" required />
+                        </div>
+                        <div class="col-md-6 form-group p_star">
+                            <label for="phone" style="font-weight:bold;">Số điện thoại</label>
+                            <input type="number" class="form-control ip pho" value="@ViewBag.Phone" id="phone" name="number" placeholder="Nhập số điện thoại" required />
+                        </div>
+                        <div class="col-md-6 form-group p_star">
+                            <label for="email" style="font-weight:bold;">Email</label>
+                            <input type="text" class="form-control ip" value="@ViewBag.Email" id="email" name="email" placeholder="Nhập Email" readonly />
+                        </div>
+
+                        <div class="cupon_area" style="margin:15px 0;">
+                            <div class="check_title">
+                                <h2>
+                                    Bạn muốn sử dụng mã giảm giá?
+                                    <a href="javascript:void(0)" onclick="showCP()">Nhấn vào đây để áp mã</a>
+                                </h2>
+                            </div>
+                            <div id="cpbox" style="display:none;transition: 2s ease;padding: 0 30px;">
+                                <input type="text" class="ip" id="ipv" name="voucher" placeholder="Nhập mã giảm giá" style="margin:20px 0px;" />
+                                <button type="button" class="tp_btn appv" style="margin:0px;">Áp dụng</button>
+                                <button type="button" class="tp_btn" id="delv" style="margin:0px 10px;background-color:bisque;display:none;">Huỷ áp mã</button>
+
+                            </div>
+                        </div>
+
+                        <div class="col-md-12 form-group">
+                            <div class="creat_account">
+                                <h3 style="margin:0px;padding:0;font-weight:bold;margin-top:20px;">Lưu ý cho Shipper</h3>
+                            </div>
+                            <textarea class="form-control note" name="note" id="message" rows="1"
+                                      placeholder="Yêu cầu..."></textarea>
+                        </div>
+
+                        <div class="col-md-12 form-group" style="text-align:center;">
+                            <button type="button" value="submit" name="payment" class="btn_3 order" id="order" style="margin:0 20px;">
+                                Đặt hàng (COD)
+                            </button>
+
+                            <input type="submit" value="Thanh toán VNPAY" name="payment" class="btn_3" id="ordervnp">
+                        </div>
+                    </form>
+
+                </div>
+                <div class="col-lg-4">
+                    <div class="order_box">
+                        <h2 style="font-family:Arial; font-weight:bold;">Đơn hàng</h2>
+                        <ul class="list">
+                            <li>
+                                <a href="#" style="font-weight:bold">
+                                    Sản phẩm
+                                    <span>Giá</span>
+                                </a>
+                            </li>
+                            @{
+                                double? subtotal = 0;
+                            }
+                            @foreach (var item in Model)
+                            {
+                                string bakeryName = "";
+                                @foreach (var bakery in (IEnumerable<BusinessObjects.Models.Product>)ViewData["Product"])
+                                {
+                                    if (bakery != null && bakery.Id == item.Product.ProductId)
+                                    {
+                                        bakeryName = bakery.Name;
+                                        break;
+                                    }
+                                }
+
+                                var total = item.Price;
+                                subtotal += total;
+
+                                <li>
+                                    <a href="#">
+                                        @bakeryName
+                                        <span class="middle">x @item.Quantity</span>
+                                        <span class="last">@($"{total:N0}đ")</span>
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                        <ul class="list">
+                            <li>
+                                <a href="#" style="font-weight:bold">
+                                    Tổng
+                                    <span>@($"{subtotal:N0}đ")</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" style="font-weight:bold">
+                                    Shipping
+                                    <span>20.000đ</span>
+                                </a>
+                            </li>
+                            @{
+                                subtotal += 20000;
+                            }
+
+                            <script type="text/javascript">
+                                var stotal = @subtotal;
+                            </script>
+
+                            <li>
+                                <a href="#" id="vch" style="font-weight:bold;display:none;">
+                                    Voucher
+                                    <span id="codev"></span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="#" style="font-weight:bold">
+                                    Tổng tiền
+                                    <span id="subtotal">@($"{subtotal:N0}đ")</span>
+                                </a>
+                            </li>
+                        </ul>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- jquery plugins here-->
+<script src="/js/jquery-1.12.1.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="/js/checkout.js"></script>
+
+@if (TempData["Message"] != null && TempData["Message"].ToString() == "Thanh toán VN Pay thành công!")
+{
+    <script>
+        $("#order").css("display", "none");
+        $("#ordervnp").css("display", "none");
+        $("#c_quantity").css("display", "none");
+        Swal.fire({
+            title: "Thành công!",
+            text: "Bạn đã thanh toán thành công. Hãy theo dõi trạng thái đơn hàng, đơn hàng sẽ sớm được giao đến bạn.",
+            icon: "success",
+            showDenyButton: true,
+            confirmButtonColor: "#3085d6",
+            denyButtonColor: "#d33",
+            denyButtonText: "Lịch sử đặt hàng",
+            confirmButtonText: "Về Trang chủ"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                window.location.href = "/";
+            }
+            else if (result.isDenied) {
+                window.location.href = "/Bills";
+            }
+        });
+    </script>
+}
+else
+{
+
+    <script>
+        var mess = @TempData["Message"] == null ? "" : TempData["Message"].ToString();
+        Swal.fire({
+            title: "Thất bại!",
+            text: mess,
+            icon: "error",
+        });
+    </script>
+
+
+}

@@ -1,0 +1,73 @@
+﻿@model IEnumerable<BusinessObjects.Models.User>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<div class="container">
+    <h1 style="text-align:center; font-family:Arial;font-weight:bolder">Quản lí tài khoản</h1>
+
+<p>
+        <a class="genric-btn info radius" asp-action="Create">Tạo mới</a>
+</p>
+    <table class="table table-hover mt-2">
+        <thead class="bg-info">
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.FullName)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Address)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.BirthDate)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Email)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.PhoneNumber)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Role)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.IsBanned)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.FullName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Address)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.BirthDate)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Email)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.PhoneNumber)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Role)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.IsBanned)
+            </td>
+            <td>
+                        <a class="genric-btn warning radius" asp-action="Edit" asp-route-id="@item.Id">Edit</a>
+                        <a class="genric-btn primary radius" asp-action="Details" asp-route-id="@item.Id">Details</a>
+                        <a class="genric-btn danger radius" asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
+</div>

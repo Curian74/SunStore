@@ -1,0 +1,239 @@
+﻿@model IEnumerable<BusinessObjects.Models.OrderItem>
+@inject IHttpContextAccessor HttpContextAccessor
+@{
+    var userId = HttpContextAccessor.HttpContext!.Session.GetString("UserId");
+    var userRole = HttpContextAccessor.HttpContext.Session.GetString("UserRole");
+}
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<!--================Bill Area =================-->
+<section class="confirmation_part" style="padding-bottom:70px;">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12" style="margin:40px 0;">
+                @if(userRole == "1")
+                {
+                    <a asp-controller="Orders" asp-action="Index" class="btn_3">Trở lại</a>
+                }
+                else if(userRole == "3")
+                {
+                    <a asp-controller="Employees" asp-action="Order" class="btn_3">Trở lại</a>
+                }
+            </div>
+            <div class="col-lg-6 col-lx-4">
+                <div class="single_confirmation_details">
+                    <h4 style="font-family:Arial;font-weight:bold;">Thông tin giao hàng</h4>
+                    <ul>
+                        <li style="padding-left: 40%;">
+                            <p>Tên khách hàng</p><span>: @ViewBag.FullName</span>
+                        </li>
+                        <li style="padding-left: 40%;">
+                            <p>Địa chỉ</p><span>: @ViewBag.Address</span>
+                        </li>
+                        <li style="padding-left: 40%;">
+                            <p>Số điện thoại</p><span>: @ViewBag.Phone</span>
+                        </li>
+                        <li style="padding-left: 40%;">
+                            <p>Phương thức thanh toán</p><span>: @ViewBag.Payment</span>
+                        </li>
+                        @if (@ViewBag.Note != null)
+                        {
+                            <li style="padding-left: 40%;margin-top:20px;">
+                                <p>Lưu ý khi ship</p>
+                            </li>
+                            <p style="padding-top:20px;width:75%;">@ViewBag.Note</p>
+                        }
+
+                    </ul>
+                </div>
+            </div>
+            <div class="col-lg-6 col-lx-4">
+                <div class="single_confirmation_details">
+                    <div style="text-align:center;width:100%;">
+                        <h4 style="font-family:Arial;font-weight:bold;">Trạng thái đơn hàng</h4>
+                        <div style="width:100%;display:flex;justify-content:center;margin-bottom:30px;">
+                            <p style="color:white; background-color:red; font-weight:bold; padding: 10px auto; font-size:17px;
+                                      border:none; border-radius:4px;text-align:center; width:55%;">
+                                @ViewBag.Status
+                            </p>
+                        </div>
+                    </div>
+
+                    <ul>
+                        @if (ViewBag.Voucher != "Không có")
+                        {
+                            <li style="padding-left: 40%;">
+                                <p>Voucher</p><span>: @ViewBag.Voucher</span>
+                            </li>
+                        }
+                        @if (ViewBag.Shipper != "Chưa có")
+                        {
+                            <li style="padding-left: 40%;">
+                                <p>Shipper</p><span>: @ViewBag.Shipper</span>
+                            </li>
+                        }
+
+
+                    </ul>
+
+                </div>
+            </div>
+
+        </div>
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="order_details_iner">
+                    <h3 style="font-family:Arial;font-weight:bold;">Thông tin đơn hàng</h3>
+                    <table class="table table-borderless">
+                        <thead>
+                            <tr>
+                                <th scope="col" colspan="2">Sản phẩm</th>
+                                <th scope="col">Số lượng</th>
+                                <th scope="col">Tổng</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                double? subtotal = 0;
+                            }
+                            @foreach (var item in Model)
+                            {
+                                string productName = "";
+                                string productImg = "";
+                                @foreach (var product in (IEnumerable<BusinessObjects.Models.Product>)ViewData["Product"])
+                                {
+                                    if (product != null && product.Id == item.Product.ProductId)
+                                    {
+                                        productName = product.Name;
+                                        productImg = product.Image;
+                                        break;
+                                    }
+                                }
+                                var total = item.Price;
+                                subtotal += total;
+
+                                <tr>
+                                    <th colspan="2"><span>@productName (Size: @item.Product.Size)</span></th>
+                                    <th>x @item.Quantity</th>
+                                    <th> <span>@($"{total:N0}đ")</span></th>
+                                </tr>
+
+                            }
+
+
+                            <tr>
+                                <th colspan="3">Tổng</th>
+                                <th> <span>@($"{subtotal:N0}đ")</span></th>
+                            </tr>
+                            <tr>
+                                <th colspan="3">Shipping</th>
+                                <th><span>20,000đ</span></th>
+                            </tr>
+
+                            @{
+                                subtotal += 20000;
+                            }
+
+                            @if (ViewBag.VoucherPercent != 0)
+                            {
+                                int vch = ViewBag.VoucherPercent;
+                                var dis = subtotal * vch / 100;
+                                subtotal -= dis;
+                                <tr>
+                                    <th colspan="3">Voucher</th>
+                                    <th><span>- (@vch %) @($"{dis:N0}đ")</span></th>
+                                </tr>
+                            }
+
+                        </tbody>
+
+                        <tfoot>
+                            <tr>
+                                <th scope="col" colspan="3">Tổng cộng</th>
+                                <th scope="col">@($"{subtotal:N0}đ")</th>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+@*
+<h1>Details</h1>
+
+<div>
+    <h4>Order</h4>
+    <hr />
+    <dl class="row">
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.DateTime)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.DateTime)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.AdrDelivery)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.AdrDelivery)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.PhoneNumber)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.PhoneNumber)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Note)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Note)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.TotalPrice)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.TotalPrice)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Payment)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Payment)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Status)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Status)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.DenyReason)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.DenyReason)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Shipper)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Shipper.UserId)
+        </dd>
+        <dt class = "col-sm-2">
+            @Html.DisplayNameFor(model => model.Voucher)
+        </dt>
+        <dd class = "col-sm-10">
+            @Html.DisplayFor(model => model.Voucher.VoucherId)
+        </dd>
+    </dl>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>
+*@

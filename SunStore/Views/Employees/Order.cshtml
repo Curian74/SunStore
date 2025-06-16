@@ -1,0 +1,229 @@
+﻿@model IEnumerable<BusinessObjects.Models.Order>
+
+<link rel="stylesheet" href="/css//styletk.css" />
+
+<section class="checkout_area" style="padding: 50px;">
+    <h1 style="text-align:center; font-family:Arial;font-weight:bolder; margin-bottom:50px">Giao hàng</h1>
+    <div class="container">
+        <table class="table" style="font-family:Arial">
+            <thead class="thead-light">
+                <tr>
+                    <th scope="col">Mã đơn hàng</th>
+                    <th scope="col">Tổng tiền</th>
+                    <th scope="col">Ngày tạo</th>
+                    <th scope="col">Địa chỉ</th>
+                    <th scope="col">Trạng thái</th>
+                    <th scope="col">Chi tiết</th>
+                    <th scope="col">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    if (item.Id != 0)
+                    {
+                        <tr>
+                            <th scope="row">@item.Id</th>
+                            @{
+                                double? price = item.TotalPrice;
+                                string formattedPrice = price.HasValue ? price.Value.ToString("#,##0") + "đ" : "N/A";
+                            }
+                            <td>@formattedPrice</td>
+                            <td>@item.DateTime</td>
+                            <td>@item.AdrDelivery</td>
+                            <td style="position:relative;min-width:150px;">
+                                <p style="color:white; background-color:red; font-weight:bold; position:absolute; padding:auto 5px;
+                              border:none; border-radius:4px;text-align:center; width:80%; height:40px; display:flex;align-items:center; cursor:pointer;"
+                                   onclick="updateOrderStatus(@item.Id, '@item.Status')">
+                                    <span style="width:100%;text-align:center;" id="stt_@item.Id">@item.Status</span>
+                                </p>
+                            </td>
+                            <td style="width:150px;text-align:center;">
+                                <a asp-controller="Orders" asp-action="Details" asp-route-id="@item.Id" class="genric-btn success-border radius">Xem chi tiết</a>
+                            </td>
+                            @if (item.Status == "Đã đặt hàng")
+                            {
+                                <td style="width:150px;text-align:center;">
+                                    <button style="width: 120px;" class="btn btn-primary assign-shipper-btn mb-1" onclick="acceptOrder(@item.Id)">Chấp nhận</button>
+                                    <button style="width: 120px;" class="btn btn-primary assign-shipper-btn" onclick="rejectOrder(@item.Id)">Từ chối</button>
+                                </td>
+                            }
+                            else if (item.Status == "Đang giao hàng")
+                            {
+                                <td style="width:150px;text-align:center;">
+                                    <button class="btn btn-primary" onclick="completeOrder(@item.Id)">Đã giao hàng</button>
+                                </td>
+                            }
+                            else
+                            {
+                                <td colspan="2" style="text-align:center;">
+                                </td>
+                            }
+                        </tr>
+                    }
+                }
+            </tbody>
+
+        </table>
+    </div>
+</section>
+
+
+<!-- jquery plugins here-->
+<script src="/js/jquery-1.12.1.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+    function acceptOrder(orderId) {
+        $.ajax({
+            url: '/Employees/Accept',
+            method: 'POST',
+            data: { orderId: orderId },
+            success: function (response) {
+                if (response.success) {
+                    $('#stt_' + orderId).text('Đang giao hàng'); // Cập nhật trạng thái ngay sau khi chấp nhận
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Chấp nhận đơn hàng thành công',
+                        showConfirmButton: false,
+                        timer: 1500
+                    }).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Đã xảy ra lỗi',
+                        text: 'Không thể chấp nhận đơn hàng.',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            },
+            error: function () {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Đã xảy ra lỗi',
+                    text: 'Đã xảy ra lỗi khi gọi API.',
+                    confirmButtonText: 'OK'
+                });
+            }
+        });
+    }
+
+    function rejectOrder(orderId) {
+        $.ajax({
+            url: '/Employees/Reject',
+            method: 'POST',
+            data: { orderId: orderId },
+            success: function (response) {
+                if (response.success) {
+                    $('#stt_' + orderId).text('Bị từ chối');
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Từ chối đơn hàng thành công',
+                        showConfirmButton: false,
+                        timer: 1500
+                    }).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Đã xảy ra lỗi',
+                        text: 'Không thể từ chối đơn hàng.',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            },
+            error: function () {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Đã xảy ra lỗi',
+                    text: 'Đã xảy ra lỗi khi gọi API.',
+                    confirmButtonText: 'OK'
+                });
+            }
+        });
+    }
+
+    function completeOrder(orderId) {
+        $.ajax({
+            url: '/Employees/Complete',
+            method: 'POST',
+            data: { orderId: orderId },
+            success: function (response) {
+                if (response.success) {
+                    $('#stt_' + orderId).text('Đã giao hàng'); // Cập nhật trạng thái từ "Đang giao hàng" thành "Đã giao hàng"
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Giao hàng thành công',
+                        showConfirmButton: false,
+                        timer: 1500
+                    }).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Đã xảy ra lỗi',
+                        text: 'Không thể cập nhật trạng thái đơn hàng.',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            },
+            error: function () {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Đã xảy ra lỗi',
+                    text: 'Đã xảy ra lỗi khi gọi API.',
+                    confirmButtonText: 'OK'
+                });
+            }
+        });
+    }
+
+    function updateOrderStatus(orderId, currentStatus) {
+        let newStatus;
+        if (currentStatus === "Đang giao hàng") {
+            newStatus = "Đã giao hàng";
+        } else {
+            return; // Không thay đổi gì nếu trạng thái không phải là "Đang giao hàng"
+        }
+
+        $.ajax({
+            url: '/Employees/UpdateStatus',
+            method: 'POST',
+            data: { orderId: orderId, status: newStatus },
+            success: function (response) {
+                if (response.success) {
+                    $('#stt_' + orderId).text(newStatus);
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Cập nhật trạng thái thành công',
+                        showConfirmButton: false,
+                        timer: 1500
+                    }).then(() => {
+                        location.reload();
+                    });
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Đã xảy ra lỗi',
+                        text: 'Không thể cập nhật trạng thái đơn hàng.',
+                        confirmButtonText: 'OK'
+                    });
+                }
+            },
+            error: function () {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Đã xảy ra lỗi',
+                    text: 'Đã xảy ra lỗi khi gọi API.',
+                    confirmButtonText: 'OK'
+                });
+            }
+        });
+    }
+
+</script>

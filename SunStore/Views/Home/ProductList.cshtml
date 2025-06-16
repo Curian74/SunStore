@@ -1,0 +1,258 @@
+﻿@using X.PagedList.Mvc.Core
+@model X.PagedList.IPagedList<Product>
+
+<style>
+    .section_padding {
+        padding: 100px 0px;
+    }
+
+    .searchbt:hover {
+        background-color: #2FCAE9 !important;
+    }
+</style>
+<style>
+    .product {
+        margin: 20px 0px;
+        padding: 20px;
+        padding-top: 30px;
+        border: #f1f1f1 solid 1px;
+        border-radius: 20px;
+    }
+
+        .product:hover {
+            box-shadow: 0 2px 12px rgba(0,0,0,.12);
+        }
+
+        .product a {
+            width: 100%;
+            color: black;
+        }
+
+    .pr-image {
+        width: 100%;
+        height: 300px;
+        display: flex;
+        justify-content: center;
+    }
+
+        .pr-image img {
+            width: 100%;
+        }
+
+            .pr-image img:hover {
+                transform: translateY(-10px);
+                transition: 0.5s;
+            }
+
+    .pr-name {
+        margin-top: 20px;
+        margin-bottom: 0;
+        font-size: 26px;
+        font-weight: bolder;
+        font-family: Arial;
+        max-height: 70px;
+        overflow: hidden;
+    }
+
+        .pr-name:hover {
+            color: rgb(52, 97, 175);
+        }
+
+    .pr-screen {
+        margin: 5px 0;
+        max-height: 150px;
+        overflow: hidden;
+    }
+
+        .pr-screen span {
+            text-align: justify;
+            padding: 3px 5px;
+            /* background-color: rgb(237, 228, 228); */
+            font-size: 14px;
+        }
+
+    .pr-chip {
+        padding: 3px 5px;
+        background-color: rgb(237, 228, 228);
+        font-size: 14px;
+        margin: 5px 0;
+    }
+
+    .pr-rom {
+        margin: 10px 0;
+        display: flex;
+    }
+
+    .pr-rom-op {
+        /* box-shadow: 0 .5px .5px rgba(31, 31, 31, 0.12); */
+        margin-right: 7px;
+        margin-bottom: 5px;
+        font-size: 20px;
+    }
+
+    .pr-price {
+        color: red;
+    }
+
+</style>
+
+<!-- breadcrumb part start-->
+<section class="breadcrumb_part">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="breadcrumb_iner">
+                    <h2>product list</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- breadcrumb part end-->
+<!-- product list part start-->
+<section class="product_list section_padding">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="row">
+                    <div class="col-9 product_sidebar">
+                        <form asp-controller="Home" asp-action="ProductList" id="searchForm" style="display:flex">
+                            <input type="text" name="keyword" id="keyword" placeholder="Tìm kiếm" class="form-control" style="width:200px; margin-right:60px; height:42px;" value="@ViewData["keyword"]">
+                            <div class="d-flex justify-content-between" style="width:55%;">
+                            <select id="categoryID" name="categoryID" class="form-control" style="width:200px;margin-right:10px">
+                                <option value="">Chọn danh mục</option>
+                                @foreach (var category in (IEnumerable<BusinessObjects.Models.Category>)ViewData["Categories"])
+                                {
+                                    var isSelected = category.Id == (int?)ViewData["categoryID"] ? "selected" : "";
+                                    if (isSelected == "selected")
+                                    {
+                                        <option value="@category.Id" selected>
+                                            @category.Name
+                                        </option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@category.Id">
+                                            @category.Name
+                                        </option>
+                                    }
+                                }
+                            </select>
+                            <select name="priceRange" id="priceRange" class="form-control" style="width:200px;margin-right:10px">
+                                <option value="">Chọn mức giá</option>
+                                @if (@ViewData["priceRange"] != null && "0-100000" == @ViewData["priceRange"].ToString())
+                                {
+                                    <option value="0-100000" selected>0 - 100,000đ</option>
+                                }
+                                else
+                                {
+                                    <option value="0-100000">0 - 100,000đ</option>
+                                }
+                                @if (@ViewData["priceRange"] != null && "100000-200000" == @ViewData["priceRange"].ToString())
+                                {
+                                    <option value="100000-200000" selected>100,000đ - 200,000đ</option>
+                                }
+                                else
+                                {
+                                    <option value="100000-200000">100,000đ - 200,000đ</option>
+                                }
+                                @if (@ViewData["priceRange"] != null && "200000-500000" == @ViewData["priceRange"].ToString())
+                                {
+                                    <option value="200000-500000" selected>200,000đ - 500,000đ</option>
+                                }
+                                else
+                                {
+                                    <option value="200000-500000">200,000đ - 500,000đ</option>
+                                }
+                                @if (@ViewData["priceRange"] != null && "500000+" == @ViewData["priceRange"].ToString())
+                                {
+                                    <option value="500000+" selected>500,000đ+</option>
+                                }
+                                else
+                                {
+                                    <option value="500000+">500,000đ+</option>
+                                }
+
+                            </select>
+                            <input type="hidden" name="page" id="page" value="1">
+                            <button type="submit" class="btn btn-primary searchbt" style="background-color: #06A2C8; border:none;">
+                                Tìm kiếm
+                            </button>
+                            </div>
+                        </form>
+                    </div>
+                    <br />
+                </div>
+            </div>
+
+
+            <div class="col-md-12" id="product" style="margin-top: 50px;">
+
+                <div class="product_list">
+                    <div class="row justify-content-center">
+                        @foreach (var product in Model)
+                        {
+                            @if (product.IsDeleted == false)
+                            {
+                                var minPrice = product.ProductOptions.Any() ? product.ProductOptions.Min(bo => bo.Price) : 0;
+                                @* <div class="col-lg-4 col-sm-4" style="margin-top: 20px;">
+                                    <div class="single_product_item">
+                                        <img style="width:95%;height:300px;" src="@product.Image" alt="#" class="img-fluid">
+                                        <h3 style="color:black; font-weight:bold">
+                                            <a asp-controller="Products" asp-action="Details" asp-route-id="@product.Id">
+                                                @product.Name
+                                            </a>
+                                        </h3>
+                                        <p>@($"Price: {minPrice:N0}đ")</p>
+
+                                    </div>
+                                </div> *@
+
+                                <div class="product col-lg-4">
+                                    <a asp-controller="Products" asp-action="Details" asp-route-id="@product.Id" style="text-decoration: none;">
+                                        <div class="pr-image">
+                                            <img src="@product.Image" alt="">
+                                        </div>
+                                        <p class="pr-name">@product.Name</p>
+                                        <div class="pr-rom">
+                                            <p class="pr-rom-op">@($"Price: {minPrice:N0}đ")</p>
+                                        </div>
+                                    </a>
+                                </div>
+                            }
+                        }
+                    </div>
+                </div>
+
+                @Html.PagedListPager(Model, page => Url.Action("ProductList", "Home", new { page = page, keyword = @ViewData["keyword"], categoryID = @ViewData["categoryID"], priceRange = @ViewData["priceRange"] }),
+                         new PagedListRenderOptions()
+                {
+                    LiElementClasses = new List<String> { "page-item" },
+                    PageClasses = new List<String> { "page-link" }
+                }
+                         )
+            </div>
+
+
+
+</section>
+
+<script>
+    function searchByName() {
+        var form = document.getElementById("searchForm");
+        var formData = new FormData(form);
+
+        var queryString = new URLSearchParams(formData).toString();
+        fetch(`/Home/ProductList?${queryString}`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+            // .then(response => response.text())
+            // .then(data => {
+            //     document.getElementById("product").innerHTML = data;
+            // })
+            .catch(error => console.error('Error:', error));
+    }
+</script>

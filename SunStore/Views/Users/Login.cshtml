@@ -1,0 +1,19 @@
+﻿@{
+}
+<link rel="stylesheet" href="~/css/login.css" asp-append-version="true" />
+
+<div style="width: 100%; display:flex; justify-content:center" class="">
+    <div class="containerr">
+        <div class="head">Log In</div>
+        <form method="post" asp-action="Login" asp-controller="Users" class="form">
+            <input required="" class="inp" type="text" name="username" id="email" placeholder="Tên đăng nhập">
+            <input required="" class="inp" type="password" name="password" id="password" placeholder="Mật khẩu">
+            @if (ViewBag.Error != null)
+            {
+                <p style="color:red; margin: 10px;">@ViewBag.Error</p>
+            }
+            <span class="forgot-password"><a href="#">Forgot Password ?</a></span> 
+            <input class="login-button" type="submit" value="Đăng nhập">
+        </form>
+    </div>
+</div>
