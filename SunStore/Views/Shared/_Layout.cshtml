@@ -1,9 +1,14 @@
 ﻿@inject IHttpContextAccessor HttpContextAccessor
 @{
-    var userId = HttpContextAccessor.HttpContext!.Session.GetString("UserId");
+    // var userId = HttpContextAccessor.HttpContext!.Session.GetString("UserId");
     var userRole = HttpContextAccessor.HttpContext.Session.GetString("UserRole");
-    var userName = HttpContextAccessor.HttpContext.Session.GetString("UserName");
+    // var userName = HttpContextAccessor.HttpContext.Session.GetString("UserName");
     var cq = HttpContextAccessor.HttpContext.Session.GetString("CartQuantity");
+}
+
+@{
+    var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value.ToString();
+    var userName = User.FindFirst(ClaimTypes.Name)?.Value.ToString();
 }
 
 <!DOCTYPE html>
@@ -61,7 +66,8 @@
                                         <a class="dropdown-item" asp-controller="Home" asp-action="ProductList"> Danh sách sản phẩm</a>
                                     </div>
                                 </li>
-                                @if (userRole == "2")
+
+                                @if (User.IsInRole(UserRoleConstants.Customer))
                                 {
                                     <li class="nav-item dropdown">
                                         <a class="nav-link dropdown-toggle" asp-controller="Home" asp-action="Index" id="navbarDropdown_3"
@@ -79,7 +85,7 @@
                                     </li>
                                 }
 
-                                @if(userRole == "1")
+                                @if (User.IsInRole(UserRoleConstants.Admin))
                                 {
                                     <li class="nav-item dropdown">
                                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown_user"
@@ -103,14 +109,15 @@
                                         <a class="nav-link" asp-controller="Employees" asp-action="AssignShipper" style="white-space:nowrap">Gán Shipper</a>
                                     </li>
                                 }
-                                @if(userRole == "3")
+
+                                @if (User.IsInRole(UserRoleConstants.Shipper))
                                 {
                                     <li class="nav-item">
                                         <a class="nav-link" asp-controller="Employees" asp-action="Order" style="white-space:nowrap">Xem đơn hàng</a>
                                     </li>
                                 }
 
-                                @if (userId != "" && userId != null)
+                                @if (User.Identity.IsAuthenticated)
                                 {
                                     <li class="nav-item dropdown">
                                         <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown_user"

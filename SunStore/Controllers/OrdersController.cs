@@ -1,12 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using BusinessObjects.Models;
 using X.PagedList.Extensions;
+using Microsoft.AspNetCore.Authorization;
+using BusinessObjects.Constants;
 
 namespace SunStore.Controllers
 {
@@ -26,6 +24,7 @@ namespace SunStore.Controllers
         //    return View(await sunStoreContext.ToListAsync());
         //}
 
+        [Authorize(Roles = UserRoleConstants.Admin)]
         public IActionResult Index(int? page, DateTime? fromDate, DateTime? toDate)
         {
             var orders = _context.Orders.ToList();

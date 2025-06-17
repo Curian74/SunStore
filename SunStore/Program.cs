@@ -2,6 +2,10 @@ using SunStore.Services;
 using Microsoft.EntityFrameworkCore;
 using SunStore.APIServices;
 using BusinessObjects.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace SunStore
 {
@@ -21,17 +25,20 @@ namespace SunStore
 
             builder.Services.AddScoped(typeof(SunStoreContext));
 
-            //Add session
-            builder.Services.AddDistributedMemoryCache();
-            builder.Services.AddHttpContextAccessor();
 
             builder.Services.AddHttpClient("api", httpClient =>
             {
                 httpClient.BaseAddress = new Uri("https://localhost:7270/api/");
             });
 
+            #region DIs
             builder.Services.AddScoped<OrderAPIService>();
+            builder.Services.AddScoped<AuthAPIService>();
+            #endregion
 
+            //Add session
+            builder.Services.AddDistributedMemoryCache();
+            builder.Services.AddHttpContextAccessor();
             builder.Services.AddSession(options =>
             {
                 options.IdleTimeout = TimeSpan.FromDays(1);
@@ -52,8 +59,54 @@ namespace SunStore
                                             .AllowAnyMethod();
                                   });
             });
-            
 
+            #region Jwt Authentication configuration.
+            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Secret"]!));
+
+            builder.Services.AddAuthentication(options =>
+            {
+                // Scheme used to parse user principal from requests.
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                // Scheme used to handle unauthorized challenge
+                // it will return a 401 error if the user is unauthorized.
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                    ValidAudience = builder.Configuration["Jwt:Audience"],
+                    IssuerSigningKey = key,
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ClockSkew = TimeSpan.Zero,
+                };
+
+                // This event will be called whenever the authentication middleware for Jwt is invoked.
+                // options.Events is used to manipulated Jwt bearer authentication lifecycle.
+                // By default, OnMessageReceived will read the Jwt from the request header
+                // but in this case we override the event and read the Jwt token from cookie instead.
+                options.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        var token = context.HttpContext.Request.Cookies["jwtToken"];
+                        if (!string.IsNullOrEmpty(token))
+                        {
+                            context.Token = token;
+                        }
+                        return Task.CompletedTask;
+                    }
+                };
+            });
+
+            #endregion
+
+            builder.Services.AddAuthentication();
+            builder.Services.AddAuthorization();
 
             var app = builder.Build();
 
@@ -68,7 +121,29 @@ namespace SunStore
             }
 
             app.UseHttpsRedirection();
+
             app.UseStaticFiles();
+
+            // Redirect to a specific page according to error status code.
+            app.UseStatusCodePages(context =>
+            {
+                var response = context.HttpContext.Response;
+
+                if (response.StatusCode == 401)
+                {
+                    response.Redirect("/Users/Login");
+                }
+                else if (response.StatusCode == 403)
+                {
+                    response.Redirect("/Users/AccessDenied");
+                }
+                else if (response.StatusCode == 404)
+                {
+                    response.Redirect("/Users/NotFoundPage");
+                }
+
+                return Task.CompletedTask;
+            });
 
             app.UseRouting();
 
