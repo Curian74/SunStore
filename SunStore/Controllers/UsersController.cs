@@ -192,6 +192,11 @@ namespace SunStore.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(LoginRequestViewModel model)
         {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
             try
             {
                 var result = await _authAPIService.LoginAsync(model);
