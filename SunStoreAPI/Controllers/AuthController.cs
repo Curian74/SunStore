@@ -1,4 +1,5 @@
-﻿using BusinessObjects.Models;
+﻿using BusinessObjects.Constants;
+using BusinessObjects.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SunStoreAPI.Dtos;
@@ -83,6 +84,48 @@ namespace SunStoreAPI.Controllers
             Response.Cookies.Delete(JWT_COOKIE_NAME);
 
             return Ok("Logged out");
+        }
+
+        [HttpPost]
+        [Route("register")]
+        public async Task<IActionResult> Register(RegisterDto dto)
+        {
+            var emailExisted = await _context.Users
+                .FirstOrDefaultAsync(u => u.Email == dto.Email) != null;
+
+            if (emailExisted)
+            {
+                return BadRequest("Email đã tồn tại.");
+            }
+
+            var phoneExisted = await _context.Users
+                .FirstOrDefaultAsync(u => u.PhoneNumber == dto.PhoneNumber) != null;
+
+            if (phoneExisted)
+            {
+                return BadRequest("Số điện thoại đã tồn tại.");
+            }
+
+            if (dto.Password != dto.ConfirmPassword)
+            {
+                return BadRequest("Mật khẩu không khớp!");
+            }
+
+            var newUser = new User
+            {
+                Email = dto.Email,
+                Password = dto.Password,
+                BirthDate = dto.BirthDate,
+                FullName = dto.FullName,
+                PhoneNumber = dto.PhoneNumber,
+                Username = "", // Temp value to bypass null check.
+                Role = int.Parse(UserRoleConstants.Customer),
+            };
+
+            await _context.Users.AddAsync(newUser);
+            await _context.SaveChangesAsync();
+
+            return Ok("Đăng ký thành công.");
         }
     }
 }
