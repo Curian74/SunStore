@@ -1,4 +1,5 @@
-﻿using BusinessObjects.Constants;
+﻿using BusinessObjects.ApiResponses;
+using BusinessObjects.Constants;
 using BusinessObjects.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -95,7 +96,11 @@ namespace SunStoreAPI.Controllers
 
             if (emailExisted)
             {
-                return BadRequest("Email đã tồn tại.");
+                return BadRequest(new ApiResult
+                {
+                    IsSuccessful = false,
+                    Message = "Email này đã tồn tại."
+                });
             }
 
             var phoneExisted = await _context.Users
@@ -103,12 +108,20 @@ namespace SunStoreAPI.Controllers
 
             if (phoneExisted)
             {
-                return BadRequest("Số điện thoại đã tồn tại.");
+                return BadRequest(new ApiResult
+                {
+                    IsSuccessful = false,
+                    Message = "Số điện thoại đã tồn tại."
+                });
             }
 
             if (dto.Password != dto.ConfirmPassword)
             {
-                return BadRequest("Mật khẩu không khớp!");
+                return BadRequest(new ApiResult
+                {
+                    IsSuccessful = false,
+                    Message = "Mật khẩu không khớp!"
+                });
             }
 
             var newUser = new User
@@ -125,7 +138,12 @@ namespace SunStoreAPI.Controllers
             await _context.Users.AddAsync(newUser);
             await _context.SaveChangesAsync();
 
-            return Ok("Đăng ký thành công.");
+            return Ok(new ApiResult
+            {
+                IsSuccessful = true,
+                Message = "Đăng ký thành công."
+            });
+
         }
     }
 }

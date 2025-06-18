@@ -1,4 +1,5 @@
-﻿using SunStore.Extensions;
+﻿using BusinessObjects.ApiResponses;
+using SunStore.Extensions;
 using SunStore.Models;
 using SunStore.ViewModel;
 using System.Text.Json;
@@ -43,6 +44,14 @@ namespace SunStore.APIServices
                     throw new HttpRequestException("Lỗi không xác định.");
                 }
             }
+        }
+
+        public async Task<ApiResult?> RegisterAsync(RegisterRequestViewModel model)
+        {
+            var response = await _httpClient.PostAsJsonAsync("Auth/register", model);
+            var result = await response.Content.ReadFromJsonAsync<ApiResult>();
+
+            return result;
         }
 
         public async Task<bool> SignOutAsync()

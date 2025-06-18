@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace SunStoreAPI.Dtos
+namespace SunStore.ViewModel
 {
-    public class RegisterDto
+    public class RegisterRequestViewModel
     {
         public string FullName { get; set; } = null!;
 

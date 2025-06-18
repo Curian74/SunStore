@@ -1,0 +1,21 @@
+﻿@{
+    ViewBag.Title = "Đăng ký thành công";
+}
+
+<div class="d-flex justify-content-center align-items-center mt-5">
+    <div class="card text-center shadow-lg p-4" style="max-width: 500px; width: 100%;">
+        <div class="card-body">
+            <svg xmlns="http://www.w3.org/2000/svg" width="72" height="72" fill="#28a745" class="bi bi-check-circle mb-3" viewBox="0 0 16 16">
+                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM6.97 10.03a.75.75 0 0 0 1.07 0l3.992-3.992a.75.75 0 1 0-1.06-1.06L7.5 8.439 6.03 6.97a.75.75 0 0 0-1.06 1.06l1.999 2z" />
+            </svg>
+
+            <h3 class="card-title text-success">Đăng ký thành công!</h3>
+            <p class="card-text mt-2">Chào mừng bạn đã tham gia hệ thống của chúng tôi.</p>
+
+            <div class="d-grid gap-2 mt-4">
+                <a asp-action="Login" asp-controller="Users" class="btn btn-primary">Đăng nhập ngay</a>
+                <a href="/" class="btn btn-outline-secondary">Về trang chủ</a>
+            </div>
+        </div>
+    </div>
+</div>
