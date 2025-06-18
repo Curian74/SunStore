@@ -1,24 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.Threading.Tasks;
+﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using BusinessObjects.Models;
+using SunStore.APIServices;
+using System.Threading.Tasks;
+using SunStore.ViewModel;
 
 namespace SunStore.Controllers
 {
     public class UsersController : Controller
     {
         private readonly SunStoreContext _context;
+        private readonly AuthAPIService _authAPIService;
 
-        public UsersController(SunStoreContext context)
+        private const string JWT_COOKIE_NAME = "jwtToken";
+
+        public UsersController(SunStoreContext context, AuthAPIService authAPIService)
         {
             _context = context;
+            _authAPIService = authAPIService;
         }
 
         // GET: Users
@@ -164,46 +166,94 @@ namespace SunStore.Controllers
         {
             return View();
         }
-        public IActionResult Logout()
+        
+        public IActionResult AccessDenied()
         {
-            HttpContext.Session.Clear();
+            return View();
+        }
+
+        public IActionResult NotFoundPage()
+        {
+            return View();
+        }
+
+        public async Task<IActionResult> Logout()
+        {
+            var result = await _authAPIService.SignOutAsync();
+
+            if (result)
+            {
+                Response.Cookies.Delete(JWT_COOKIE_NAME);
+            }
+
             return RedirectToAction("Login");
         }
 
         [HttpPost]
-        public IActionResult Login(string username, string password)
+        public async Task<IActionResult> Login(LoginRequestViewModel model)
         {
-            var user = _context.Users.Where(e => e.Username == username && e.Password == password).FirstOrDefault();
-            if (user == null || _context.Users == null)
+            if (!ModelState.IsValid)
             {
-                ViewBag.Error = "Tên đăng nhập hoặc mật khẩu không chính xác!";
+                return View(model);
+            }
+
+            try
+            {
+                var result = await _authAPIService.LoginAsync(model);
+
+                if (result.IsSuccessful == false)
+                {
+                    ViewBag.Error = result.ErrorMessage;
+                    return View();
+                }
+
+                var cookieOptions = new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    Expires = DateTime.UtcNow.AddHours(1)
+                };
+
+                // Append Jwt token to the cookie.
+                Response.Cookies.Append(JWT_COOKIE_NAME, result.Token!, cookieOptions);
+
+                #region temporary code
+
+                var user = _context.Users
+                    .Where(e => e.Email == model.Email && e.Password == model.Password)
+                    .FirstOrDefault();
+                //if (user == null || _context.Users == null)
+                //{
+                //    ViewBag.Error = "Tên đăng nhập hoặc mật khẩu không chính xác!";
+                //    return View();
+                //}
+                //if (user.IsBanned == 1)
+                //{
+                //    ViewBag.Error = "Tài khoản của bạn đã bị chặn!";
+                //    return View();
+                //}
+
+                // Store account info in session or cookie
+                HttpContext.Session.SetString("UserId", user.Id.ToString());
+                HttpContext.Session.SetString("UserRole", user.Role.ToString()!);
+                HttpContext.Session.SetString("UserName", user.FullName!.ToString()!);
+                HttpContext.Session.SetString("UserEmail", user.Email!.ToString()!);
+
+                int uid = user.Id;
+
+                var cartQuantity = _context.OrderItems.Where(o => o.OrderId == 0 && o.CustomerId == uid).Count();
+                HttpContext.Session.SetString("CartQuantity", cartQuantity.ToString());
+
+                #endregion
+
+                return RedirectToAction("Index", "Home");
+            }
+
+            catch (HttpRequestException ex)
+            {
+                ViewBag.Error = ex.Message;
                 return View();
             }
-            if (user.IsBanned == 1)
-            {
-                ViewBag.Error = "Tài khoản của bạn đã bị chặn!";
-                return View();
-            }
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Name, user.FullName),
-                new Claim(ClaimTypes.Role, user.Role.ToString()),
-            };
-            var claimsIdentity = new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme);
-
-            // Store account info in session or cookie
-            HttpContext.Session.SetString("UserId", user.Id.ToString());
-            HttpContext.Session.SetString("UserRole", user.Role.ToString()!);
-            HttpContext.Session.SetString("UserName", user.FullName!.ToString()!);
-            HttpContext.Session.SetString("UserEmail", user.Email!.ToString()!);
-
-            int uid = user.Id;
-
-            var cartQuantity = _context.OrderItems.Where(o => o.OrderId == 0 && o.CustomerId == uid).Count();
-            HttpContext.Session.SetString("CartQuantity", cartQuantity.ToString());
-
-            return RedirectToAction("Index", "Home");
         }
     }
 }
