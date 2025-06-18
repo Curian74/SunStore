@@ -255,5 +255,44 @@ namespace SunStore.Controllers
                 return View();
             }
         }
+
+        public IActionResult Register()
+        {
+            return View();
+        }
+
+        public IActionResult RegisterSuccessful()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Register(RegisterRequestViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            try
+            {
+                var result = await _authAPIService.RegisterAsync(model);
+
+                if (result!.IsSuccessful)
+                {
+                    return RedirectToAction(nameof(RegisterSuccessful));
+                }
+
+                ViewBag.Error = result.Message;
+                return View(model);
+            }
+
+            catch (HttpRequestException e)
+            {
+                ModelState.AddModelError("error", e.Message);
+                return View(model);
+            }
+
+        }
     }
 }

@@ -1,4 +1,6 @@
-﻿using BusinessObjects.Models;
+﻿using BusinessObjects.ApiResponses;
+using BusinessObjects.Constants;
+using BusinessObjects.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SunStoreAPI.Dtos;
@@ -83,6 +85,65 @@ namespace SunStoreAPI.Controllers
             Response.Cookies.Delete(JWT_COOKIE_NAME);
 
             return Ok("Logged out");
+        }
+
+        [HttpPost]
+        [Route("register")]
+        public async Task<IActionResult> Register(RegisterDto dto)
+        {
+            var emailExisted = await _context.Users
+                .FirstOrDefaultAsync(u => u.Email == dto.Email) != null;
+
+            if (emailExisted)
+            {
+                return BadRequest(new ApiResult
+                {
+                    IsSuccessful = false,
+                    Message = "Email này đã tồn tại."
+                });
+            }
+
+            var phoneExisted = await _context.Users
+                .FirstOrDefaultAsync(u => u.PhoneNumber == dto.PhoneNumber) != null;
+
+            if (phoneExisted)
+            {
+                return BadRequest(new ApiResult
+                {
+                    IsSuccessful = false,
+                    Message = "Số điện thoại đã tồn tại."
+                });
+            }
+
+            if (dto.Password != dto.ConfirmPassword)
+            {
+                return BadRequest(new ApiResult
+                {
+                    IsSuccessful = false,
+                    Message = "Mật khẩu không khớp!"
+                });
+            }
+
+            var newUser = new User
+            {
+                Email = dto.Email,
+                Password = dto.Password,
+                BirthDate = dto.BirthDate,
+                FullName = dto.FullName,
+                PhoneNumber = dto.PhoneNumber,
+                Username = "", // Temp value to bypass null check.
+                Role = int.Parse(UserRoleConstants.Customer),
+            };
+
+            await _context.Users.AddAsync(newUser);
+            await _context.SaveChangesAsync();
+
+            return Ok(new ApiResult
+            {
+                IsSuccessful = true,
+                Message = "Đăng ký thành công."
+            });
+
         }
     }
 }

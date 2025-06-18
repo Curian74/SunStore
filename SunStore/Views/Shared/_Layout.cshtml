@@ -45,7 +45,7 @@
             <div class="row align-items-center justify-content-center">
                 <div class="col-lg-12">
                     <nav class="navbar navbar-expand-lg navbar-light">
-                        <a class="navbar-brand" asp-controller="Home" asp-action="Index"> <img style="height:86px;border-radius:15px;" src="~/img/logo.jpg" alt="logo"> </a> 
+                        <a class="navbar-brand" asp-controller="Home" asp-action="Index"> <img style="height:86px;border-radius:15px;" src="~/img/logo.jpg" alt="logo"> </a>
                         <button class="navbar-toggler" type="button" data-toggle="collapse"
                                 data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
                                 aria-expanded="false" aria-label="Toggle navigation">
@@ -137,7 +137,17 @@
                                 else
                                 {
                                     <li class="nav-item">
-                                        <a class="nav-link" asp-controller="Users" asp-action="Login" style="white-space:nowrap">Đăng nhập</a>
+                                        <a class="nav-link" asp-controller="Users" asp-action="Login" style="white-space:nowrap">
+                                            Đăng nhập
+                                        </a>
+                                    </li>
+
+                                    <li class="nav-item">
+                                        <a class="nav-link"
+                                           asp-controller="Users"
+                                           asp-action="Register" style="white-space:nowrap">
+                                            Đăng Ký
+                                        </a>
                                     </li>
                                 }
                             </ul>
@@ -175,11 +185,11 @@
     <!-- jquery plugins here-->
     <script src="/js/jquery-1.12.1.min.js"></script>
     <!-- easing js -->
-    <script src="/js/jquery.magnific-popup.js"></script> 
+    <script src="/js/jquery.magnific-popup.js"></script>
     <!-- swiper js -->
     <script src="/js/swiper.min.js"></script>
     <!-- swiper js -->
-    <script src="/js/mixitup.min.js"></script>  
+    <script src="/js/mixitup.min.js"></script>
     <!-- particles js -->
     <script src="/js/owl.carousel.min.js"></script>
     <script src="/js/jquery.nice-select.min.js"></script>
@@ -192,7 +202,7 @@
     <script src="/js/jquery.validate.min.js"></script>
     <script src="/js/mail-script.js"></script>
     <!-- custom js -->
-    <script src="/js/custom.js"></script> 
+    <script src="/js/custom.js"></script>
 
     @* <script src="~/lib/jquery/dist/jquery.min.js"></script> *@
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
