@@ -14,8 +14,10 @@ namespace SunStoreAPI.Utils
         public void SaveResetCode(string email, string code, int expirationInMinutes)
         {
             var cacheKey = $"reset_code:{email.ToLower()}";
+
+            // Expires after 10 mins
             var cacheEntryOptions = new MemoryCacheEntryOptions()
-                .SetSlidingExpiration(TimeSpan.FromMinutes(expirationInMinutes)); // Tự động xóa sau 10 phút
+                .SetSlidingExpiration(TimeSpan.FromMinutes(expirationInMinutes));
 
             _memoryCache.Set(cacheKey, code, cacheEntryOptions);
         }
@@ -25,14 +27,17 @@ namespace SunStoreAPI.Utils
             var cacheKey = $"reset_code:{email.ToLower()}";
             if (_memoryCache.TryGetValue(cacheKey, out string savedCode))
             {
-                if (inputCode == savedCode)
-                {
-                    _memoryCache.Remove(cacheKey);
-                    return true;
-                }
+                return inputCode == savedCode;
             }
 
-            return false; // Không tồn tại hoặc hết hạn
+            // Invalid or expired code.
+            return false;
+        }
+
+        public void RemoveResetCode(string email)
+        {
+            var cacheKey = $"reset_code:{email.ToLower()}";
+            _memoryCache.Remove(cacheKey);
         }
     }
 }

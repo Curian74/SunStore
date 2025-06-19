@@ -10,12 +10,28 @@
             <span asp-validation-for="@Model.Email" class="text-danger"></span>
             <input asp-for="@Model.Password" class="inp mb-3" type="password" placeholder="Mật khẩu">
             <span asp-validation-for="@Model.Password" class="text-danger"></span>
+
             @if (ViewBag.Error != null)
             {
                 <p style="color:red; margin: 10px;">@ViewBag.Error</p>
             }
-            <span class="forgot-password"><a href="#">Forgot Password ?</a></span> 
+
+            else if (ViewBag.ResetPassword != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <small>@ViewBag.ResetPassword</small>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            <span class="forgot-password"><a asp-action="ResetPassword">Forgot Password ?</a></span>
             <input class="login-button" type="submit" value="Đăng nhập">
         </form>
     </div>
 </div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

@@ -154,6 +154,7 @@ namespace SunStoreAPI.Controllers
 
         }
 
+        // Otp sending endpoints.
         [HttpPost]
         [Route("password")]
         public async Task<IActionResult> ForgotPassword(ResetPasswordDto dto)
@@ -164,7 +165,11 @@ namespace SunStoreAPI.Controllers
 
                 if (user == null)
                 {
-                    return BadRequest("User not found.");
+                    return BadRequest(new ApiResult
+                    {
+                        IsSuccessful = false,
+                        Message = "User not found."
+                    });
                 }
 
                 string randomVerificationCode = VerificationCodeGenerator.GenerateCode();
@@ -175,9 +180,14 @@ namespace SunStoreAPI.Controllers
 
                 await _emailService.SendEmailAsync(dto.Email, "Đặt lại mật khẩu", mailContent);
 
+                // Save Otp code to memory cache.
                 _cacheUtils.SaveResetCode(dto.Email, randomVerificationCode, OTP_EXPIRATION_MINUTES);
 
-                return Ok("Gửi email thành công.");
+                return Ok(new ApiResult
+                {
+                    IsSuccessful = true,
+                    Message = "Gửi email thành công."
+                });
             }
 
             catch (Exception ex)
@@ -186,6 +196,7 @@ namespace SunStoreAPI.Controllers
             }
         }
 
+        // Otp verification endpoint.
         [HttpPost]
         [Route("verify-reset")]
         public IActionResult VerifyResetPasswordOTP(VerifyPasswordOtpDto dto)
@@ -194,10 +205,71 @@ namespace SunStoreAPI.Controllers
 
             if (!isValid)
             {
-                return BadRequest("Mã OTP không hợp lệ hoặc đã hết hạn.");
+                return BadRequest(new ApiResult
+                {
+                    IsSuccessful = false,
+                    Message = "Mã OTP không hợp lệ hoặc đã hết hạn."
+                });
             }
 
-            return Ok("Xác thực thành công.");
+            return Ok(new ApiResult
+            {
+                IsSuccessful = true,
+                Message = "Xác thực thành công."
+            });
+        }
+
+        // Update password endpoint.
+        [HttpPost]
+        [Route("reset-password")]
+        public async Task<IActionResult> UpdatePassword(UpdatePasswordDto dto)
+        {
+            try
+            {
+                var isValid = _cacheUtils.VerifyResetCode(dto.Email, dto.Otp);
+
+                if (!isValid)
+                {
+                    return BadRequest(new ApiResult
+                    {
+                        IsSuccessful = false,
+                        Message = "Yêu cầu không hợp lệ hoặc đã hết hạn."
+                    });
+                }
+
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
+
+                if (user == null)
+                {
+                    return BadRequest(new ApiResult
+                    {
+                        IsSuccessful = false,
+                        Message = "Không tìm thấy người dùng."
+                    });
+                }
+
+                // Update user's password.
+                user.Password = dto.Password;
+                await _context.SaveChangesAsync();
+
+                // Remove the OTP code from cache.
+                _cacheUtils.RemoveResetCode(dto.Email);
+
+                return Ok(new ApiResult
+                {
+                    IsSuccessful = true,
+                    Message = "Cập nhật mật khẩu thành công."
+                });
+            }
+
+            catch (Exception e)
+            {
+                return StatusCode(500, new ApiResult
+                {
+                    IsSuccessful = false,
+                    Message = e.Message,
+                });
+            }
         }
     }
 }

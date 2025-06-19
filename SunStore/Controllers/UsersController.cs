@@ -164,6 +164,7 @@ namespace SunStore.Controllers
 
         public IActionResult Login()
         {
+            ViewBag.ResetPassword = TempData["ResetPassword"];
             return View();
         }
         
@@ -261,6 +262,115 @@ namespace SunStore.Controllers
             return View();
         }
 
+        public IActionResult ResetPassword()
+        {
+            return View();
+        }
+
+        public IActionResult NewPassword(string? email, string? otp)
+        {
+            var modelData = new UpdatePasswordRequestViewModel { Email = email, Otp = otp};
+
+            // Prevent access to the page if the email or the otp code is not present in the query string.
+            if (string.IsNullOrEmpty(otp) || string.IsNullOrEmpty(email))
+            {
+                return RedirectToAction(nameof(NotFoundPage));
+            }
+
+            return View(modelData);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> NewPassword(UpdatePasswordRequestViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            try
+            {
+                var result = await _authAPIService.UpdatePasswordAsync(model);
+
+                if (result!.IsSuccessful)
+                {
+                    TempData["ResetPassword"] = result.Message;
+                    return RedirectToAction(nameof(Login));
+                }
+
+                ViewBag.Error = result.Message;
+                return View(model);
+            }
+
+            catch (Exception ex)
+            {
+                ViewBag.Error = ex.Message;
+                return View();
+            }
+        }
+
+        public IActionResult VerifyOTP(string email)
+        {
+            var modelData = new OTPVerificationRequestViewModel { Email = email };
+            return View(modelData);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> VerifyOTP(OTPVerificationRequestViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            try
+            {
+                var result = await _authAPIService.SendOTPVerificationRequestAsync(model);
+
+                if (result!.IsSuccessful)
+                {
+                    return RedirectToAction(nameof(NewPassword), new { email = model.Email, otp = model.Otp});
+                }
+
+                ViewBag.Error = result.Message;
+                return View(model);
+            }
+
+            catch (Exception ex)
+            {
+                ViewBag.Error = ex.Message;
+                return View();
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> ResetPassword(ResetPasswordRequestViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            try
+            {
+                var result = await _authAPIService.SendResetPasswordRequestAsync(model);
+
+                if (result!.IsSuccessful)
+                {
+                    return RedirectToAction(nameof(VerifyOTP), new {email = model.Email});
+                }
+
+                ViewBag.Error = result.Message;
+                return View(model);
+            }
+
+            catch (Exception ex)
+            {
+                ViewBag.Error = ex.Message;
+                return View();
+            }
+        }
+
         public IActionResult RegisterSuccessful()
         {
             return View();
@@ -293,5 +403,6 @@ namespace SunStore.Controllers
                 return View(model);
             }
         }
+
     }
 }

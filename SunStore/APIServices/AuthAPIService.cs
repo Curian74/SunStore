@@ -60,5 +60,29 @@ namespace SunStore.APIServices
 
             return response.IsSuccessStatusCode;
         }
+
+        public async Task<ApiResult?> SendResetPasswordRequestAsync(ResetPasswordRequestViewModel model)
+        {
+            var response = await _httpClient.PostAsJsonAsync("Auth/password", model);
+            var result = await response.Content.ReadFromJsonAsync<ApiResult>();
+
+            return result;
+        }
+
+        public async Task<ApiResult?> SendOTPVerificationRequestAsync(OTPVerificationRequestViewModel model)
+        {
+            var response = await _httpClient.PostAsJsonAsync("Auth/verify-reset", model);
+            var result = await response.Content.ReadFromJsonAsync<ApiResult>();
+
+            return result;
+        }
+
+        public async Task<ApiResult?> UpdatePasswordAsync(UpdatePasswordRequestViewModel model)
+        {
+            var response = await _httpClient.PostAsJsonAsync("Auth/reset-password", model);
+            var result = await response.Content.ReadFromJsonAsync<ApiResult>();
+
+            return result;
+        }
     }
 }
