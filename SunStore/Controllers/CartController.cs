@@ -25,7 +25,7 @@ namespace SunStore.Controllers
         {
             get
             {
-                var userId = HttpContext!.Session.GetString("UserId");
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value.ToString();
                 int uid = 0;
                 if (userId != null)
                 {
@@ -46,7 +46,7 @@ namespace SunStore.Controllers
         public JsonResult AddToCart(int id, int quantity)
         {
             var myCart = Orders;
-            var userId = HttpContext!.Session.GetString("UserId");
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value.ToString();
             var item = myCart.FirstOrDefault(c => c.ProductId == id);
             var product = _context.ProductOptions.Include(b => b.Product).FirstOrDefault(b => b.Id == id);
             var exist = false;

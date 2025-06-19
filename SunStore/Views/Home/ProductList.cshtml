@@ -1,5 +1,7 @@
-﻿@using X.PagedList.Mvc.Core
-@model X.PagedList.IPagedList<Product>
+﻿@using X.PagedList
+@using X.PagedList.Mvc.Core
+@model BusinessObjects.PagedResult<Product>
+
 
 <style>
     .section_padding {
@@ -102,7 +104,7 @@
         <div class="row">
             <div class="col-lg-12">
                 <div class="breadcrumb_iner">
-                    <h2>product list</h2>
+                    <h2>DANH SÁCH SẢN PHẨM</h2>
                 </div>
             </div>
         </div>
@@ -190,26 +192,14 @@
 
                 <div class="product_list">
                     <div class="row justify-content-center">
-                        @foreach (var product in Model)
+                        @foreach (var product in Model.Items)
                         {
-                            @if (product.IsDeleted == false)
+                            @if (product.IsDeleted == false || product.IsDeleted == null)
                             {
                                 var minPrice = product.ProductOptions.Any() ? product.ProductOptions.Min(bo => bo.Price) : 0;
-                                @* <div class="col-lg-4 col-sm-4" style="margin-top: 20px;">
-                                    <div class="single_product_item">
-                                        <img style="width:95%;height:300px;" src="@product.Image" alt="#" class="img-fluid">
-                                        <h3 style="color:black; font-weight:bold">
-                                            <a asp-controller="Products" asp-action="Details" asp-route-id="@product.Id">
-                                                @product.Name
-                                            </a>
-                                        </h3>
-                                        <p>@($"Price: {minPrice:N0}đ")</p>
-
-                                    </div>
-                                </div> *@
 
                                 <div class="product col-lg-4">
-                                    <a asp-controller="Products" asp-action="Details" asp-route-id="@product.Id" style="text-decoration: none;">
+                                    <a asp-controller="Home" asp-action="ProductDetail" asp-route-id="@product.ProductOptions.FirstOrDefault().Id" style="text-decoration: none;">
                                         <div class="pr-image">
                                             <img src="@product.Image" alt="">
                                         </div>
@@ -224,35 +214,22 @@
                     </div>
                 </div>
 
-                @Html.PagedListPager(Model, page => Url.Action("ProductList", "Home", new { page = page, keyword = @ViewData["keyword"], categoryID = @ViewData["categoryID"], priceRange = @ViewData["priceRange"] }),
-                         new PagedListRenderOptions()
-                {
-                    LiElementClasses = new List<String> { "page-item" },
-                    PageClasses = new List<String> { "page-link" }
-                }
-                         )
+                @Html.PagedListPager(
+                    new StaticPagedList<Product>(Model.Items, Model.CurrentPage, 9, Model.TotalPages * 9),
+                    page => Url.Action("ProductList", "Home", new
+                    {
+                        page = page,
+                        keyword = @ViewData["keyword"],
+                        categoryID = @ViewData["categoryID"],
+                        priceRange = @ViewData["priceRange"]
+                    }),
+                    new PagedListRenderOptions()
+                    {
+                        LiElementClasses = new List<String> { "page-item" },
+                        PageClasses = new List<String> { "page-link" }
+                    }
+                )
+
             </div>
 
-
-
 </section>
-
-<script>
-    function searchByName() {
-        var form = document.getElementById("searchForm");
-        var formData = new FormData(form);
-
-        var queryString = new URLSearchParams(formData).toString();
-        fetch(`/Home/ProductList?${queryString}`, {
-            method: 'POST',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-            // .then(response => response.text())
-            // .then(data => {
-            //     document.getElementById("product").innerHTML = data;
-            // })
-            .catch(error => console.error('Error:', error));
-    }
-</script>
