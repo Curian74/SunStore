@@ -18,5 +18,7 @@ namespace SunStore.ViewModel
         public string PhoneNumber { get; set; } = null!;
 
         public DateOnly BirthDate { get; set; }
+
+        public string Username { get; set; } = null!;
     }
 }

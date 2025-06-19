@@ -139,7 +139,7 @@ namespace SunStoreAPI.Controllers
                 BirthDate = dto.BirthDate,
                 FullName = dto.FullName,
                 PhoneNumber = dto.PhoneNumber,
-                Username = "", // Temp value to bypass null check.
+                Username = dto.Username,
                 Role = int.Parse(UserRoleConstants.Customer),
             };
 
