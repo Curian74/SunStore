@@ -1,12 +1,15 @@
 ﻿using BusinessObjects.ApiResponses;
 using BusinessObjects.Constants;
 using BusinessObjects.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using SunStoreAPI.Dtos;
+using SunStoreAPI.Dtos.User;
 using SunStoreAPI.Services;
 using SunStoreAPI.Utils;
+using System.Security.Claims;
 
 namespace SunStoreAPI.Controllers
 {
@@ -104,7 +107,7 @@ namespace SunStoreAPI.Controllers
 
             if (emailExisted)
             {
-                return BadRequest(new ApiResult
+                return BadRequest(new BaseApiResponse
                 {
                     IsSuccessful = false,
                     Message = "Email này đã tồn tại."
@@ -116,7 +119,7 @@ namespace SunStoreAPI.Controllers
 
             if (phoneExisted)
             {
-                return BadRequest(new ApiResult
+                return BadRequest(new BaseApiResponse
                 {
                     IsSuccessful = false,
                     Message = "Số điện thoại đã tồn tại."
@@ -125,7 +128,7 @@ namespace SunStoreAPI.Controllers
 
             if (dto.Password != dto.ConfirmPassword)
             {
-                return BadRequest(new ApiResult
+                return BadRequest(new BaseApiResponse
                 {
                     IsSuccessful = false,
                     Message = "Mật khẩu không khớp!"
@@ -146,7 +149,7 @@ namespace SunStoreAPI.Controllers
             await _context.Users.AddAsync(newUser);
             await _context.SaveChangesAsync();
 
-            return Ok(new ApiResult
+            return Ok(new BaseApiResponse
             {
                 IsSuccessful = true,
                 Message = "Đăng ký thành công."
@@ -165,7 +168,7 @@ namespace SunStoreAPI.Controllers
 
                 if (user == null)
                 {
-                    return BadRequest(new ApiResult
+                    return BadRequest(new BaseApiResponse
                     {
                         IsSuccessful = false,
                         Message = "User not found."
@@ -183,7 +186,7 @@ namespace SunStoreAPI.Controllers
                 // Save Otp code to memory cache.
                 _cacheUtils.SaveResetCode(dto.Email, randomVerificationCode, OTP_EXPIRATION_MINUTES);
 
-                return Ok(new ApiResult
+                return Ok(new BaseApiResponse
                 {
                     IsSuccessful = true,
                     Message = "Gửi email thành công."
@@ -205,14 +208,14 @@ namespace SunStoreAPI.Controllers
 
             if (!isValid)
             {
-                return BadRequest(new ApiResult
+                return BadRequest(new BaseApiResponse
                 {
                     IsSuccessful = false,
                     Message = "Mã OTP không hợp lệ hoặc đã hết hạn."
                 });
             }
 
-            return Ok(new ApiResult
+            return Ok(new BaseApiResponse
             {
                 IsSuccessful = true,
                 Message = "Xác thực thành công."
@@ -230,7 +233,7 @@ namespace SunStoreAPI.Controllers
 
                 if (!isValid)
                 {
-                    return BadRequest(new ApiResult
+                    return BadRequest(new BaseApiResponse
                     {
                         IsSuccessful = false,
                         Message = "Yêu cầu không hợp lệ hoặc đã hết hạn."
@@ -241,7 +244,7 @@ namespace SunStoreAPI.Controllers
 
                 if (user == null)
                 {
-                    return BadRequest(new ApiResult
+                    return BadRequest(new BaseApiResponse
                     {
                         IsSuccessful = false,
                         Message = "Không tìm thấy người dùng."
@@ -255,7 +258,7 @@ namespace SunStoreAPI.Controllers
                 // Remove the OTP code from cache.
                 _cacheUtils.RemoveResetCode(dto.Email);
 
-                return Ok(new ApiResult
+                return Ok(new BaseApiResponse
                 {
                     IsSuccessful = true,
                     Message = "Cập nhật mật khẩu thành công."
@@ -264,12 +267,55 @@ namespace SunStoreAPI.Controllers
 
             catch (Exception e)
             {
-                return StatusCode(500, new ApiResult
+                return StatusCode(500, new BaseApiResponse
                 {
                     IsSuccessful = false,
                     Message = e.Message,
                 });
             }
+        }
+
+        [HttpGet]
+        [Route("me")]
+        [Authorize]
+        public async Task<IActionResult> GetMyProfileInfo()
+        {
+            var userIdRaw = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userIdRaw))
+            {
+                return NotFound();
+            }
+
+            _ = int.TryParse(userIdRaw, out var userId);
+
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == userId);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            var userDto = new UserDto
+            {
+                Id = userId,
+                FullName = user.FullName,
+                Address = user.Address,
+                BirthDate = user.BirthDate,
+                Email = user.Email,
+                IsBanned = user.IsBanned,
+                Password = user.Password,
+                PhoneNumber = user.PhoneNumber,
+                Role = user.Role,
+                Username = user.Username,
+            };
+
+            return Ok(new ApiResult<UserDto>
+            {
+                IsSuccessful = true,
+                Data = userDto
+            });
+
         }
     }
 }

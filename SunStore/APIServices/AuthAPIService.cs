@@ -46,10 +46,10 @@ namespace SunStore.APIServices
             }
         }
 
-        public async Task<ApiResult?> RegisterAsync(RegisterRequestViewModel model)
+        public async Task<BaseApiResponse?> RegisterAsync(RegisterRequestViewModel model)
         {
             var response = await _httpClient.PostAsJsonAsync("Auth/register", model);
-            var result = await response.Content.ReadFromJsonAsync<ApiResult>();
+            var result = await response.Content.ReadFromJsonAsync<BaseApiResponse>();
 
             return result;
         }
@@ -61,26 +61,26 @@ namespace SunStore.APIServices
             return response.IsSuccessStatusCode;
         }
 
-        public async Task<ApiResult?> SendResetPasswordRequestAsync(ResetPasswordRequestViewModel model)
+        public async Task<BaseApiResponse?> SendResetPasswordRequestAsync(ResetPasswordRequestViewModel model)
         {
             var response = await _httpClient.PostAsJsonAsync("Auth/password", model);
-            var result = await response.Content.ReadFromJsonAsync<ApiResult>();
+            var result = await response.Content.ReadFromJsonAsync<BaseApiResponse>();
 
             return result;
         }
 
-        public async Task<ApiResult?> SendOTPVerificationRequestAsync(OTPVerificationRequestViewModel model)
+        public async Task<BaseApiResponse?> SendOTPVerificationRequestAsync(OTPVerificationRequestViewModel model)
         {
             var response = await _httpClient.PostAsJsonAsync("Auth/verify-reset", model);
-            var result = await response.Content.ReadFromJsonAsync<ApiResult>();
+            var result = await response.Content.ReadFromJsonAsync<BaseApiResponse>();
 
             return result;
         }
 
-        public async Task<ApiResult?> UpdatePasswordAsync(UpdatePasswordRequestViewModel model)
+        public async Task<BaseApiResponse?> UpdatePasswordAsync(UpdatePasswordRequestViewModel model)
         {
             var response = await _httpClient.PostAsJsonAsync("Auth/reset-password", model);
-            var result = await response.Content.ReadFromJsonAsync<ApiResult>();
+            var result = await response.Content.ReadFromJsonAsync<BaseApiResponse>();
 
             return result;
         }

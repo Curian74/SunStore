@@ -1,8 +1,8 @@
-﻿namespace BusinessObjects.ApiResponses
+﻿
+namespace BusinessObjects.ApiResponses
 {
-    public class ApiResult
+    public class ApiResult<T> : BaseApiResponse
     {
-        public bool IsSuccessful { get; set; } = false;
-        public string? Message { get; set; }
+        public T? Data { get; set; }
     }
 }
