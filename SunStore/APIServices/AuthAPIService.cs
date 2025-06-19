@@ -1,7 +1,9 @@
 ﻿using BusinessObjects.ApiResponses;
+using Microsoft.AspNetCore.Http;
 using SunStore.Extensions;
 using SunStore.ViewModel.DataModels;
 using SunStore.ViewModel.RequestModels;
+using System.Net.Http.Headers;
 using System.Text.Json;
 
 namespace SunStore.APIServices
@@ -9,10 +11,12 @@ namespace SunStore.APIServices
     public class AuthAPIService
     {
         private readonly HttpClient _httpClient;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public AuthAPIService(IHttpClientFactory httpClientFactory)
+        public AuthAPIService(IHttpClientFactory httpClientFactory, IHttpContextAccessor httpContextAccessor)
         {
             _httpClient = httpClientFactory.CreateClient("api");
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<LoginResponseModel> LoginAsync(LoginRequestViewModel model)
@@ -81,11 +85,10 @@ namespace SunStore.APIServices
         {
             var response = await _httpClient.PostAsJsonAsync("Auth/reset-password", model);
             var result = await response.Content.ReadFromJsonAsync<BaseApiResponse>();
-
             return result;
         }
 
-        public async Task<BaseApiResponse?> GetProfileInfoAsync()
+        public async Task<ApiResult<UserViewModel>?> GetProfileInfoAsync()
         {
             var response = await _httpClient.GetAsync("Auth/me");
 

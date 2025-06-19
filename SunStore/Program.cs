@@ -3,9 +3,10 @@ using Microsoft.EntityFrameworkCore;
 using SunStore.APIServices;
 using BusinessObjects.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using System.Net.Http.Headers;
+using SunStore.Configs;
 
 namespace SunStore
 {
@@ -25,17 +26,23 @@ namespace SunStore
 
             builder.Services.AddScoped(typeof(SunStoreContext));
 
+            builder.Services.AddHttpContextAccessor();
 
-            builder.Services.AddHttpClient("api", httpClient =>
+            builder.Services.AddHttpClient("api", client =>
             {
-                httpClient.BaseAddress = new Uri("https://localhost:7270/api/");
-            });
+                client.BaseAddress = new Uri("https://localhost:7270/api/");
+            })
+            // Use Bearer Token
+            .AddHttpMessageHandler<AuthTokenHandler>();
 
             #region DIs
+
+            builder.Services.AddTransient<AuthTokenHandler>();
             builder.Services.AddScoped<OrderAPIService>();
             builder.Services.AddScoped<AuthAPIService>();
             builder.Services.AddScoped<ProductAPIService>();
             builder.Services.AddScoped<ProductOptionAPIService>();
+
             #endregion
 
             //Add session

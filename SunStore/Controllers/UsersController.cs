@@ -1,11 +1,8 @@
-﻿using System.Security.Claims;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication;
+﻿using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using BusinessObjects.Models;
 using SunStore.APIServices;
-using System.Threading.Tasks;
 using SunStore.ViewModel.RequestModels;
 
 namespace SunStore.Controllers
@@ -37,8 +34,10 @@ namespace SunStore.Controllers
                 return NotFound();
             }
 
-            var user = await _context.Users
-                .FirstOrDefaultAsync(m => m.Id == id);
+            var result = await _authAPIService.GetProfileInfoAsync();
+
+            var user = result?.Data;
+
             if (user == null)
             {
                 return NotFound();
