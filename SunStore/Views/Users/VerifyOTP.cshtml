@@ -1,0 +1,28 @@
+﻿@using SunStore.ViewModel.RequestModels
+@model OTPVerificationRequestViewModel
+
+<link rel="stylesheet" href="~/css/login.css" asp-append-version="true" />
+
+<div style="width: 100%; display:flex; justify-content:center" class="">
+    <div class="containerr">
+        <div class="head">OTP Verification</div>
+        <form method="post" asp-action="VerifyOTP" asp-controller="Users" class="form">
+            <input name="Email" value="@Model.Email" class="inp mb-3" type="hidden">
+            <input asp-for="@Model.Otp" class="inp mb-3" placeholder="Mã OTP">
+            <span asp-validation-for="@Model.Otp" class="text-danger"></span>
+
+            @if (ViewBag.Error != null)
+            {
+                <p style="color:red; margin: 10px;">@ViewBag.Error</p>
+            }
+
+            <input class="login-button" type="submit" value="Xác nhận">
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}

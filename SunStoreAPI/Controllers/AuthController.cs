@@ -1,10 +1,15 @@
 ﻿using BusinessObjects.ApiResponses;
 using BusinessObjects.Constants;
 using BusinessObjects.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using SunStoreAPI.Dtos;
+using SunStoreAPI.Dtos.User;
+using SunStoreAPI.Services;
 using SunStoreAPI.Utils;
+using System.Security.Claims;
 
 namespace SunStoreAPI.Controllers
 {
@@ -12,15 +17,21 @@ namespace SunStoreAPI.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
+        private const string JWT_COOKIE_NAME = "jwtToken";
+        private const int OTP_EXPIRATION_MINUTES = 10;
+
         private readonly SunStoreContext _context;
         private readonly JwtTokenProvider _jwtTokenProvider;
+        private readonly EmailService _emailService;
+        private readonly CacheUtils _cacheUtils;
 
-        private const string JWT_COOKIE_NAME = "jwtToken";
-
-        public AuthController(SunStoreContext context, JwtTokenProvider jwtTokenProvider)
+        public AuthController(SunStoreContext context, JwtTokenProvider jwtTokenProvider,
+            EmailService emailService, CacheUtils cacheUtils)
         {
             _context = context;
             _jwtTokenProvider = jwtTokenProvider;
+            _emailService = emailService;
+            _cacheUtils = cacheUtils;
         }
 
         [HttpPost]
@@ -96,7 +107,7 @@ namespace SunStoreAPI.Controllers
 
             if (emailExisted)
             {
-                return BadRequest(new ApiResult
+                return BadRequest(new BaseApiResponse
                 {
                     IsSuccessful = false,
                     Message = "Email này đã tồn tại."
@@ -108,7 +119,7 @@ namespace SunStoreAPI.Controllers
 
             if (phoneExisted)
             {
-                return BadRequest(new ApiResult
+                return BadRequest(new BaseApiResponse
                 {
                     IsSuccessful = false,
                     Message = "Số điện thoại đã tồn tại."
@@ -117,7 +128,7 @@ namespace SunStoreAPI.Controllers
 
             if (dto.Password != dto.ConfirmPassword)
             {
-                return BadRequest(new ApiResult
+                return BadRequest(new BaseApiResponse
                 {
                     IsSuccessful = false,
                     Message = "Mật khẩu không khớp!"
@@ -131,17 +142,178 @@ namespace SunStoreAPI.Controllers
                 BirthDate = dto.BirthDate,
                 FullName = dto.FullName,
                 PhoneNumber = dto.PhoneNumber,
-                Username = "", // Temp value to bypass null check.
+                Username = dto.Username,
                 Role = int.Parse(UserRoleConstants.Customer),
             };
 
             await _context.Users.AddAsync(newUser);
             await _context.SaveChangesAsync();
 
-            return Ok(new ApiResult
+            return Ok(new BaseApiResponse
             {
                 IsSuccessful = true,
                 Message = "Đăng ký thành công."
+            });
+
+        }
+
+        // Otp sending endpoints.
+        [HttpPost]
+        [Route("password")]
+        public async Task<IActionResult> ForgotPassword(ResetPasswordDto dto)
+        {
+            try
+            {
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
+
+                if (user == null)
+                {
+                    return BadRequest(new BaseApiResponse
+                    {
+                        IsSuccessful = false,
+                        Message = "User not found."
+                    });
+                }
+
+                string randomVerificationCode = VerificationCodeGenerator.GenerateCode();
+
+                string mailContent = $"<p> Sử dụng mã sau để thiết lập lại mật khẩu mới:" +
+                    $"<strong>{randomVerificationCode}</strong>. </p>" +
+                    $"<p> <i>Lưu ý: Mã OTP sẽ hết hạn sau {OTP_EXPIRATION_MINUTES} phút. </i>";
+
+                await _emailService.SendEmailAsync(dto.Email, "Đặt lại mật khẩu", mailContent);
+
+                // Save Otp code to memory cache.
+                _cacheUtils.SaveResetCode(dto.Email, randomVerificationCode, OTP_EXPIRATION_MINUTES);
+
+                return Ok(new BaseApiResponse
+                {
+                    IsSuccessful = true,
+                    Message = "Gửi email thành công."
+                });
+            }
+
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
+        }
+
+        // Otp verification endpoint.
+        [HttpPost]
+        [Route("verify-reset")]
+        public IActionResult VerifyResetPasswordOTP(VerifyPasswordOtpDto dto)
+        {
+            var isValid = _cacheUtils.VerifyResetCode(dto.Email, dto.Otp);
+
+            if (!isValid)
+            {
+                return BadRequest(new BaseApiResponse
+                {
+                    IsSuccessful = false,
+                    Message = "Mã OTP không hợp lệ hoặc đã hết hạn."
+                });
+            }
+
+            return Ok(new BaseApiResponse
+            {
+                IsSuccessful = true,
+                Message = "Xác thực thành công."
+            });
+        }
+
+        // Update password endpoint.
+        [HttpPost]
+        [Route("reset-password")]
+        public async Task<IActionResult> UpdatePassword(UpdatePasswordDto dto)
+        {
+            try
+            {
+                var isValid = _cacheUtils.VerifyResetCode(dto.Email, dto.Otp);
+
+                if (!isValid)
+                {
+                    return BadRequest(new BaseApiResponse
+                    {
+                        IsSuccessful = false,
+                        Message = "Yêu cầu không hợp lệ hoặc đã hết hạn."
+                    });
+                }
+
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
+
+                if (user == null)
+                {
+                    return BadRequest(new BaseApiResponse
+                    {
+                        IsSuccessful = false,
+                        Message = "Không tìm thấy người dùng."
+                    });
+                }
+
+                // Update user's password.
+                user.Password = dto.Password;
+                await _context.SaveChangesAsync();
+
+                // Remove the OTP code from cache.
+                _cacheUtils.RemoveResetCode(dto.Email);
+
+                return Ok(new BaseApiResponse
+                {
+                    IsSuccessful = true,
+                    Message = "Cập nhật mật khẩu thành công."
+                });
+            }
+
+            catch (Exception e)
+            {
+                return StatusCode(500, new BaseApiResponse
+                {
+                    IsSuccessful = false,
+                    Message = e.Message,
+                });
+            }
+        }
+
+        [HttpGet]
+        [Route("me")]
+        [Authorize]
+        public async Task<IActionResult> GetMyProfileInfo()
+        {
+            var userIdRaw = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (string.IsNullOrEmpty(userIdRaw))
+            {
+                return NotFound();
+            }
+
+            _ = int.TryParse(userIdRaw, out var userId);
+
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == userId);
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            var userDto = new UserDto
+            {
+                Id = userId,
+                FullName = user.FullName,
+                Address = user.Address,
+                BirthDate = user.BirthDate,
+                Email = user.Email,
+                IsBanned = user.IsBanned,
+                Password = user.Password,
+                PhoneNumber = user.PhoneNumber,
+                Role = user.Role,
+                Username = user.Username,
+            };
+
+            return Ok(new ApiResult<UserDto>
+            {
+                IsSuccessful = true,
+                Data = userDto
             });
 
         }

@@ -2,8 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using BusinessObjects.Models;
 using SunStore.Services;
-using SunStore.ViewModel;
-using System.Security.Claims;
+using SunStore.ViewModel.RequestModels;
 
 namespace SunStore.Controllers
 {

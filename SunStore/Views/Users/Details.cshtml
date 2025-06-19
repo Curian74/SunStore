@@ -1,12 +1,5 @@
-﻿@model BusinessObjects.Models.User
-@inject IHttpContextAccessor HttpContextAccessor
+﻿@model UserViewModel
 
-@{
-    ViewData["Title"] = "Details";
-    var userId = HttpContextAccessor.HttpContext!.Session.GetString("UserId");
-    var userRole = HttpContextAccessor.HttpContext.Session.GetString("UserRole");
-    var userName = HttpContextAccessor.HttpContext.Session.GetString("UserName");
-}
 <style>
     .backgr {
         background-image: url("/img/background2.jpg");
