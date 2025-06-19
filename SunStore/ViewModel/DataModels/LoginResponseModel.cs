@@ -1,4 +1,4 @@
-﻿namespace SunStore.Models
+﻿namespace SunStore.ViewModel.DataModels
 {
     public class LoginResponseModel
     {

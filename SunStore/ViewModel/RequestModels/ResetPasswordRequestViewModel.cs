@@ -1,4 +1,4 @@
-﻿namespace SunStore.ViewModel
+﻿namespace SunStore.ViewModel.RequestModels
 {
     public class ResetPasswordRequestViewModel
     {

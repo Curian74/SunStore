@@ -1,8 +1,8 @@
 ﻿using SunStore.Helper;
 using BusinessObjects.Models;
-using SunStore.ViewModel;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Security.Policy;
+using SunStore.ViewModel.RequestModels;
 
 namespace SunStore.Services
 {

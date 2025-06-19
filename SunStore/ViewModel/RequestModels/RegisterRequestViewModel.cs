@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace SunStore.ViewModel
+namespace SunStore.ViewModel.RequestModels
 {
     public class RegisterRequestViewModel
     {

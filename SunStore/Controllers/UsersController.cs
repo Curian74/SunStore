@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using BusinessObjects.Models;
 using SunStore.APIServices;
 using System.Threading.Tasks;
-using SunStore.ViewModel;
+using SunStore.ViewModel.RequestModels;
 
 namespace SunStore.Controllers
 {
@@ -393,6 +393,5 @@ namespace SunStore.Controllers
                 return View(model);
             }
         }
-
     }
 }

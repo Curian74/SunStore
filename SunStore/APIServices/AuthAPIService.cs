@@ -1,7 +1,7 @@
 ﻿using BusinessObjects.ApiResponses;
 using SunStore.Extensions;
-using SunStore.Models;
-using SunStore.ViewModel;
+using SunStore.ViewModel.DataModels;
+using SunStore.ViewModel.RequestModels;
 using System.Text.Json;
 
 namespace SunStore.APIServices
@@ -81,6 +81,15 @@ namespace SunStore.APIServices
         {
             var response = await _httpClient.PostAsJsonAsync("Auth/reset-password", model);
             var result = await response.Content.ReadFromJsonAsync<BaseApiResponse>();
+
+            return result;
+        }
+
+        public async Task<BaseApiResponse?> GetProfileInfoAsync()
+        {
+            var response = await _httpClient.GetAsync("Auth/me");
+
+            var result = await response.Content.ReadFromJsonAsync<ApiResult<UserViewModel>>();
 
             return result;
         }
