@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using BusinessObjects.Models;
+using Microsoft.AspNetCore.Authorization;
+using BusinessObjects.Constants;
 
 namespace SunStoreAPI.Controllers
 {
@@ -29,6 +31,7 @@ namespace SunStoreAPI.Controllers
 
         [HttpGet]
         [Route("unassigned")]
+        [Authorize(Roles = UserRoleConstants.Admin)]
         public async Task<ActionResult<IEnumerable<Order>>> GetOrdersForShipperAssignment()
         {
             return await _context.Orders

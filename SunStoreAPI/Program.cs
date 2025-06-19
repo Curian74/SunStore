@@ -2,7 +2,9 @@ using BusinessObjects.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using SunStoreAPI;
+using SunStoreAPI.Configs;
+using SunStoreAPI.Services;
+using SunStoreAPI.Utils;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,6 +24,9 @@ builder.Services.AddDbContext<SunStoreContext>(opt =>
 #region DIs
 
 builder.Services.AddScoped<JwtTokenProvider>();
+builder.Services.AddScoped<EmailService>();
+builder.Services.AddScoped<CacheUtils>();
+builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 
 #endregion
 
@@ -64,6 +69,8 @@ builder.Services.AddAuthentication(options =>
 });
 
 #endregion
+
+builder.Services.AddMemoryCache();
 
 builder.Services.AddAuthentication();
 builder.Services.AddAuthorization();

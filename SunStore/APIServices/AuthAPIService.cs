@@ -1,7 +1,9 @@
 ﻿using BusinessObjects.ApiResponses;
+using Microsoft.AspNetCore.Http;
 using SunStore.Extensions;
-using SunStore.Models;
-using SunStore.ViewModel;
+using SunStore.ViewModel.DataModels;
+using SunStore.ViewModel.RequestModels;
+using System.Net.Http.Headers;
 using System.Text.Json;
 
 namespace SunStore.APIServices
@@ -9,10 +11,12 @@ namespace SunStore.APIServices
     public class AuthAPIService
     {
         private readonly HttpClient _httpClient;
+        private readonly IHttpContextAccessor _httpContextAccessor;
 
-        public AuthAPIService(IHttpClientFactory httpClientFactory)
+        public AuthAPIService(IHttpClientFactory httpClientFactory, IHttpContextAccessor httpContextAccessor)
         {
             _httpClient = httpClientFactory.CreateClient("api");
+            _httpContextAccessor = httpContextAccessor;
         }
 
         public async Task<LoginResponseModel> LoginAsync(LoginRequestViewModel model)
@@ -46,10 +50,10 @@ namespace SunStore.APIServices
             }
         }
 
-        public async Task<ApiResult?> RegisterAsync(RegisterRequestViewModel model)
+        public async Task<BaseApiResponse?> RegisterAsync(RegisterRequestViewModel model)
         {
             var response = await _httpClient.PostAsJsonAsync("Auth/register", model);
-            var result = await response.Content.ReadFromJsonAsync<ApiResult>();
+            var result = await response.Content.ReadFromJsonAsync<BaseApiResponse>();
 
             return result;
         }
@@ -59,6 +63,38 @@ namespace SunStore.APIServices
             var response = await _httpClient.PostAsync("Auth/logout", null);
 
             return response.IsSuccessStatusCode;
+        }
+
+        public async Task<BaseApiResponse?> SendResetPasswordRequestAsync(ResetPasswordRequestViewModel model)
+        {
+            var response = await _httpClient.PostAsJsonAsync("Auth/password", model);
+            var result = await response.Content.ReadFromJsonAsync<BaseApiResponse>();
+
+            return result;
+        }
+
+        public async Task<BaseApiResponse?> SendOTPVerificationRequestAsync(OTPVerificationRequestViewModel model)
+        {
+            var response = await _httpClient.PostAsJsonAsync("Auth/verify-reset", model);
+            var result = await response.Content.ReadFromJsonAsync<BaseApiResponse>();
+
+            return result;
+        }
+
+        public async Task<BaseApiResponse?> UpdatePasswordAsync(UpdatePasswordRequestViewModel model)
+        {
+            var response = await _httpClient.PostAsJsonAsync("Auth/reset-password", model);
+            var result = await response.Content.ReadFromJsonAsync<BaseApiResponse>();
+            return result;
+        }
+
+        public async Task<ApiResult<UserViewModel>?> GetProfileInfoAsync()
+        {
+            var response = await _httpClient.GetAsync("Auth/me");
+
+            var result = await response.Content.ReadFromJsonAsync<ApiResult<UserViewModel>>();
+
+            return result;
         }
     }
 }

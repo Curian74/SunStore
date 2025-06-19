@@ -1,4 +1,4 @@
-﻿using SunStore.ViewModel;
+﻿using SunStore.ViewModel.RequestModels;
 
 namespace SunStore.Services
 {
