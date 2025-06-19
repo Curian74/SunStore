@@ -30,7 +30,7 @@ namespace SunStore.Controllers
         {
             get
             {
-                var userId = HttpContext!.Session.GetString("UserId");
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value.ToString();
                 int uid = 0;
                 if (userId != null)
                 {

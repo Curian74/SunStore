@@ -222,16 +222,6 @@ namespace SunStore.Controllers
                 var user = _context.Users
                     .Where(e => e.Email == model.Email && e.Password == model.Password)
                     .FirstOrDefault();
-                //if (user == null || _context.Users == null)
-                //{
-                //    ViewBag.Error = "Tên đăng nhập hoặc mật khẩu không chính xác!";
-                //    return View();
-                //}
-                //if (user.IsBanned == 1)
-                //{
-                //    ViewBag.Error = "Tài khoản của bạn đã bị chặn!";
-                //    return View();
-                //}
 
                 // Store account info in session or cookie
                 HttpContext.Session.SetString("UserId", user.Id.ToString());
