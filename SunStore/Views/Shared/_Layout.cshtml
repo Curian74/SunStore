@@ -1,8 +1,5 @@
 ﻿@inject IHttpContextAccessor HttpContextAccessor
 @{
-    // var userId = HttpContextAccessor.HttpContext!.Session.GetString("UserId");
-    var userRole = HttpContextAccessor.HttpContext.Session.GetString("UserRole");
-    // var userName = HttpContextAccessor.HttpContext.Session.GetString("UserName");
     var cq = HttpContextAccessor.HttpContext.Session.GetString("CartQuantity");
 }
 
