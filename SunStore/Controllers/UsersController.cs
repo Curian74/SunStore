@@ -292,7 +292,6 @@ namespace SunStore.Controllers
                 ModelState.AddModelError("error", e.Message);
                 return View(model);
             }
-
         }
     }
 }
