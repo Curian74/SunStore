@@ -199,7 +199,7 @@
                                 var minPrice = product.ProductOptions.Any() ? product.ProductOptions.Min(bo => bo.Price) : 0;
 
                                 <div class="product col-lg-4">
-                                    <a asp-controller="Products" asp-action="Details" asp-route-id="@product.Id" style="text-decoration: none;">
+                                    <a asp-controller="Products" asp-action="Details" asp-route-id="@product.ProductOptions.FirstOrDefault()!.Id" style="text-decoration: none;">
                                         <div class="pr-image">
                                             <img src="@product.Image" alt="">
                                         </div>

@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using BusinessObjects.Models;
+using BusinessObjects;
+using SunStoreAPI.Dtos;
 
 namespace SunStoreAPI.Controllers
 {
@@ -85,20 +87,29 @@ namespace SunStoreAPI.Controllers
                 .Take(pageSize)
                 .ToListAsync();
 
-            var result = new
+            var result = new PagedResult<ProductListResponseDto>
             {
-                currentPage = page,
-                totalItems,
-                totalPages = (int)Math.Ceiling((double)totalItems / pageSize),
-                items = products.Select(p => new
+                CurrentPage = (int) page,
+                PageSize = pageSize,
+                TotalPages = (int)Math.Ceiling((double)totalItems / pageSize),
+                Items = products.Select(p => new ProductListResponseDto
                 {
-                    p.Id,
-                    p.Name,
-                    p.Description,
-                    p.Image,
-                    Category = new { p.Category?.Id, p.Category?.Name },
-                    ProductOptions = p.ProductOptions.Select(po => new { po.Id, po.Size, po.Price })
-                })
+                    Id = p.Id,
+                    Name = p.Name,
+                    Description = p.Description,
+                    Image = p.Image,
+                    Category = p.Category == null ? null : new CategoryResponseModel
+                    {
+                        Id = p.Category.Id,
+                        Name = p.Category.Name
+                    },
+                    ProductOptions = p.ProductOptions.Select(po => new ProductOptionResponseModel
+                    {
+                        Id = po.Id,
+                        Size = po.Size,
+                        Price = po.Price
+                    }).ToList()
+                }).ToList()
             };
 
             return Ok(result);
