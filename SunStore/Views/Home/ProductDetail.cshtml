@@ -1,0 +1,149 @@
+﻿@using BusinessObjects.ApiResponses
+@model ProductDetailResponse
+
+
+<link rel="stylesheet" href="/css/detail.css" />
+<style>
+    .sh-image {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        margin: 40px 0;
+    }
+
+        .sh-image img {
+            width: 80%;
+        }
+
+    .sh-dt-head {
+        width: 100%;
+        text-align: center;
+        margin-top: 20px;
+    }
+
+    .sh-detail {
+        font-size: 18px;
+        margin: 20px auto;
+        width: 100%;
+        text-align: center justify;
+    }
+</style>
+
+
+<!-- breadcrumb part start-->
+<section class="breadcrumb_part">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="breadcrumb_iner">
+                    <h2>THÔNG TIN SẢN PHẨM</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- breadcrumb part end-->
+@*
+<h1 style="text-align:center;padding:10px 40px;background-color:aqua;margin:0;font-family:Arial;font-weight:bolder">THÔNG TIN SẢN PHẨM</h1>
+*@
+<div class="container" style="padding-top: 70px;">
+
+    <div class="row">
+
+        <h4 class="sh-name">@Model.ProductName</h4>
+        <hr style="color: rgb(57, 56, 56);height: 3px;">
+
+        <div class="sh-l col-lg-8">
+            <div class="sh-image">
+                <img src="@Model.ProductImage" alt="">
+            </div>
+
+        </div>
+
+        <div class="sh-r col-lg-4">
+
+            <p class="sh-detail">@Model.ProductDescription</p>
+
+            <p class="sizepart">Kích cỡ của sản phẩm:</p>
+            @foreach (var option in Model.OtherOptions)
+            {
+
+                if (option.Id == Model.OptionId)
+                {
+                    <a asp-controller="ProductOptions" asp-action="Details" asp-route-id="@option.Id"
+                       class="size_option active">
+                        @option.Size
+                    </a>
+                }
+                else
+                {
+                    <a asp-controller="ProductOptions" asp-action="Details" asp-route-id="@option.Id"
+                       class="size_option">
+                        @option.Size
+                    </a>
+                }
+
+            }
+
+            <h3 class="pr-price" style="margin: 30px 0; margin-bottom: 30px;">
+                Giá: @($"{@Model.Price:N0}đ")
+            </h3>
+
+            <div class="card_area">
+                <div class="product_count d-inline-block" style="background-color:transparent; margin: 0;">
+                    <span class="product_count_item inumber-decrement" onclick="decreaseQuantity()"><i class="ti-minus"></i></span>
+                    <input class="qq product_count_item" type="text" name="quantity" id="quantity" value="1" min="1" max="@Model.Quantity;">
+                    <span class="product_count_item number-increment" onclick="increaseQuantity()"> <i class="ti-plus"></i></span>
+
+                    <script type="text/javascript">
+                        var maxQuantity = @Model.Quantity;
+                    </script>
+                </div>
+            </div>
+            <p style="margin-bottom:50px;">Còn @Model.Quantity SP</p>
+
+            @{
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value.ToString();
+                var userRole = User.FindFirst(ClaimTypes.Role)?.Value.ToString();
+            }
+
+
+            @if (userId != null)
+            {
+                @if (userRole != "2")
+                {
+                    <div class="add_to_cart">
+                        <button type="submit" class="btn_3" disabled>Thêm vào giỏ hàng</button>
+                    </div>
+                    <p style="color:red;font-style:italic">Đăng nhập bằng tài khoản khách hàng để mua hàng.</p>
+                }
+                else
+                {
+                    <div class="add_to_cart">
+                        <button type="button" class="atc btn_3" data-id="@Model.OptionId">Thêm vào giỏ hàng</button>
+                    </div>
+                }
+
+            }
+            else
+            {
+                <div class="add_to_cart">
+                    <button type="submit" class="btn_3" disabled>Thêm vào giỏ hàng</button>
+                </div>
+                <p style="color:red;font-style:italic">Vui lòng đăng nhập để mua hàng.</p>
+            }
+
+        </div>
+
+    </div>
+
+
+</div>
+
+
+<!-- jquery plugins here-->
+<script src="/js/jquery-1.12.1.min.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="/js/quantitybt.js"></script>
+<script src="/js/noti.addtocart.js"></script>
