@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using BusinessObjects.Models;
+using BusinessObjects.ApiResponses;
 
 namespace SunStoreAPI.Controllers
 {
@@ -25,6 +26,54 @@ namespace SunStoreAPI.Controllers
         public async Task<ActionResult<IEnumerable<ProductOption>>> GetProductOptions()
         {
             return await _context.ProductOptions.ToListAsync();
+        }
+
+        // GET: api/ProductOptions/detail/5
+        [HttpGet("detail/{id}")]
+        public async Task<ActionResult<ProductDetailResponse>> GetProductOptionDetail(int id)
+        {
+            var option = await _context.ProductOptions.Include(po => po.Product)
+                                                          .ThenInclude(p => p.Category)
+                                                      .Include(po => po.Product.ProductOptions)
+                                                      .FirstOrDefaultAsync(po => po.Id == id);
+
+            if (option == null) return NotFound();
+
+            var product = option.Product;
+
+            var result = new ProductDetailResponse
+            {
+                // Product info
+                ProductId = product.Id,
+                ProductName = product.Name,
+                ProductImage = product.Image,
+                ProductDescription = product.Description,
+                ReleaseDate = product.ReleaseDate,
+                Category = new CategoryResponseModel
+                {
+                    Id = product.Category.Id,
+                    Name = product.Category.Name
+                },
+
+                // Option selected
+                OptionId = option.Id,
+                Size = option.Size,
+                Quantity = option.Quantity,
+                Price = option.Price,
+                Rating = option.Rating,
+                Discount = option.Discount,
+
+                // List other options
+                OtherOptions = product.ProductOptions
+                    .Select(po => new ProductOptionSummaryModel
+                    {
+                        Id = po.Id,
+                        Size = po.Size,
+                        Price = po.Price
+                    }).ToList()
+            };
+
+            return Ok(result);
         }
 
         // GET: api/ProductOptions/5

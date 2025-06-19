@@ -35,6 +35,7 @@ namespace SunStore
             builder.Services.AddScoped<OrderAPIService>();
             builder.Services.AddScoped<AuthAPIService>();
             builder.Services.AddScoped<ProductAPIService>();
+            builder.Services.AddScoped<ProductOptionAPIService>();
             #endregion
 
             //Add session
