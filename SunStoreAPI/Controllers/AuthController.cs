@@ -3,7 +3,9 @@ using BusinessObjects.Constants;
 using BusinessObjects.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using SunStoreAPI.Dtos;
+using SunStoreAPI.Services;
 using SunStoreAPI.Utils;
 
 namespace SunStoreAPI.Controllers
@@ -12,15 +14,21 @@ namespace SunStoreAPI.Controllers
     [ApiController]
     public class AuthController : ControllerBase
     {
+        private const string JWT_COOKIE_NAME = "jwtToken";
+        private const int OTP_EXPIRATION_MINUTES = 10;
+
         private readonly SunStoreContext _context;
         private readonly JwtTokenProvider _jwtTokenProvider;
+        private readonly EmailService _emailService;
+        private readonly CacheUtils _cacheUtils;
 
-        private const string JWT_COOKIE_NAME = "jwtToken";
-
-        public AuthController(SunStoreContext context, JwtTokenProvider jwtTokenProvider)
+        public AuthController(SunStoreContext context, JwtTokenProvider jwtTokenProvider,
+            EmailService emailService, CacheUtils cacheUtils)
         {
             _context = context;
             _jwtTokenProvider = jwtTokenProvider;
+            _emailService = emailService;
+            _cacheUtils = cacheUtils;
         }
 
         [HttpPost]
@@ -144,6 +152,52 @@ namespace SunStoreAPI.Controllers
                 Message = "Đăng ký thành công."
             });
 
+        }
+
+        [HttpPost]
+        [Route("password")]
+        public async Task<IActionResult> ForgotPassword(ResetPasswordDto dto)
+        {
+            try
+            {
+                var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == dto.Email);
+
+                if (user == null)
+                {
+                    return BadRequest("User not found.");
+                }
+
+                string randomVerificationCode = VerificationCodeGenerator.GenerateCode();
+
+                string mailContent = $"<p> Sử dụng mã sau để thiết lập lại mật khẩu mới:" +
+                    $"<strong>{randomVerificationCode}</strong>. </p>" +
+                    $"<p> <i>Lưu ý: Mã OTP sẽ hết hạn sau {OTP_EXPIRATION_MINUTES} phút. </i>";
+
+                await _emailService.SendEmailAsync(dto.Email, "Đặt lại mật khẩu", mailContent);
+
+                _cacheUtils.SaveResetCode(dto.Email, randomVerificationCode, OTP_EXPIRATION_MINUTES);
+
+                return Ok("Gửi email thành công.");
+            }
+
+            catch (Exception ex)
+            {
+                return BadRequest(ex);
+            }
+        }
+
+        [HttpPost]
+        [Route("verify-reset")]
+        public IActionResult VerifyResetPasswordOTP(VerifyPasswordOtpDto dto)
+        {
+            var isValid = _cacheUtils.VerifyResetCode(dto.Email, dto.Otp);
+
+            if (!isValid)
+            {
+                return BadRequest("Mã OTP không hợp lệ hoặc đã hết hạn.");
+            }
+
+            return Ok("Xác thực thành công.");
         }
     }
 }
