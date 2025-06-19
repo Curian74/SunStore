@@ -22,7 +22,7 @@ namespace SunStore.Controllers
         // GET: OrderItems
         public async Task<IActionResult> Index()
         {
-            var sunStoreContext = _context.OrderItems.Include(o => o.Customer).Include(o => o.Order).Include(o => o.Product);
+            var sunStoreContext = _context.OrderItems.Include(o => o.Customer).Include(o => o.Order).Include(o => o.ProductOption);
             return View(await sunStoreContext.ToListAsync());
         }
 
@@ -37,7 +37,7 @@ namespace SunStore.Controllers
                     uid = int.Parse(userId);
                 }
 
-                var data = _context.OrderItems.Include(o => o.Product)
+                var data = _context.OrderItems.Include(o => o.ProductOption)
                                              .Where(o => o.CustomerId == uid)
                                              .Where(o => o.OrderId == 0)
                                              .ToList();
@@ -238,7 +238,7 @@ namespace SunStore.Controllers
             var orderItem = await _context.OrderItems
                 .Include(o => o.Customer)
                 .Include(o => o.Order)
-                .Include(o => o.Product)
+                .Include(o => o.ProductOption)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (orderItem == null)
             {
@@ -344,7 +344,7 @@ namespace SunStore.Controllers
             var orderItem = await _context.OrderItems
                 .Include(o => o.Customer)
                 .Include(o => o.Order)
-                .Include(o => o.Product)
+                .Include(o => o.ProductOption)
                 .FirstOrDefaultAsync(m => m.Id == id);
             if (orderItem == null)
             {

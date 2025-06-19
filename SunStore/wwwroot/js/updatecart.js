@@ -1,64 +1,29 @@
-﻿//Increase button
-$(document).ready(function () {
+﻿$(document).ready(function () {
+    // Increase button
     $(".increment").click(function () {
         var targetInputSelector = $(this).data("target");
-        var totalSelector = "#total_" + $(this).data("id");
+        var input = $(targetInputSelector);
+        var currentVal = parseInt(input.val()) || 0;
+        var max = parseInt(input.attr("max")) || 9999;
 
-        $.ajax({
-            url: "Cart/IncOne",
-            data: {
-                id: $(this).data("id")
-            },
-            success: function (response) {
-                console.log(response);
-                $(targetInputSelector).val(response.quantity);
-                var total = Intl.NumberFormat('en-US').format(response.price);
-                $(totalSelector).text(total + "đ");
-                var subtotal = Intl.NumberFormat('en-US').format(response.total);
-                $("#subtotal").text(subtotal + "đ");
-
-            },
-            error: function () {
-                Swal.fire({
-                    icon: "error",
-                    title: "Ôi...",
-                    text: "Đã có lỗi xảy ra!"
-                });
-            }
-        });
+        if (currentVal < max) {
+            input.val(currentVal + 1).trigger("change");
+        }
     });
-});
 
-//Decrease button
-$(document).ready(function () {
+    // Decrease button
     $(".decrement").click(function () {
         var targetInputSelector = $(this).data("target");
-        var totalSelector = "#total_" + $(this).data("id");
+        var input = $(targetInputSelector);
+        var currentVal = parseInt(input.val()) || 0;
+        var min = parseInt(input.attr("min")) || 1;
 
-        $.ajax({
-            url: "Cart/DecOne",
-            data: {
-                id: $(this).data("id")
-            },
-            success: function (response) {
-                console.log(response);
-                $(targetInputSelector).val(response.quantity);
-                var total = Intl.NumberFormat('en-US').format(response.price);
-                $(totalSelector).text(total + "đ");
-                var subtotal = Intl.NumberFormat('en-US').format(response.total);
-                $("#subtotal").text(subtotal + "đ");
-
-            },
-            error: function () {
-                Swal.fire({
-                    icon: "error",
-                    title: "Ôi...",
-                    text: "Đã có lỗi xảy ra!"
-                });
-            }
-        });
+        if (currentVal > min) {
+            input.val(currentVal - 1).trigger("change");
+        }
     });
 });
+
 
 //Change input value
 function check(id) {
@@ -74,7 +39,7 @@ function check(id) {
     if (quan > maxQuantity) {
         Swal.fire({
             title: "Thông báo",
-            text: "Rất tiếc, bạn chỉ có thể mua tối đa " + maxQuantity + " chiếc của loại bánh này.",
+            text: "Rất tiếc, bạn chỉ có thể mua tối đa " + maxQuantity + " chiếc của sản phẩm này.",
             confirmButtonText: "Đồng ý"
         });
     }
