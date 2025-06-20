@@ -149,6 +149,15 @@ namespace SunStoreAPI.Controllers
             await _context.Users.AddAsync(newUser);
             await _context.SaveChangesAsync();
 
+            var newCustomer = new Customer
+            {
+                UserId = newUser.Id,
+                Ranking = "Đồng"
+            };
+
+            await _context.Customers.AddAsync(newCustomer);
+            await _context.SaveChangesAsync();
+
             return Ok(new BaseApiResponse
             {
                 IsSuccessful = true,
