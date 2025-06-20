@@ -102,7 +102,7 @@
                                 string bakeryName = "";
                                 @foreach (var bakery in (IEnumerable<BusinessObjects.Models.Product>)ViewData["Product"])
                                 {
-                                    if (bakery != null && bakery.Id == item.Product.ProductId)
+                                    if (bakery != null && bakery.Id == item.ProductOption.ProductId)
                                     {
                                         bakeryName = bakery.Name;
                                         break;

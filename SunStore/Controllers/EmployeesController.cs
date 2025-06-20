@@ -94,7 +94,7 @@ namespace SunStore.Controllers
         public async Task<IActionResult> Reject(int orderId)
         {
             var order = await _context.Orders.FindAsync(orderId);
-            var items = _context.OrderItems.Include(o => o.Product).Where(o => o.OrderId == orderId).ToList();
+            var items = _context.OrderItems.Include(o => o.ProductOption).Where(o => o.OrderId == orderId).ToList();
             if (order == null)
             {
                 return Json(new { success = false });

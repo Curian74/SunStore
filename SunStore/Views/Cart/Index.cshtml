@@ -1,4 +1,5 @@
-﻿@model IEnumerable<BusinessObjects.Models.OrderItem>
+﻿@using BusinessObjects.DTOs
+@model IEnumerable<CartItemDto>
 
 
 <link rel="stylesheet" href="/css/cart.css">
@@ -34,51 +35,50 @@
                     <tbody>
 
                         @{
-                            double? subtotal = 0;
+                            double? total = 0;
                         }
                         @foreach (var item in Model)
                         {
-                            string productName = "";
+                            @* string productName = "";
                             string productImg = "";
                             @foreach (var product in (IEnumerable<BusinessObjects.Models.Product>)ViewData["Product"])
                             {
-                                if (product != null && product.Id == item.Product.ProductId)
+                                if (product != null && product.Id == item.ProductOption.ProductId)
                                 {
                                     productName = product.Name;
                                     productImg = product.Image;
                                     break;
                                 }
-                            }
+                            } *@
                             <tr id="item_@item.Id">
                                 <td>
                                     <div class="media">
                                         <div class="d-flex">
-                                            <img src="@productImg" alt="" />
+                                            <img src="@item.ProductImage" alt="" />
                                         </div>
                                         <div class="media-body">
-                                            <h4>@productName (Size: @item.Product.Size)</h4>
+                                            <h4>@item.ProductName (Size: @item.Size)</h4>
                                         </div>
                                     </div>
                                 </td>
                                 <td>
-                                    <h5>@($"{@item.Product.Price:N0}đ")</h5>
+                                    <h5>@($"{@item.Price:N0}đ")</h5>
                                 </td>
 
                                 <td style="padding:25px;text-align:center;">
                                     <div class="product_count">
                                         <span class="decrement" data-id="@item.Id" data-target="#quantity_@item.Id"><i class="ti-minus"></i></span>
                                         <input class="qq product_count_item" type="text" name="quantity" id="quantity_@item.Id" value="@item.Quantity"
-                                               min="1" max="@item.Product.Quantity" data-id="@item.Id" onchange="check(@item.Id)"
-                                               data-max="@item.Product.Quantity">
+                                               min="1" max="@item.TotalQuantity" data-id="@item.Id" onchange="check(@item.Id)"
+                                               data-max="@item.TotalQuantity">
                                         <span class="increment" data-id="@item.Id" data-target="#quantity_@item.Id"><i class="ti-plus"></i></span>
                                     </div>
                                 </td>
                                 @{
-                                    var total = @item.Product.Price * item.Quantity;
-                                    subtotal += total;
+                                    total += item.Total;
                                 }
                                 <td>
-                                    <h5 id="total_@item.Id">@($"{total:N0}đ")</h5>
+                                    <h5 id="total_@item.Id">@($"{item.Total:N0}đ")</h5>
 
                                 </td>
                                 <td>
@@ -107,7 +107,7 @@
                                 <h4>Tổng tiền: </h4>
                             </td>
                             <td>
-                                <h4 id="subtotal">@($"{subtotal:N0}đ")</h4>
+                                <h4 id="subtotal">@($"{total:N0}đ")</h4>
                             </td>
                         </tr>
 

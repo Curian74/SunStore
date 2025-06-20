@@ -65,7 +65,7 @@ namespace SunStore.Controllers
 
         public IActionResult Details(int id)
         {
-            var items = _context.OrderItems.Include(o => o.Product).Where(o => o.OrderId == id).ToList();
+            var items = _context.OrderItems.Include(o => o.ProductOption).Where(o => o.OrderId == id).ToList();
             var order = _context.Orders.Find(id);
 
             var uid = items.FirstOrDefault().CustomerId;
@@ -106,7 +106,7 @@ namespace SunStore.Controllers
 
         public IActionResult Cancel(int id, string reason)
         {
-            var items = _context.OrderItems.Include(o => o.Product).Where(o => o.OrderId == id).ToList();
+            var items = _context.OrderItems.Include(o => o.ProductOption).Where(o => o.OrderId == id).ToList();
 
             var order = _context.Orders.Find(id);
             foreach (var item in items)

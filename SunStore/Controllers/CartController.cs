@@ -3,84 +3,54 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using BusinessObjects.Models;
 using System.Security.Claims;
+using BusinessObjects.DTOs;
+using SunStore.APIServices;
+using BusinessObjects.RequestModel;
 
 namespace SunStore.Controllers
 {
     public class CartController : Controller
     {
-        private readonly SunStoreContext _context;
+        private readonly CartAPIService _cartAPIService;
 
-        public CartController(SunStoreContext context)
+        public CartController(CartAPIService cartAPIService)
         {
-            _context = context;
+            _cartAPIService = cartAPIService;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            ViewData["Product"] = _context.Products.ToList();
-            return View(Orders);
-        }
-
-        public List<OrderItem> Orders
-        {
-            get
-            {
-                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value.ToString();
-                int uid = 0;
-                if (userId != null)
-                {
-                    uid = int.Parse(userId);
-                }
-
-                var data = _context.OrderItems.Include(o => o.Product)
-                                             .Where(o => o.CustomerId == uid)
-                                             .Where(o => o.OrderId == 0)
-                                             .ToList();
-                if (data == null)
-                {
-                    data = new List<OrderItem>();
-                }
-                return data;
-            }
-        }
-        public JsonResult AddToCart(int id, int quantity)
-        {
-            var myCart = Orders;
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value.ToString();
-            var item = myCart.FirstOrDefault(c => c.ProductId == id);
-            var product = _context.ProductOptions.Include(b => b.Product).FirstOrDefault(b => b.Id == id);
-            var exist = false;
-            if (item == null)
+            var uid = 0;
+
+            if(userId != null)
             {
-                item = new OrderItem()
-                {
-                    ProductId = product.Id,
-                    CustomerId = userId == null ? 0 : int.Parse(userId),
-                    OrderId = 0,
-                    Quantity = quantity,
-                    Price = product.Price * quantity
-                };
-                _context.OrderItems.Add(item);
-                _context.SaveChanges();
-            }
-            else
-            {
-                exist = true;
-                var orderItem = _context.OrderItems.Find(item.Id);
-                orderItem.Quantity = quantity;
-                orderItem.Price = product.Price * quantity;
-                _context.OrderItems.Update(orderItem);
-                _context.SaveChanges();
+                uid = int.Parse(userId);
             }
 
-            int uid = 0;
+            var listCart = await _cartAPIService.GetCartAsync(uid);
+            return View(listCart);
+        }
+
+        public async Task<JsonResult> AddToCart(int id, int quantity)
+        {
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value.ToString();
+            int? uid = null;
+
             if (userId != null)
             {
-                uid = Int32.Parse(userId);
+                uid = int.Parse(userId);
             }
 
-            var cartQuantity = _context.OrderItems.Where(o => o.OrderId == 0 && o.CustomerId == uid).Count();
-            HttpContext.Session.SetString("CartQuantity", cartQuantity.ToString());
+            var request = new CartActionRequest
+            {
+                CustomerId = uid,
+                ProductOptionId = id,
+                Quantity = quantity
+            };
+
+            var response = await _cartAPIService.AddToCartAsync(request);
+            bool exist = response.Message.Equals("True");
 
             return Json(new
             {
@@ -88,137 +58,38 @@ namespace SunStore.Controllers
             });
         }
 
-        public JsonResult DeleteItem(int id)
+        public async Task<JsonResult> UpdateQuantity(int id, int quantity)
         {
-            var item = _context.OrderItems.Find(id);
-
-            if (item != null)
+            var request = new UpdateQuantityRequest
             {
-                _context.OrderItems.Remove(item);
-                _context.SaveChanges();
-            }
+                CartItemId = id,
+                Quantity = quantity
+            };
 
-            var userId = HttpContext!.Session.GetString("UserId");
-            int uid = 0;
-            if (userId != null)
-            {
-                uid = Int32.Parse(userId);
-            }
-
-            var cartQuantity = _context.OrderItems.Where(o => o.OrderId == 0 && o.CustomerId == uid).Count();
-            HttpContext.Session.SetString("CartQuantity", cartQuantity.ToString());
-
-            var items = _context.OrderItems.Where(o => o.CustomerId == uid && o.OrderId == 0);
-            var total = items.Sum(o => o.Price);
+            var response = await _cartAPIService.UpdateQuantityAsync(request);
 
             return Json(new
             {
-                total
+                quantity = response.Quantity,
+                price = response.Price,
+                unitprice = response.UnitPrice,
+                total = response.Total
             });
         }
 
-        public JsonResult IncOne(int id)
+        public async Task<JsonResult> DeleteItem(int id)
         {
-            var userId = HttpContext!.Session.GetString("UserId");
-            int uid = 0;
-            if (userId != null)
-            {
-                uid = Int32.Parse(userId);
-            }
-            var item = _context.OrderItems.Find(id);
-            var product = _context.ProductOptions.FirstOrDefault(b => b.Id == item.ProductId);
+            var result = await _cartAPIService.DeleteItemAsync(id);
 
-            var unitprice = product.Price;
-            var MaxQuantity = product.Quantity;
-            if (item != null && item.Quantity < MaxQuantity)
-            {
-                item.Quantity++;
-                item.Price = unitprice * item.Quantity;
-                _context.OrderItems.Update(item);
-                _context.SaveChanges();
-            }
-
-            var items = _context.OrderItems.Where(o => o.CustomerId == uid && o.OrderId == 0);
-            var total = items.Sum(o => o.Price);
+            //// update Cart Quantity
+            //var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            //int uid = userId != null ? int.Parse(userId) : 0;
+            //var remainingCount = (await _cartAPIService.GetCartAsync(uid)).Count;
+            //HttpContext.Session.SetString("CartQuantity", remainingCount.ToString());
 
             return Json(new
             {
-                quantity = item.Quantity,
-                price = item.Price,
-                unitprice,
-                total
-            });
-        }
-
-        public JsonResult DecOne(int id)
-        {
-            var userId = HttpContext!.Session.GetString("UserId");
-            int uid = 0;
-            if (userId != null)
-            {
-                uid = Int32.Parse(userId);
-            }
-            var item = _context.OrderItems.Find(id);
-            var product = _context.ProductOptions.FirstOrDefault(b => b.Id == item.ProductId);
-
-            var unitprice = product.Price;
-            if (item != null && item.Quantity > 1)
-            {
-                item.Quantity--;
-                item.Price = unitprice * item.Quantity;
-                _context.OrderItems.Update(item);
-                _context.SaveChanges();
-            }
-
-            var items = _context.OrderItems.Where(o => o.CustomerId == uid && o.OrderId == 0);
-            var total = items.Sum(o => o.Price);
-
-            return Json(new
-            {
-                quantity = item.Quantity,
-                price = item.Price,
-                unitprice,
-                total
-            });
-        }
-
-        public JsonResult UpdateQuantity(int id, int quantity)
-        {
-            var userId = HttpContext!.Session.GetString("UserId");
-            int uid = 0;
-            if (userId != null)
-            {
-                uid = Int32.Parse(userId);
-            }
-            var item = _context.OrderItems.Find(id);
-            var product = _context.ProductOptions.FirstOrDefault(b => b.Id == item.ProductId);
-
-            var unitprice = product.Price;
-            var MaxQuantity = product.Quantity;
-            if (item != null)
-            {
-                if (quantity > MaxQuantity)
-                {
-                    item.Quantity = MaxQuantity;
-                }
-                else
-                {
-                    item.Quantity = quantity;
-                }
-                item.Price = unitprice * item.Quantity;
-                _context.OrderItems.Update(item);
-                _context.SaveChanges();
-            }
-
-            var items = _context.OrderItems.Where(o => o.CustomerId == uid && o.OrderId == 0);
-            var total = items.Sum(o => o.Price);
-
-            return Json(new
-            {
-                quantity = item.Quantity,
-                price = item.Price,
-                unitprice,
-                total
+                total = result.Total,
             });
         }
     }

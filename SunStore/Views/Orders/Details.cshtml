@@ -105,7 +105,7 @@
                                 string productImg = "";
                                 @foreach (var product in (IEnumerable<BusinessObjects.Models.Product>)ViewData["Product"])
                                 {
-                                    if (product != null && product.Id == item.Product.ProductId)
+                                    if (product != null && product.Id == item.ProductOption.ProductId)
                                     {
                                         productName = product.Name;
                                         productImg = product.Image;
@@ -116,7 +116,7 @@
                                 subtotal += total;
 
                                 <tr>
-                                    <th colspan="2"><span>@productName (Size: @item.Product.Size)</span></th>
+                                    <th colspan="2"><span>@productName (Size: @item.ProductOption.Size)</span></th>
                                     <th>x @item.Quantity</th>
                                     <th> <span>@($"{total:N0}đ")</span></th>
                                 </tr>
