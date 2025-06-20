@@ -65,7 +65,7 @@ namespace SunStoreAPI.Controllers
         }
 
         [HttpPost("add")]
-        public ApiResult AddToCart([FromBody] CartActionRequest model)
+        public BaseApiResponse AddToCart([FromBody] CartActionRequest model)
         {
             var myCart = listCart;
             var userId = model.CustomerId;
@@ -98,7 +98,7 @@ namespace SunStoreAPI.Controllers
             //var cartQuantity = _context.OrderItems.Where(o => o.OrderId == 0 && o.CustomerId == uid).Count();
             //HttpContext.Session.SetString("CartQuantity", cartQuantity.ToString());
 
-            return new ApiResult
+            return new BaseApiResponse
             {
                 IsSuccessful = true,
                 Message = exist.ToString(),
@@ -154,7 +154,7 @@ namespace SunStoreAPI.Controllers
         {
             var item = await _context.OrderItems.FindAsync(id);
             if (item == null)
-                return NotFound(new ApiResult { IsSuccessful = false, Message = "Cart item not found." });
+                return NotFound(new BaseApiResponse { IsSuccessful = false, Message = "Cart item not found." });
 
             _context.OrderItems.Remove(item);
             await _context.SaveChangesAsync();

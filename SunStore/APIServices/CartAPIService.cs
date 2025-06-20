@@ -19,10 +19,10 @@ namespace SunStore.APIServices
                 ?? new List<CartItemDto>();
         }
 
-        public async Task<ApiResult> AddToCartAsync(CartActionRequest request)
+        public async Task<BaseApiResponse> AddToCartAsync(CartActionRequest request)
         {
             var response = await _httpClient.PostAsJsonAsync("Carts/add", request);
-            var result = await response.Content.ReadFromJsonAsync<ApiResult>();
+            var result = await response.Content.ReadFromJsonAsync<BaseApiResponse>();
             return result;
         }
 
