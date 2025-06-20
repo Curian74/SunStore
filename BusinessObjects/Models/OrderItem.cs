@@ -21,5 +21,5 @@ public partial class OrderItem
 
     public virtual Order? Order { get; set; }
 
-    public virtual ProductOption? Product { get; set; }
+    public virtual ProductOption? ProductOption { get; set; }
 }

@@ -136,7 +136,7 @@ public partial class SunStoreContext : DbContext
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK__OrderItem__Order__6754599E");
 
-            entity.HasOne(d => d.Product).WithMany(p => p.OrderItems)
+            entity.HasOne(d => d.ProductOption).WithMany(p => p.OrderItems)
                 .HasForeignKey(d => d.ProductId)
                 .OnDelete(DeleteBehavior.Cascade)
                 .HasConstraintName("FK__OrderItem__Produ__66603565");

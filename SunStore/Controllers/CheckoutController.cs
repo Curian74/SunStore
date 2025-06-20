@@ -44,7 +44,7 @@ namespace SunStore.Controllers
                     uid = int.Parse(userId);
                 }
 
-                var data = _context.OrderItems.Include(o => o.Product)
+                var data = _context.OrderItems.Include(o => o.ProductOption)
                                              .Where(o => o.CustomerId == uid)
                                              .Where(o => o.OrderId == 0)
                                              .ToList();
