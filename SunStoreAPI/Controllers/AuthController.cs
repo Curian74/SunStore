@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 using SunStoreAPI.Dtos;
+using SunStoreAPI.Dtos.Requests;
 using SunStoreAPI.Dtos.User;
 using SunStoreAPI.Services;
 using SunStoreAPI.Utils;
@@ -231,10 +232,10 @@ namespace SunStoreAPI.Controllers
             });
         }
 
-        // Update password endpoint.
+        // Reset password endpoint.
         [HttpPost]
         [Route("reset-password")]
-        public async Task<IActionResult> UpdatePassword(UpdatePasswordDto dto)
+        public async Task<IActionResult> ResetPassword(UpdatePasswordDto dto)
         {
             try
             {

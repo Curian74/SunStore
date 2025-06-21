@@ -1,4 +1,4 @@
-﻿namespace SunStoreAPI.Dtos
+﻿namespace SunStoreAPI.Dtos.Requests
 {
     public class ResetPasswordDto
     {

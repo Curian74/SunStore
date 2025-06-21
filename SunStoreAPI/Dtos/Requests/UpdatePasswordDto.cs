@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace SunStoreAPI.Dtos
+namespace SunStoreAPI.Dtos.Requests
 {
     public class UpdatePasswordDto
     {
