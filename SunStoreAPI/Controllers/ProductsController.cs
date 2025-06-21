@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using BusinessObjects.Models;
 using BusinessObjects;
-using SunStoreAPI.Dtos;
+using SunStoreAPI.Dtos.Requests;
 
 namespace SunStoreAPI.Controllers
 {

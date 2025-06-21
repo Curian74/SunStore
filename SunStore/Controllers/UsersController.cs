@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using BusinessObjects.Models;
 using SunStore.APIServices;
 using SunStore.ViewModel.RequestModels;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SunStore.Controllers
 {
@@ -11,13 +12,14 @@ namespace SunStore.Controllers
     {
         private readonly SunStoreContext _context;
         private readonly AuthAPIService _authAPIService;
-
+        private readonly UserAPIService _userAPIService;
         private const string JWT_COOKIE_NAME = "jwtToken";
 
-        public UsersController(SunStoreContext context, AuthAPIService authAPIService)
+        public UsersController(SunStoreContext context, AuthAPIService authAPIService, UserAPIService userAPIService)
         {
             _context = context;
             _authAPIService = authAPIService;
+            _userAPIService = userAPIService;
         }
 
         // GET: Users
@@ -27,6 +29,7 @@ namespace SunStore.Controllers
         }
 
         // GET: Users/Details/5
+        [Authorize]
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
@@ -82,6 +85,71 @@ namespace SunStore.Controllers
                 return NotFound();
             }
             return View(user);
+        }
+
+        [Authorize]
+        public async Task<IActionResult> Profile(int? id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
+
+            var user = await _authAPIService.GetProfileInfoAsync();
+
+            if (user == null)
+            {
+                return NotFound();
+            }
+
+            var viewModel = new UpdateUserRequestViewModel
+            {
+                Id = user.Data!.Id,
+                Address = user.Data.Address,
+                BirthDate = user.Data.BirthDate,
+                Email = user.Data.Email,
+                FullName = user.Data.FullName,
+                IsBanned = user.Data.IsBanned,
+                PhoneNumber = user.Data.PhoneNumber,
+                Username = user.Data.Username,
+                Role = user.Data.Role,
+            };
+
+            return View(viewModel);
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> Profile(int? id, UpdateUserRequestViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            try
+            {
+                var result = await _userAPIService.UpdateUserAsync(model);
+
+                if (result.IsSuccessful)
+                {
+                    TempData["success"] = result.Message;
+                }
+
+                else
+                {
+                    TempData["error"] = result.Message;
+                    return View(model);
+                }
+
+                return RedirectToAction(nameof(Profile));
+            }
+
+            catch (Exception ex)
+            {
+                ViewBag.Error = ex.Message;
+                return View();
+            }
         }
 
         // POST: Users/Edit/5
@@ -165,7 +233,7 @@ namespace SunStore.Controllers
             ViewBag.ResetPassword = TempData["ResetPassword"];
             return View();
         }
-        
+
         public IActionResult AccessDenied()
         {
             return View();
@@ -257,7 +325,7 @@ namespace SunStore.Controllers
 
         public IActionResult NewPassword(string? email, string? otp)
         {
-            var modelData = new UpdatePasswordRequestViewModel { Email = email, Otp = otp};
+            var modelData = new UpdatePasswordRequestViewModel { Email = email, Otp = otp };
 
             // Prevent access to the page if the email or the otp code is not present in the query string.
             if (string.IsNullOrEmpty(otp) || string.IsNullOrEmpty(email))
@@ -317,7 +385,7 @@ namespace SunStore.Controllers
 
                 if (result!.IsSuccessful)
                 {
-                    return RedirectToAction(nameof(NewPassword), new { email = model.Email, otp = model.Otp});
+                    return RedirectToAction(nameof(NewPassword), new { email = model.Email, otp = model.Otp });
                 }
 
                 ViewBag.Error = result.Message;
@@ -345,7 +413,7 @@ namespace SunStore.Controllers
 
                 if (result!.IsSuccessful)
                 {
-                    return RedirectToAction(nameof(VerifyOTP), new {email = model.Email});
+                    return RedirectToAction(nameof(VerifyOTP), new { email = model.Email });
                 }
 
                 ViewBag.Error = result.Message;

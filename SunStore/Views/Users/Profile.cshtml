@@ -1,12 +1,4 @@
-﻿@model BusinessObjects.Models.User
-@inject IHttpContextAccessor HttpContextAccessor
-
-@{
-    ViewData["Title"] = "Edit";
-    var userId = HttpContextAccessor.HttpContext!.Session.GetString("UserId");
-    var userRole = HttpContextAccessor.HttpContext.Session.GetString("UserRole");
-    var userName = HttpContextAccessor.HttpContext.Session.GetString("UserName");
-}
+﻿@model UpdateUserRequestViewModel
 
 <style>
     .backgr {
@@ -21,7 +13,7 @@
 <div class="row backgr">
     <div class="row" style="text-align:center; margin: 0;">
         <div class="container" style="margin: 60px auto; border: solid 2px gray; border-radius: 15px; padding: 35px 0; text-align:center;background-color:ghostwhite;margin-bottom:200px;">
-            <form asp-action="Edit" method="post">
+            <form id="profileForm" asp-action="Profile" method="post">
                 <div class="d-flex justify-content-around">
                     <div>
                         <div asp-validation-summary="ModelOnly" class="text-danger"></div>
@@ -35,7 +27,7 @@
 
                         <div class="form-group">
                             <label asp-for="Username" class="control-label"></label>
-                            <input asp-for="Username" disabled class="form-control" />
+                            <input asp-for="Username" readonly class="form-control" />
                             <span asp-validation-for="Username" class="text-danger"></span>
                         </div>
 
@@ -67,12 +59,15 @@
                         </div>
                     </div>
                 </div>
-                @if (ViewBag.Mess != null)
+
+                @if (TempData["error"] != null)
                 {
-                    <p style="width:100%;text-align:center;color:forestgreen;margin: 5px auto;">@ViewBag.Mess</p>
+                    <p class="text-danger"
+                       style="width:100%;text-align:center;margin: 5px auto;">@TempData["error"]</p>
                 }
+
                 <div class="form-group">
-                    <input type="submit" value="Lưu thông tin" style="padding: 10px 15px;margin-top:20px;" class="btn btn-primary" />
+                    <input type="submit" value="Lưu thông tin" id="saveButton" style="padding: 10px 15px;margin-top:20px;" class="btn btn-primary" />
                 </div>
             </form>
 
@@ -82,5 +77,48 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        document.getElementById("profileForm").addEventListener("submit", function (e) {
+            e.preventDefault();
+
+            Swal.fire({
+                title: "Bạn có muốn lưu thay đổi không?",
+                showDenyButton: true,
+                confirmButtonText: "Lưu",
+                denyButtonText: "Hủy"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    e.target.submit();
+                } 
+            });
+        });
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+        @if (TempData["success"] != null)
+        {
+            <text>
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Thành công!',
+                        });
+            </text>
+        }
+        else if (TempData["error"] != null)
+        {
+            <text>
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops!',
+                            text: 'Đã có lỗi xảy ra. Vui lòng kiểm tra thông báo lỗi.'
+                        });
+            </text>
+        }
+        });
+    </script>
 }
