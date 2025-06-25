@@ -1,10 +1,12 @@
-﻿using BusinessObjects.ApiResponses;
+﻿using BusinessObjects;
+using BusinessObjects.ApiResponses;
 using BusinessObjects.Models;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SunStoreAPI.Dtos.Requests;
+using SunStoreAPI.Dtos.User;
+using BusinessObjects.Queries;
 
 namespace SunStoreAPI.Controllers
 {
@@ -17,6 +19,43 @@ namespace SunStoreAPI.Controllers
         public UserController(SunStoreContext context)
         {
             _context = context;
+        }
+
+        [HttpGet("filter")]
+        public async Task<IActionResult> GetPaged([FromQuery] UserQueryObject userQueryObject)
+        {
+            var users = _context.Users.AsQueryable();
+
+            var skip = (userQueryObject.CurrentPage - 1) * userQueryObject.PageSize;
+
+            var filteredData = await users.Skip(skip).Take(userQueryObject.PageSize).ToListAsync();
+
+            var pagedData = new PagedResult<UserDto>
+            {
+                PageSize = userQueryObject.PageSize,
+                CurrentPage = userQueryObject.CurrentPage,
+                TotalItems = users.Count(),
+                Items = filteredData.Select(u => new UserDto
+                {
+                    Id = u.Id,
+                    Address = u.Address,
+                    BirthDate = u.BirthDate,
+                    Email = u.Email,
+                    FullName = u.FullName,
+                    IsBanned = u.IsBanned,
+                    Password = u.Password,
+                    PhoneNumber = u.PhoneNumber,
+                    Role = u.Role,
+                    Username = u.Username,
+                })
+                .ToList(),
+            };
+
+            return Ok(new ApiResult<PagedResult<UserDto>>
+            {
+                Data = pagedData,
+                IsSuccessful = true,
+            });
         }
 
         [HttpPost("update")]

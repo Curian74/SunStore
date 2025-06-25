@@ -5,6 +5,7 @@ using BusinessObjects.Models;
 using SunStore.APIServices;
 using SunStore.ViewModel.RequestModels;
 using Microsoft.AspNetCore.Authorization;
+using BusinessObjects.Queries;
 
 namespace SunStore.Controllers
 {
@@ -23,9 +24,11 @@ namespace SunStore.Controllers
         }
 
         // GET: Users
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(UserQueryObject userQueryObject)
         {
-            return View(await _context.Users.ToListAsync());
+            var data = await _userAPIService.GetPagedUserAsync(userQueryObject);
+
+            return View(data?.Data);
         }
 
         // GET: Users/Details/5
