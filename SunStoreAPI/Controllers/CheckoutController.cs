@@ -3,11 +3,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SunStoreAPI.Dtos;
 using SunStoreAPI.Dtos.Requests;
-using SunStoreAPI.Services;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-using System.Security.Cryptography;
 using System.Security.Claims;
 using Microsoft.AspNetCore.WebUtilities;
+using Humanizer;
+using SunStoreAPI.Services;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 
 namespace SunStoreAPI.Controllers
 {
@@ -17,10 +17,12 @@ namespace SunStoreAPI.Controllers
     {
         private readonly SunStoreContext _context;
         private readonly IVnPayService _vnPayService;
-        public CheckoutController(SunStoreContext context, IVnPayService vnPayService)
+        private readonly EmailService _emailService;
+        public CheckoutController(SunStoreContext context, IVnPayService vnPayService, EmailService emailService)
         {
             _context = context;
             _vnPayService = vnPayService;
+            _emailService = emailService;
         }
 
         [HttpGet("init-checkout/{userId}")]
@@ -137,6 +139,13 @@ namespace SunStoreAPI.Controllers
             }
 
             await _context.SaveChangesAsync();
+
+            string mailContent = $"<html><body> Quý khách đã đặt hàng thành công. Đơn hàng sẽ được vận chuyển sớm nhất có thể." +
+                                 $"<br> Thời gian: {DateTime.Now}" +
+                                 $"<br><br>Sun Store trân trọng cảm ơn quý khách! </body></html>";
+
+            await _emailService.SendEmailAsync(user.Email!, "[Sun Store] Đặt hàng thành công", mailContent);
+
             return Ok(new { Message = "Đặt hàng thành công", OrderId = order.Id });
         }
 
@@ -203,6 +212,14 @@ namespace SunStoreAPI.Controllers
             _context.Orders.Update(order);
 
             await _context.SaveChangesAsync();
+
+            var user = await _context.Users.FindAsync(userId);
+            string mailContent = $"<html><body> Quý khách đã đặt hàng thành công. Đơn hàng sẽ được vận chuyển sớm nhất có thể." +
+                                  $"<br> Thời gian: {DateTime.Now}" +
+                                  $"<br><br>Sun Store trân trọng cảm ơn quý khách! </body></html>";
+
+            await _emailService.SendEmailAsync(user.Email!, "[Sun Store] Đặt hàng thành công", mailContent);
+
             return Redirect($"https://localhost:7127/Checkout/PaymentCallBack?success=true&orderId={order.Id}");
 
         }
@@ -258,8 +275,5 @@ namespace SunStoreAPI.Controllers
                 percent
             });
         }
-
-
-
     }
 }
