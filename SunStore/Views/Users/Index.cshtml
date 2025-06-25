@@ -35,7 +35,7 @@
                     Role
                 </th>
                 <th>
-                    IsBanned
+                    IsActive
                 </th>
                 <th></th>
             </tr>
@@ -74,13 +74,13 @@
                         }
                     </td>
                     <td>
-                        @if (item.IsBanned == 1)
+                        @if (item.IsBanned == 0)
                         {
-                            @:Yes
+                            <i class="fa-solid fa-square-check text-success"></i>
                         }
                         else
                         {
-                            @:No
+                            <i class="fa-solid fa-rectangle-xmark text-danger"></i>
                         }
                     </td>
 
