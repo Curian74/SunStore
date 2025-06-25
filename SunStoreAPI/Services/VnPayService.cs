@@ -1,10 +1,10 @@
-﻿using SunStore.Helper;
+﻿using SunStoreAPI.Helper;
 using BusinessObjects.Models;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System.Security.Policy;
-using SunStore.ViewModel.RequestModels;
+using SunStoreAPI.Dtos;
 
-namespace SunStore.Services
+namespace SunStoreAPI.Services
 {
     public class VnPayService : IVnPayService
     {
@@ -27,13 +27,15 @@ namespace SunStore.Services
             //là: 10000000
 
             vnpay.AddRequestData("vnp_CreateDate", model.CreatedDate.ToString("yyyyMMddHHmmss"));
+            vnpay.AddRequestData("vnp_ReturnUrl", model.ReturnUrl.ToString());
+            
             vnpay.AddRequestData("vnp_CurrCode", _config["VnPay:CurrCode"]);
-            vnpay.AddRequestData("vnp_IpAddr", Utils.GetIpAddress(context));
+            vnpay.AddRequestData("vnp_IpAddr", Util.GetIpAddress(context));
             vnpay.AddRequestData("vnp_Locale", _config["VnPay:Locale"]);
 
             vnpay.AddRequestData("vnp_OrderInfo", "Thanh toán cho đơn hàng:" + model.OrderId);
             vnpay.AddRequestData("vnp_OrderType", "other"); //default value: other
-            vnpay.AddRequestData("vnp_ReturnUrl", _config["VnPay:PaymentBackReturnUrl"]);
+            //vnpay.AddRequestData("vnp_ReturnUrl", _config["VnPay:PaymentBackReturnUrl"]);
 
             vnpay.AddRequestData("vnp_TxnRef", tick); // Mã tham chiếu của giao dịch tại hệ 
             //thống của merchant.Mã này là duy nhất dùng để phân biệt các đơn hàng gửi sang VNPAY.Không được
