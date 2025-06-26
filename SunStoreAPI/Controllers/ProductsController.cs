@@ -90,7 +90,7 @@ namespace SunStoreAPI.Controllers
             {
                 CurrentPage = (int) page,
                 PageSize = pageSize,
-                TotalPages = (int)Math.Ceiling((double)totalItems / pageSize),
+                TotalItems = totalItems,
                 Items = products.Select(p => new ProductListResponseDto
                 {
                     Id = p.Id,

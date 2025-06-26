@@ -71,6 +71,21 @@ builder.Services.AddAuthentication(options =>
 
 #endregion
 
+var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(name: MyAllowSpecificOrigins,
+                      policy =>
+                      {
+                          policy.WithOrigins("https://localhost:7127")
+                                .AllowAnyHeader()
+                                .AllowCredentials()
+                                .AllowAnyMethod();
+                      });
+});
+
+
 builder.Services.AddMemoryCache();
 
 builder.Services.AddAuthentication();
@@ -84,6 +99,8 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseCors(MyAllowSpecificOrigins);
 
 app.UseHttpsRedirection();
 
