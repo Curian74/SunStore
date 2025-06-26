@@ -1,4 +1,4 @@
-using SunStore.Services;
+
 using Microsoft.EntityFrameworkCore;
 using SunStore.APIServices;
 using BusinessObjects.Models;
@@ -44,7 +44,8 @@ namespace SunStore
             builder.Services.AddScoped<ProductOptionAPIService>();
             builder.Services.AddScoped<CartAPIService>();
             builder.Services.AddScoped<UserAPIService>();
-          
+            builder.Services.AddScoped<CheckoutAPIService>();
+
             #endregion
 
             //Add session
@@ -57,7 +58,7 @@ namespace SunStore
                 options.Cookie.IsEssential = true;
             });
 
-            builder.Services.AddSingleton<IVnPayService, VnPayService>();
+            //builder.Services.AddSingleton<IVnPayService, VnPayService>();
 
             var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
             builder.Services.AddCors(options =>

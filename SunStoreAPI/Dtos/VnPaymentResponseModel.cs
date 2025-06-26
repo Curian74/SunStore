@@ -1,4 +1,4 @@
-﻿namespace SunStore.ViewModel.RequestModels
+﻿namespace SunStoreAPI.Dtos
 {
     public class VnPaymentResponseModel
     {
@@ -19,5 +19,6 @@
         public string Description { get; set; }
         public double Amount { get; set; }
         public DateTime CreatedDate { get; set; }
+        public string ReturnUrl { get; set; }
     }
 }

@@ -39,17 +39,6 @@
                         }
                         @foreach (var item in Model)
                         {
-                            @* string productName = "";
-                            string productImg = "";
-                            @foreach (var product in (IEnumerable<BusinessObjects.Models.Product>)ViewData["Product"])
-                            {
-                                if (product != null && product.Id == item.ProductOption.ProductId)
-                                {
-                                    productName = product.Name;
-                                    productImg = product.Image;
-                                    break;
-                                }
-                            } *@
                             <tr id="item_@item.Id">
                                 <td>
                                     <div class="media">

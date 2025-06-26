@@ -4,7 +4,7 @@ using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace SunStore.Helper
+namespace SunStoreAPI.Helper
 {
     public class VnPayLibrary
     {
@@ -51,7 +51,7 @@ namespace SunStore.Helper
                 signData = signData.Remove(data.Length - 1, 1);
             }
 
-            var vnpSecureHash = Utils.HmacSHA512(vnpHashSecret, signData);
+            var vnpSecureHash = Util.HmacSHA512(vnpHashSecret, signData);
             baseUrl += "vnp_SecureHash=" + vnpSecureHash;
 
             return baseUrl;
@@ -62,7 +62,7 @@ namespace SunStore.Helper
         public bool ValidateSignature(string inputHash, string secretKey)
         {
             var rspRaw = GetResponseData();
-            var myChecksum = Utils.HmacSHA512(secretKey, rspRaw);
+            var myChecksum = Util.HmacSHA512(secretKey, rspRaw);
             return myChecksum.Equals(inputHash, StringComparison.InvariantCultureIgnoreCase);
         }
 
@@ -96,7 +96,7 @@ namespace SunStore.Helper
 
     }
 
-    public class Utils
+    public class Util
     {
         public static string HmacSHA512(string key, string inputData)
         {
@@ -116,7 +116,6 @@ namespace SunStore.Helper
         }
 
 
-        // có chế biến cho .NET Core MVC
         public static string GetIpAddress(HttpContext context)
         {
             var ipAddress = string.Empty;
