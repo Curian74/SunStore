@@ -27,6 +27,7 @@ builder.Services.AddScoped<JwtTokenProvider>();
 builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<CacheUtils>();
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
+builder.Services.AddSingleton<IVnPayService, VnPayService>();
 
 #endregion
 

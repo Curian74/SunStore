@@ -18,7 +18,7 @@ namespace SunStore.Controllers
 
         public IActionResult Index(int? page, DateTime? fromDate, DateTime? toDate)
         {
-            var userId = HttpContext!.Session.GetString("UserId");
+            var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value.ToString();
             int uid = 0;
             if (userId != null)
             {
@@ -48,7 +48,7 @@ namespace SunStore.Controllers
             }
             
             //Pagination
-            int pageSize = 5;
+            int pageSize = 6;
             int pageNumber = (page ?? 1);
 
             var od = orders.OrderByDescending(o => o.DateTime).ToPagedList(pageNumber, pageSize);
@@ -59,12 +59,8 @@ namespace SunStore.Controllers
         {
             var items = _context.OrderItems.Include(o => o.ProductOption).Where(o => o.OrderId == id).ToList();
             var order = _context.Orders.Find(id);
-            var userId = HttpContext!.Session.GetString("UserId");
-            int uid = 0;
-            if (userId != null)
-            {
-                uid = int.Parse(userId);
-            }
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var uid = int.Parse(userIdStr);
             var user = _context.Users.Find(uid);
             ViewBag.FullName = user.FullName;
             ViewBag.Phone = order.PhoneNumber;

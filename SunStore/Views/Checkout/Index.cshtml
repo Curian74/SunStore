@@ -1,4 +1,4 @@
-﻿@model IEnumerable<BusinessObjects.Models.OrderItem>
+﻿@model SunStore.ViewModel.DataModels.CheckoutInitResponse
 
 <style>
     .ip::placeholder {
@@ -36,19 +36,19 @@
                         </div>
                         <div class="col-md-12 form-group p_star">
                             <label for="name" style="font-weight:bold;">Tên người mua hàng</label>
-                            <input type="text" class="form-control ip" value="@ViewBag.FullName" id="name" name="name" placeholder="Nhập tên" readonly />
+                            <input type="text" class="form-control ip" value="@Model.FullName" id="name" name="name" placeholder="Nhập tên" readonly />
                         </div>
                         <div class="col-md-12 form-group p_star">
                             <label for="add" style="font-weight:bold;">Địa chỉ nhận hàng</label>
-                            <input type="text" class="form-control ip adr" value="@ViewBag.Address" id="add" name="address" placeholder="Nhập địa chỉ" required />
+                            <input type="text" class="form-control ip adr" value="@Model.Address" id="add" name="address" placeholder="Nhập địa chỉ" required />
                         </div>
                         <div class="col-md-6 form-group p_star">
                             <label for="phone" style="font-weight:bold;">Số điện thoại</label>
-                            <input type="number" class="form-control ip pho" value="@ViewBag.Phone" id="phone" name="number" placeholder="Nhập số điện thoại" required />
+                            <input type="number" class="form-control ip pho" value="@Model.PhoneNumber" id="phone" name="number" placeholder="Nhập số điện thoại" required />
                         </div>
                         <div class="col-md-6 form-group p_star">
                             <label for="email" style="font-weight:bold;">Email</label>
-                            <input type="text" class="form-control ip" value="@ViewBag.Email" id="email" name="email" placeholder="Nhập Email" readonly />
+                            <input type="text" class="form-control ip" value="@Model.Email" id="email" name="email" placeholder="Nhập Email" readonly />
                         </div>
 
                         <div class="cupon_area" style="margin:15px 0;">
@@ -95,28 +95,15 @@
                                 </a>
                             </li>
                             @{
-                                double? subtotal = 0;
+                                double? finalTotal = 0;
                             }
-                            @foreach (var item in Model)
+                            @foreach (var item in Model.Items)
                             {
-                                string bakeryName = "";
-                                @foreach (var bakery in (IEnumerable<BusinessObjects.Models.Product>)ViewData["Product"])
-                                {
-                                    if (bakery != null && bakery.Id == item.ProductOption.ProductId)
-                                    {
-                                        bakeryName = bakery.Name;
-                                        break;
-                                    }
-                                }
-
-                                var total = item.Price;
-                                subtotal += total;
-
                                 <li>
                                     <a href="#">
-                                        @bakeryName
+                                        @item.Name
                                         <span class="middle">x @item.Quantity</span>
-                                        <span class="last">@($"{total:N0}đ")</span>
+                                        <span class="last">@($"{@item.SubTotal:N0}đ")</span>
                                     </a>
                                 </li>
                             }
@@ -125,7 +112,7 @@
                             <li>
                                 <a href="#" style="font-weight:bold">
                                     Tổng
-                                    <span>@($"{subtotal:N0}đ")</span>
+                                    <span>@($"{Model.Total:N0}đ")</span>
                                 </a>
                             </li>
                             <li>
@@ -135,11 +122,11 @@
                                 </a>
                             </li>
                             @{
-                                subtotal += 20000;
+                                finalTotal += Model.Total + 20000;
                             }
 
                             <script type="text/javascript">
-                                var stotal = @subtotal;
+                                var stotal = @finalTotal;
                             </script>
 
                             <li>
@@ -151,7 +138,7 @@
                             <li>
                                 <a href="#" style="font-weight:bold">
                                     Tổng tiền
-                                    <span id="subtotal">@($"{subtotal:N0}đ")</span>
+                                    <span id="subtotal">@($"{finalTotal:N0}đ")</span>
                                 </a>
                             </li>
                         </ul>

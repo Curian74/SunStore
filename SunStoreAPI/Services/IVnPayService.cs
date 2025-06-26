@@ -1,6 +1,6 @@
-﻿using SunStore.ViewModel.RequestModels;
+﻿using SunStoreAPI.Dtos;
 
-namespace SunStore.Services
+namespace SunStoreAPI.Services
 {
     public interface IVnPayService
     {
