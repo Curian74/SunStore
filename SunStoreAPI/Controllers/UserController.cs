@@ -197,7 +197,7 @@ namespace SunStoreAPI.Controllers
                 FullName = dto.FullName,
                 PhoneNumber = dto.PhoneNumber,
                 Username = dto.Username!,
-                Role = (int) userRole!,
+                Role = (int)userRole!,
                 IsBanned = dto.IsBanned,
                 Address = dto.Address,
             };
@@ -233,6 +233,39 @@ namespace SunStoreAPI.Controllers
             {
                 IsSuccessful = true,
                 Message = "Thành công."
+            });
+        }
+
+        [HttpPut("status/{id}")]
+        public async Task<IActionResult> ToggleBan(int id)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == id);
+
+            if (user == null)
+            {
+                return NotFound(new BaseApiResponse
+                {
+                    IsSuccessful = false,
+                    Message = "Không tìm thấy người dùng."
+                });
+            }
+
+            if (user.IsBanned == 1)
+            {
+                user.IsBanned = 0;
+            }
+
+            else
+            {
+                user.IsBanned = 1;
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new BaseApiResponse
+            {
+                IsSuccessful = true,
+                Message = "Thành công.",
             });
         }
     }
