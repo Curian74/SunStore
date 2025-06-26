@@ -7,7 +7,8 @@
     const int PAGE_SIZE = 10;
 }
 
-<div class="container">
+<main class="d-flex justify-content-center">
+    <section>
     <h1 style="text-align:center; font-family:Arial;font-weight:bolder">Quản lí tài khoản</h1>
 
     <p>
@@ -16,6 +17,9 @@
     <table class="table table-hover mt-2">
         <thead class="bg-info">
             <tr>
+                <th>
+                    Id
+                </th>
                 <th>
                     Full name
                 </th>
@@ -44,6 +48,9 @@
             @foreach (var item in Model.Items)
             {
                 <tr>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Id)
+                    </td>
                     <td>
                         @Html.DisplayFor(modelItem => item.FullName)
                     </td>
@@ -76,19 +83,27 @@
                     <td>
                         @if (item.IsBanned == 0)
                         {
-                            <i class="fa-solid fa-square-check text-success"></i>
+                            <i class="fa-solid fa-square-check text-success fs-5"></i>
                         }
                         else
                         {
-                            <i class="fa-solid fa-rectangle-xmark text-danger"></i>
+                            <i class="fa-solid fa-rectangle-xmark text-danger fs-5"></i>
                         }
                     </td>
 
                     <td>
-                        <a class="genric-btn warning radius" asp-action="Edit" asp-route-id="@item.Id">Edit</a>
-                        <a class="genric-btn primary radius ml-1" asp-action="Details" asp-route-id="@item.Id">Details</a>
-                        <a class="genric-btn danger radius mt-2" asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                        @* Prevent doing actions on the current logged in account. *@
+                        @if (item.Id != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value))
+                        {
+                            <a class="genric-btn success radius" asp-action="Edit" asp-route-id="@item.Id">Edit</a>
+                            <a class="genric-btn danger radius mt-2" asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                        }
+                        else
+                        {
+                            <span class="text-muted fst-italic">Tài khoản của bạn</span>
+                        }
                     </td>
+
                 </tr>
             }
         </tbody>
@@ -114,5 +129,6 @@
         }
                  )
     </nav>
+    </section> 
+</main>
 
-</div>

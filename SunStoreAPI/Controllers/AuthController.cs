@@ -145,6 +145,7 @@ namespace SunStoreAPI.Controllers
                 PhoneNumber = dto.PhoneNumber,
                 Username = dto.Username,
                 Role = int.Parse(UserRoleConstants.Customer),
+                IsBanned = 0,
             };
 
             await _context.Users.AddAsync(newUser);

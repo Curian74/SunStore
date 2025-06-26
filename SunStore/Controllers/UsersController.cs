@@ -58,20 +58,37 @@ namespace SunStore.Controllers
             return View();
         }
 
-        // POST: Users/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,FullName,Username,Password,Address,BirthDate,Email,PhoneNumber,Role,VertificationCode,IsBanned")] User user)
+        public async Task<IActionResult> Create(CreateUserRequestViewModel model)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                _context.Add(user);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                return View(model);
             }
-            return View(user);
+
+            try
+            {
+                var result = await _userAPIService.CreateUserAsync(model);
+
+                if (result!.IsSuccessful)
+                {
+                    TempData["success"] = result.Message;
+                }
+
+                else
+                {
+                    TempData["error"] = result.Message;
+                    return View(model);
+                }
+
+                return RedirectToAction(nameof(Create));
+            }
+
+            catch (Exception ex)
+            {
+                ViewBag.Error = ex.Message;
+                return View();
+            }
         }
 
         // GET: Users/Edit/5
@@ -82,12 +99,27 @@ namespace SunStore.Controllers
                 return NotFound();
             }
 
-            var user = await _context.Users.FindAsync(id);
+            var user = await _userAPIService.GetUserByIdAsync(id);
+
             if (user == null)
             {
                 return NotFound();
             }
-            return View(user);
+
+            var viewModel = new UpdateUserRequestViewModel
+            {
+                Id = user.Data!.Id,
+                Address = user.Data.Address,
+                BirthDate = user.Data.BirthDate,
+                Email = user.Data.Email,
+                FullName = user.Data.FullName,
+                IsBanned = user.Data.IsBanned,
+                PhoneNumber = user.Data.PhoneNumber,
+                Username = user.Data.Username,
+                Role = user.Data.Role,
+            };
+
+            return View(viewModel);
         }
 
         [Authorize]
@@ -156,41 +188,37 @@ namespace SunStore.Controllers
         }
 
         // POST: Users/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,FullName,Username,Password,Address,BirthDate,Email,PhoneNumber,Role,VertificationCode,IsBanned")] User user)
+        public async Task<IActionResult> Edit(int? id, UpdateUserRequestViewModel model)
         {
-            if (id != user.Id)
+            if (!ModelState.IsValid)
             {
-                return NotFound();
+                return View(model);
             }
 
-            user.IsBanned = 0;
-            user.Role = int.Parse(HttpContext!.Session.GetString("UserRole"));
-
-            if (ModelState.IsValid)
+            try
             {
-                try
+                var result = await _userAPIService.UpdateUserAsync(model);
+
+                if (result!.IsSuccessful)
                 {
-                    _context.Update(user);
-                    await _context.SaveChangesAsync();
+                    TempData["success"] = result.Message;
                 }
-                catch (DbUpdateConcurrencyException)
+
+                else
                 {
-                    if (!UserExists(user.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
+                    TempData["error"] = result.Message;
+                    return View(model);
                 }
-                ViewBag.Mess = "Cập nhật thông tin thành công!";
-                return View(user);
+
+                return RedirectToAction(nameof(Edit), new { id });
             }
-            return View(user);
+
+            catch (Exception ex)
+            {
+                ViewBag.Error = ex.Message;
+                return View();
+            }
         }
 
         // GET: Users/Delete/5

@@ -23,6 +23,22 @@ namespace SunStore.APIServices
 
             return result;
         }
+        
+        public async Task<BaseApiResponse?> CreateUserAsync(CreateUserRequestViewModel model)
+        {
+            var response = await _httpClient.PostAsJsonAsync("User/create", model);
+            var result = await response.Content.ReadFromJsonAsync<BaseApiResponse>();
+
+            return result;
+        }
+
+        public async Task<ApiResult<UserViewModel>?> GetUserByIdAsync(int? id)
+        {
+            var response = await _httpClient.GetAsync($"User/{id}");
+            var result = await response.Content.ReadFromJsonAsync<ApiResult<UserViewModel>>();
+
+            return result;
+        }
 
         public async Task<ApiResult<PagedResult<UserViewModel>>?> GetPagedUserAsync(UserQueryObject queryObject)
         {
@@ -42,7 +58,7 @@ namespace SunStore.APIServices
 
             var response = await _httpClient.GetAsync(sb.ToString());
 
-            var result = await response.Content.ReadFromJsonAsync<ApiResult<PagedResult<UserViewModel>>> ();
+            var result = await response.Content.ReadFromJsonAsync<ApiResult<PagedResult<UserViewModel>>>();
 
             return result;
         }
