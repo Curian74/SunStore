@@ -9,17 +9,29 @@
 <div class="d-flex justify-content-center">
     <div class="w-75">
         <h1 style="text-align:center; font-family:Arial;font-weight:bolder">Quản lí sản phẩm</h1>
-        <div class="d-flex justify-content-end mb-2">
-            <p style="margin-right: 30px;">
-                <a class="genric-btn info radius" asp-action="Create">Tạo sản phẩm mới</a>
-            </p>
-            <p style="margin-right: 30px;">
-                <a class="genric-btn info radius" asp-controller="ProductOptions" asp-action="Create">Thêm size cho sản phẩm</a>
-            </p>
-            <p>
-                <a class="genric-btn info radius" asp-controller="Categories" asp-action="Create">Tạo Category</a>
-            </p>
-        </div>
+
+        <section class="d-flex justify-content-between align-items-center my-3">
+            <div>
+                <form asp-action="Index">
+                    <div class="d-flex gap-3">
+                        <input class="form-control" name="keyword" placeholder="Tìm kiếm theo tên..." />
+                        <button class="btn btn-primary" type="submit">Tìm</button>
+                    </div>
+                </form>
+            </div>
+
+            <div class="d-flex justify-content-end mb-2">
+                <p style="margin-right: 30px;">
+                    <a class="genric-btn info radius" asp-action="Create">Tạo sản phẩm mới</a>
+                </p>
+                <p style="margin-right: 30px;">
+                    <a class="genric-btn info radius" asp-controller="ProductOptions" asp-action="Create">Thêm size cho sản phẩm</a>
+                </p>
+                <p>
+                    <a class="genric-btn info radius" asp-controller="Categories" asp-action="Create">Tạo Category</a>
+                </p>
+            </div>
+        </section>
         <table class="table table-hover">
             <thead class="bg-info">
                 <tr>
@@ -45,33 +57,41 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach (var item in Model.Items)
+                @if (Model.Items.Count == 0)
                 {
-                    <tr>
-                        <td>
-                            @Html.DisplayFor(modelItem => item.Name)
-                        </td>
-                        <td style="width:10%;">
-                            <img style="width:100%;" src="@item.Image" />
-                        </td>
-                        <td>
-                            @Html.DisplayFor(modelItem => item.Description)
-                        </td>
-                        <td>
-                            @Html.DisplayFor(modelItem => item.ReleaseDate)
-                        </td>
-                        <td>
-                            @Html.DisplayFor(modelItem => item.IsDeleted)
-                        </td>
-                        <td>
-                            @Html.DisplayFor(modelItem => item.Category.Name)
-                        </td>
-                        <td>
-                            <a class="genric-btn warning radius" asp-action="Edit" asp-route-id="@item.Id">Edit</a>
-                            <a class="genric-btn primary radius" asp-action="Details" asp-route-id="@item.Id">Details</a>
-                            <a class="genric-btn danger radius" asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-                        </td>
-                    </tr>
+                    @: Không tìm thấy sản phẩm nào.
+                }
+
+                else
+                {
+                    @foreach (var item in Model.Items)
+                    {
+                        <tr>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Name)
+                            </td>
+                            <td style="width:10%;">
+                                <img style="width:100%;" src="@item.Image" />
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Description)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.ReleaseDate)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.IsDeleted)
+                            </td>
+                            <td>
+                                @Html.DisplayFor(modelItem => item.Category.Name)
+                            </td>
+                            <td>
+                                <a class="genric-btn warning radius" asp-action="Edit" asp-route-id="@item.Id">Edit</a>
+                                <a class="genric-btn primary radius" asp-action="Details" asp-route-id="@item.Id">Details</a>
+                                <a class="genric-btn danger radius" asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                            </td>
+                        </tr>
+                    }
                 }
             </tbody>
         </table>
