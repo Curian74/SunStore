@@ -1,4 +1,6 @@
-﻿$(document).ready(function () {
+﻿//const { pop } = require("../vendor/fontawesome-free/js/v4-shims");
+
+$(document).ready(function () {
     $(".canc").click(function () {
         var id = $(this).data("id");
         Swal.fire({
@@ -16,6 +18,7 @@
 
                 $.ajax({
                     url: "/Bills/Cancel",
+                    method: "post",
                     data: { id: id },
                     success: function () {
                         Swal.fire({
