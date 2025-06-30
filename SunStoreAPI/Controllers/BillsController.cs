@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using BusinessObjects.Models;
 using System.Security.Claims;
+using BusinessObjects;
+using BusinessObjects.ApiResponses;
 
 namespace SunStoreAPI.Controllers
 {
@@ -18,28 +20,48 @@ namespace SunStoreAPI.Controllers
         }
 
         [HttpGet("list")]
-        public async Task<IActionResult> GetBills(DateTime? fromDate, DateTime? toDate)
+        public async Task<IActionResult> GetBills(
+            DateTime? fromDate,
+            DateTime? toDate,
+            int? page = 1,
+            int pageSize = 6)
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
             if (string.IsNullOrEmpty(userId)) return Unauthorized();
             int uid = int.Parse(userId);
 
-            var orders = await _context.Orders
-                .Where(o => _context.OrderItems.Any(oi => oi.CustomerId == uid && oi.OrderId == o.Id))
-                .ToListAsync();
+            var query = _context.Orders
+                .Where(o => _context.OrderItems.Any(oi => oi.CustomerId == uid && oi.OrderId == o.Id));
 
             if (fromDate.HasValue)
             {
-                orders = orders.Where(o => o.DateTime >= fromDate.Value).ToList();
+                query = query.Where(o => o.DateTime >= fromDate.Value);
             }
 
             if (toDate.HasValue)
             {
-                orders = orders.Where(o => o.DateTime <= toDate.Value.AddDays(1)).ToList();
+                query = query.Where(o => o.DateTime <= toDate.Value.AddDays(1));
             }
 
-            return Ok(orders.OrderByDescending(o => o.DateTime));
+            var totalItems = await query.CountAsync();
+
+            var pagedOrders = await query
+                .OrderByDescending(o => o.DateTime)
+                .Skip((page.Value - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            var result = new PagedResult<Order>
+            {
+                CurrentPage = page.Value,
+                PageSize = pageSize,
+                TotalItems = totalItems,
+                Items = pagedOrders
+            };
+
+            return Ok(result);
         }
+
 
         [HttpGet("detail/{id}")]
         public async Task<IActionResult> GetOrderDetail(int id)
@@ -65,6 +87,7 @@ namespace SunStoreAPI.Controllers
                 OrderId = i.OrderId,
                 ProductId = i.ProductId,
                 ProductOptionName = i.ProductOption?.Product.Name!,
+                ProductOptionSize = i.ProductOption?.Size!,
                 Quantity = i.Quantity,
                 Price = i.Price
             }).ToList();
@@ -114,7 +137,11 @@ namespace SunStoreAPI.Controllers
             _context.Orders.Update(order);
             await _context.SaveChangesAsync();
 
-            return Ok(new { Message = "Đã huỷ đơn hàng." });
+            return Ok(new BaseApiResponse
+            { 
+                IsSuccessful = true,
+                Message = "Đã huỷ đơn hàng." 
+            });
         }
 
         [HttpGet("cancel-reason/{id}")]

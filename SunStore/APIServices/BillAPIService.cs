@@ -1,4 +1,5 @@
-﻿using BusinessObjects.ApiResponses;
+﻿using BusinessObjects;
+using BusinessObjects.ApiResponses;
 using BusinessObjects.DTOs;
 using BusinessObjects.Models;
 using SunStore.ViewModel.DataModels;
@@ -15,19 +16,36 @@ namespace SunStore.APIServices
             _httpClient = factory.CreateClient("api");
         }
 
-        public async Task<List<Order>> GetBillsAsync(int customerId, DateTime? fromDate = null, DateTime? toDate = null)
+        public async Task<PagedResult<Order>> GetBillsAsync(
+    DateTime? fromDate = null,
+    DateTime? toDate = null,
+    int page = 1,
+    int pageSize = 6)
         {
-            string url = $"Bills/list?customerId={customerId}";
+            var queryParams = new List<string>
+    {
+        $"page={page}",
+        $"pageSize={pageSize}"
+    };
 
             if (fromDate.HasValue)
-                url += $"&fromDate={fromDate.Value:yyyy-MM-dd}";
+                queryParams.Add($"fromDate={fromDate.Value:yyyy-MM-dd}");
 
             if (toDate.HasValue)
-                url += $"&toDate={toDate.Value:yyyy-MM-dd}";
+                queryParams.Add($"toDate={toDate.Value:yyyy-MM-dd}");
 
-            return await _httpClient.GetFromJsonAsync<List<Order>>(url)
-                ?? new List<Order>();
+            string url = $"Bills/list?{string.Join("&", queryParams)}";
+
+            var result = await _httpClient.GetFromJsonAsync<PagedResult<Order>>(url);
+            return result ?? new PagedResult<Order>
+            {
+                CurrentPage = page,
+                PageSize = pageSize,
+                TotalItems = 0,
+                Items = new List<Order>()
+            };
         }
+
 
         public async Task<BillDetailResponse?> GetBillDetailAsync(int billId)
         {

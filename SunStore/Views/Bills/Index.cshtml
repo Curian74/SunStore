@@ -1,5 +1,6 @@
-﻿@using X.PagedList.Mvc.Core
-@model X.PagedList.IPagedList<Order>
+﻿@using X.PagedList
+@using X.PagedList.Mvc.Core
+@model IPagedList<BusinessObjects.Models.Order>
 
 <!-- breadcrumb part start-->
 <section class="breadcrumb_part">
@@ -96,12 +97,23 @@
             </tbody>
         </table>
 
-        @Html.PagedListPager(Model, page => Url.Action("Index", new { page = page, fromDate = ViewBag.From, toDate = ViewBag.To }),
-                 new PagedListRenderOptions()
-        {
-            LiElementClasses = new List<String> { "page-item" },
-            PageClasses = new List<String> { "page-link" }
-        })
+        <div class="pagination-container">
+            @Html.PagedListPager(
+                Model, 
+                page => Url.Action("Index", new
+                {
+                    page,
+                    fromDate = ViewBag.From,
+                    toDate = ViewBag.To
+                }),
+                new PagedListRenderOptions
+                {
+                    LiElementClasses = new[] { "page-item" },
+                    PageClasses = new[] { "page-link" },
+                    UlElementClasses = new[] { "pagination", "justify-content-center" }
+                })
+        </div>
+
 
     </div>
 </section>
