@@ -97,6 +97,8 @@ namespace SunStoreAPI.Controllers
                     Name = p.Name,
                     Description = p.Description,
                     Image = p.Image,
+                    ReleaseDate = p.ReleaseDate,
+                    IsDeleted = p.IsDeleted,
                     Category = p.Category == null ? null : new CategoryResponseModel
                     {
                         Id = p.Category.Id,

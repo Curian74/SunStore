@@ -1,74 +1,102 @@
-﻿@model IEnumerable<BusinessObjects.Models.Product>
+﻿@using X.PagedList
+@using X.PagedList.Mvc.Core
+@model PagedResult<Product>
 
 @{
     ViewData["Title"] = "Index";
 }
-<div class="container">
-    <h1 style="text-align:center; font-family:Arial;font-weight:bolder">Quản lí sản phẩm</h1>
-    <div class="d-flex mb-2">
-        <p style="margin-right: 30px;">
-            <a class="genric-btn info radius" asp-action="Create">Tạo sản phẩm mới</a>
-        </p>
-        <p style="margin-right: 30px;">
-            <a class="genric-btn info radius" asp-controller="ProductOptions" asp-action="Create">Thêm size cho sản phẩm</a>
-        </p>
-        <p>
-            <a class="genric-btn info radius" asp-controller="Categories" asp-action="Create">Tạo Category</a>
-        </p>
-    </div>
-    <table class="table table-hover">
-        <thead class="bg-info">
-            <tr>
-                <th>
-                    @Html.DisplayNameFor(model => model.Name)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.Image)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.Description)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.ReleaseDate)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.IsDeleted)
-                </th>
-                <th>
-                    @Html.DisplayNameFor(model => model.Category)
-                </th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model)
-            {
+
+<div class="d-flex justify-content-center">
+    <div class="w-75">
+        <h1 style="text-align:center; font-family:Arial;font-weight:bolder">Quản lí sản phẩm</h1>
+        <div class="d-flex justify-content-end mb-2">
+            <p style="margin-right: 30px;">
+                <a class="genric-btn info radius" asp-action="Create">Tạo sản phẩm mới</a>
+            </p>
+            <p style="margin-right: 30px;">
+                <a class="genric-btn info radius" asp-controller="ProductOptions" asp-action="Create">Thêm size cho sản phẩm</a>
+            </p>
+            <p>
+                <a class="genric-btn info radius" asp-controller="Categories" asp-action="Create">Tạo Category</a>
+            </p>
+        </div>
+        <table class="table table-hover">
+            <thead class="bg-info">
                 <tr>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Name)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Image)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Description)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.ReleaseDate)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.IsDeleted)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Category.Id)
-                    </td>
-                    <td>
-                        <a class="genric-btn warning radius" asp-action="Edit" asp-route-id="@item.Id">Edit</a>
-                        <a class="genric-btn primary radius" asp-action="Details" asp-route-id="@item.Id">Details</a>
-                        <a class="genric-btn danger radius" asp-action="Delete" asp-route-id="@item.Id">Delete</a>
-                    </td>
+                    <th>
+                        Product Name
+                    </th>
+                    <th>
+                        Image
+                    </th>
+                    <th>
+                        Description
+                    </th>
+                    <th>
+                        Release Date
+                    </th>
+                    <th>
+                        Is Deleted
+                    </th>
+                    <th>
+                        Category
+                    </th>
+                    <th></th>
                 </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Items)
+                {
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Name)
+                        </td>
+                        <td style="width:10%;">
+                            <img style="width:100%;" src="@item.Image" />
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Description)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.ReleaseDate)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.IsDeleted)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Category.Name)
+                        </td>
+                        <td>
+                            <a class="genric-btn warning radius" asp-action="Edit" asp-route-id="@item.Id">Edit</a>
+                            <a class="genric-btn primary radius" asp-action="Details" asp-route-id="@item.Id">Details</a>
+                            <a class="genric-btn danger radius" asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <nav class="pb-4 pt-2">
+            @Html.PagedListPager(
+                     new StaticPagedList<Product>(Model.Items, Model.CurrentPage, 9, Model.TotalPages * 9),
+                     page => Url.Action("Index", "Products", new
+                     {
+                         page = page,
+                         keyword = @ViewData["keyword"],
+                         categoryID = @ViewData["categoryID"],
+                         priceRange = @ViewData["priceRange"]
+                     }),
+                     new PagedListRenderOptions()
+            {
+                LiElementClasses = new List<String> { "page-item" },
+                PageClasses = new List<String> { "page-link" },
+
+                DisplayLinkToFirstPage = PagedListDisplayMode.Always,
+                DisplayLinkToLastPage = PagedListDisplayMode.Always,
+
+                LinkToFirstPageFormat = "«",
+                LinkToLastPageFormat = "»",
             }
-        </tbody>
-    </table>
+                     )
+        </nav>
+    </div>
 </div>

@@ -6,6 +6,8 @@
         public string? Name { get; set; }
         public string? Description { get; set; }
         public string? Image { get; set; }
+        public DateOnly? ReleaseDate { get; set; }
+        public bool? IsDeleted { get; set; }
 
         public CategoryResponseModel? Category { get; set; }
         public List<ProductOptionResponseModel> ProductOptions { get; set; } = new();
