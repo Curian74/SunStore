@@ -12,9 +12,9 @@
 
         <section class="d-flex justify-content-between align-items-center my-3">
             <div>
-                <form asp-action="Index">
+                <form asp-action="Index" method="get">
                     <div class="d-flex gap-3">
-                        <input class="form-control" name="keyword" placeholder="Tìm kiếm theo tên..." />
+                        <input class="form-control" value="@Context.Request.Query["keyword"]" name="keyword" placeholder="Tìm kiếm theo tên..." />
                         <button class="btn btn-primary" type="submit">Tìm</button>
                     </div>
                 </form>
@@ -101,9 +101,7 @@
                      page => Url.Action("Index", "Products", new
                      {
                          page = page,
-                         keyword = @ViewData["keyword"],
-                         categoryID = @ViewData["categoryID"],
-                         priceRange = @ViewData["priceRange"]
+                         keyword = Context.Request.Query["keyword"],
                      }),
                      new PagedListRenderOptions()
             {

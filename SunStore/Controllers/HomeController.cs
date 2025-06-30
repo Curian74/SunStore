@@ -29,7 +29,7 @@ namespace SunStore.Controllers
 
         public async Task<IActionResult> ProductList(string? keyword, int? categoryID, string? priceRange, int? page)
         {
-            var result = await _productAPIService.FilterAsync(keyword, categoryID, priceRange, page);
+            var result = await _productAPIService.FilterAsync(keyword, categoryID, priceRange, page, 9);
             
             ViewData["keyword"] = keyword;
             ViewData["categoryID"] = categoryID;

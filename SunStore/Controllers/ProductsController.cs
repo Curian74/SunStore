@@ -21,9 +21,10 @@ namespace SunStore.Controllers
         }
 
         // GET: Products
-        public async Task<IActionResult> Index(string? keyword, int? categoryID, string? priceRange, int? page)
+        public async Task<IActionResult> Index(string? keyword, int? categoryID, string? priceRange, int? page,
+            int? pageSize = 8)
         {
-            var products = await _productAPIService.FilterAsync(keyword, categoryID, priceRange, page);
+            var products = await _productAPIService.FilterAsync(keyword, categoryID, priceRange, page, pageSize);
 
             return View(products);
         }
