@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using BusinessObjects.Models;
 using Microsoft.AspNetCore.Authorization;
 using BusinessObjects.Constants;
+using BusinessObjects.ApiResponses;
+using System.Security.Claims;
 
 namespace SunStoreAPI.Controllers
 {
@@ -27,6 +29,44 @@ namespace SunStoreAPI.Controllers
         public async Task<ActionResult<IEnumerable<Order>>> GetOrders()
         {
             return await _context.Orders.ToListAsync();
+        }
+
+        [HttpGet("assigning")]
+        public async Task<IActionResult> GetOrderForAssigning(int orderId, int shipperId)
+        {
+            var order = await _context.Orders
+            .FirstOrDefaultAsync(o => o.Id == orderId && o.ShipperId == shipperId);
+
+            if (order == null)
+            {
+                return NotFound(new ApiResult<Order>
+                {
+                    IsSuccessful = false,
+                });
+            }
+
+            return Ok(new ApiResult<Order>
+            {
+                Data = order,
+                IsSuccessful = true,
+            });
+        }
+
+        [HttpPost("assign")]
+        public async Task<IActionResult> Assign(int orderId, int shipperId)
+        {
+            var order = await _context.Orders.FirstOrDefaultAsync(o => o.Id == orderId && o.ShipperId == null);
+
+            if (order == null)
+            {
+                return NotFound();
+            }
+
+            order.ShipperId = shipperId;
+
+            await _context.SaveChangesAsync();
+
+            return NoContent();
         }
 
         [HttpGet]
