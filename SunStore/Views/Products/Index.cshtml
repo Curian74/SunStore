@@ -83,14 +83,14 @@
                                 @Html.DisplayFor(modelItem => item.ReleaseDate)
                             </td>
                             <td>
-                                @Html.DisplayFor(modelItem => item.IsDeleted)
+                                @(!item.IsDeleted)
                             </td>
                             <td>
                                 @Html.DisplayFor(modelItem => item.Category.Name)
                             </td>
                             <td>
                                 <a class="genric-btn warning radius" asp-action="Edit" asp-route-id="@item.Id">Edit</a>
-                                <a class="genric-btn primary radius" asp-action="Details" asp-route-id="@item.Id">Details</a>
+                                @* <a class="genric-btn primary radius" asp-action="Details" asp-route-id="@item.Id">Details</a> *@
                                 <a class="genric-btn danger radius" asp-action="Delete" asp-route-id="@item.Id">Delete</a>
                             </td>
                         </tr>

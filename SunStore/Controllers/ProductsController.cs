@@ -9,11 +9,14 @@ namespace SunStore.Controllers
     {
         private readonly ProductAPIService _productAPIService;
         private readonly CategoryAPIService _categoryAPIService;
+        private readonly ProductOptionAPIService _optionAPIService;
 
-        public ProductsController(ProductAPIService productAPIService, CategoryAPIService categoryAPIService)
+        public ProductsController(ProductAPIService productAPIService, CategoryAPIService categoryAPIService, 
+            ProductOptionAPIService optionAPIService)
         {
             _productAPIService = productAPIService;
             _categoryAPIService = categoryAPIService;
+            _optionAPIService = optionAPIService;
         }
 
         // GET: Products
@@ -26,35 +29,32 @@ namespace SunStore.Controllers
         }
 
         // GET: Products/Details/5
-        //public async Task<IActionResult> Details(int? id)
-        //{
-        //    if (id == null)
-        //    {
-        //        return NotFound();
-        //    }
+        public async Task<IActionResult> Details(int id)
+        {
+            if (id == null)
+            {
+                return NotFound();
+            }
 
-        //    var product = await _context.Products
-        //        .Include(b => b.Category)
-        //        .Include(b => b.ProductOptions)
-        //        .FirstOrDefaultAsync(m => m.Id == id);
+            var product = await _productAPIService.GetByIdAsync(id);
 
-        //    if (product == null)
-        //    {
-        //        return NotFound();
-        //    }
-        //    var productOption = _context.ProductOptions.Include(b => b.Product).FirstOrDefault(b => b.ProductId == id);
-        //    if (productOption == null)
-        //    {
-        //        return NotFound();
-        //    }
+            if (product == null)
+            {
+                return NotFound();
+            }
+            var productOption = await _optionAPIService.GetDetail(id);
+            if (productOption == null)
+            {
+                return NotFound();
+            }
 
-        //    var userID = HttpContext!.Session.GetString("UserId");
-        //    ViewBag.userID = userID;
+            var userID = HttpContext!.Session.GetString("UserId");
+            ViewBag.userID = userID;
 
-        //    ViewData["Quantity"] = productOption.Quantity;
-        //    ViewData["Price"] = productOption.Price;
-        //    return View(product);
-        //}
+            ViewData["Quantity"] = productOption.Quantity;
+            ViewData["Price"] = productOption.Price;
+            return View(product);
+        }
 
         // GET: Products/Create
         public async Task<IActionResult> Create()

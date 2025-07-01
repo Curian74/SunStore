@@ -151,7 +151,7 @@ namespace SunStoreAPI.Controllers
 
                 product.CategoryId = dto.CategoryId;
                 product.Description = dto.Description;
-                product.IsDeleted = dto.IsDeleted;
+                product.IsDeleted = !dto.IsDeleted;
                 product.Name = dto.Name;
                 product.Image = dto.ImageUrl == null ? product.Image : dto.ImageUrl;
 
@@ -184,7 +184,7 @@ namespace SunStoreAPI.Controllers
                 {
                     CategoryId = dto.CategoryId,
                     Description = dto.Description,
-                    IsDeleted = dto.IsDeleted,
+                    IsDeleted = !dto.IsDeleted,
                     Name = dto.Name,
                     ReleaseDate = DateOnly.FromDateTime(DateTime.Now),
                     Image = dto.ImageUrl,

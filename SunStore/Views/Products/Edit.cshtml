@@ -54,7 +54,7 @@
                     <br />
                     <label asp-for="IsDeleted" class="form-check-label fw-bold"></label>
                     <br />
-                    <input name="IsDeleted" value="true" type="checkbox" class="form-check-input" />
+                    <input name="IsDeleted" checked="@(Model.IsDeleted == false)" value="true" type="checkbox" class="form-check-input" />
                     <input name="IsDeleted" type="hidden" value="false" />
                     <br />
                     <span asp-validation-for="IsDeleted" class="text-danger"></span>
