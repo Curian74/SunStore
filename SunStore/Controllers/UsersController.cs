@@ -309,7 +309,7 @@ namespace SunStore.Controllers
                 {
                     HttpOnly = true,
                     Secure = true,
-                    Expires = DateTime.UtcNow.AddHours(1)
+                    Expires = DateTime.UtcNow.AddHours(5)
                 };
 
                 // Append Jwt token to the cookie.
