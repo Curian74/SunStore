@@ -6,6 +6,7 @@ using SunStoreAPI.Dtos.Requests;
 using SunStoreAPI.Services;
 using BusinessObjects.ApiResponses;
 using CategoryResponseModel = SunStoreAPI.Dtos.Requests.CategoryResponseModel;
+using Humanizer;
 
 namespace SunStoreAPI.Controllers
 {
@@ -132,34 +133,45 @@ namespace SunStoreAPI.Controllers
         }
 
         // PUT: api/Products/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutProduct(int id, Product product)
+        [HttpPut("{productId}")]
+        public async Task<IActionResult> PutProduct([FromRoute] int productId, [FromBody] EditProductRequestDto dto)
         {
-            if (id != product.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(product).State = EntityState.Modified;
-
             try
             {
+                var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == productId);
+
+                if (product == null)
+                {
+                    return NotFound(new BaseApiResponse
+                    {
+                        IsSuccessful = false,
+                        Message = "Không tìm thấy sản phẩm."
+                    });
+                }
+
+                product.CategoryId = dto.CategoryId;
+                product.Description = dto.Description;
+                product.IsDeleted = dto.IsDeleted;
+                product.Name = dto.Name;
+                product.Image = dto.ImageUrl == null ? product.Image : dto.ImageUrl;
+
                 await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!ProductExists(id))
+
+                return Ok(new BaseApiResponse
                 {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                    Message = "Thành công.",
+                    IsSuccessful = true,
+                });
             }
 
-            return NoContent();
+            catch (Exception ex)
+            {
+                return BadRequest(new BaseApiResponse
+                {
+                    IsSuccessful = false,
+                    Message = ex.Message
+                });
+            }
         }
 
         // POST: api/Products

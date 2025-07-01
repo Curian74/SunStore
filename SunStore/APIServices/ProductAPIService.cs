@@ -55,9 +55,25 @@ namespace SunStore.APIServices
             return result;
         }
 
+        public async Task<Product> GetByIdAsync(int id)
+        {
+            var data = await _httpClient.GetFromJsonAsync<Product>($"Products/{id}");
+
+            return data;
+        }
+
         public async Task<BaseApiResponse?> CreateAsync(CreateProductRequestViewModel model)
         {
             var response = await _httpClient.PostAsJsonAsync("Products", model);
+
+            var result = await response.Content.ReadFromJsonAsync<BaseApiResponse>();
+
+            return result;
+        }
+
+        public async Task<BaseApiResponse?> EditAsync(EditProductRequestViewModel model, int pId)
+        {
+            var response = await _httpClient.PutAsJsonAsync($"Products/{pId}", model);
 
             var result = await response.Content.ReadFromJsonAsync<BaseApiResponse>();
 

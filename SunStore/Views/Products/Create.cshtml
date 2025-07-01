@@ -6,68 +6,92 @@
 
 <div class="container">
     <h1 class="text-center">Create Product</h1>
-    <div>
-        @if (TempData["error"] != null)
-        {
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <p>@TempData["error"]</p>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        }
 
-        else if (TempData["success"] != null)
-        {
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <p>@TempData["success"]</p>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        }
-        <form asp-action="Create" id="submit-form" method="post" enctype="multipart/form-data">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="Name" class="control-label fw-bold"></label>
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="ImageUrl" class="control-label fw-bold"></label>
-                <input type="file" name="Image" class="form-control" />
-                <span asp-validation-for="ImageUrl" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Description" class="control-label fw-bold"></label>
-                <input asp-for="Description" class="form-control" />
-                <span asp-validation-for="Description" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="CategoryId" class="control-label fw-bold"></label>
-                <br/>
-                <select asp-for="@Model.CategoryId" asp-items="Model.Categories" class="form-control">
-                    <option value="">Chọn 1 danh mục</option>
-                </select>
-                <span asp-validation-for="@Model.CategoryId" class="text-danger"></span>
+    @if (TempData["error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <p>@TempData["error"]</p>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    else if (TempData["success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <p>@TempData["success"]</p>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <form asp-action="Create" id="submit-form" method="post" enctype="multipart/form-data">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        <div class="row">
+            <!-- Left column: Form fields -->
+            <div class="col-md-8">
+                <div class="form-group mb-3">
+                    <label asp-for="Name" class="control-label fw-bold"></label>
+                    <input asp-for="Name" class="form-control" />
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="Description" class="control-label fw-bold"></label>
+                    <input asp-for="Description" class="form-control" />
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mb-3">
+                    <label asp-for="CategoryId" class="control-label fw-bold"></label>
+                    <select asp-for="CategoryId" asp-items="Model.Categories" class="form-control">
+                        <option value="">Chọn 1 danh mục</option>
+                    </select>
+                    <span asp-validation-for="CategoryId" class="text-danger"></span>
+                </div>
+
+                <div class="form-group form-check mb-3">
+                    <input name="IsDeleted" value="true" type="checkbox" class="form-check-input" />
+                    <input name="IsDeleted" type="hidden" value="false" />
+                    <label asp-for="IsDeleted" class="form-check-label fw-bold"></label>
+                    <span asp-validation-for="IsDeleted" class="text-danger"></span>
+                </div>
             </div>
 
-            <div class="form-group">
-                <br />
-                <br />
-                <label asp-for="IsDeleted" class="control-label fw-bold"></label>
-                <input name="IsDeleted" value="true" type="checkbox" />
-                <input name="IsDeleted" type="hidden" value="false" />
-                <span asp-validation-for="IsDeleted" class="text-danger"></span>
+            <!-- Right column: Image upload + preview -->
+            <div class="col-md-4">
+                <div class="form-group mb-3">
+                    <label asp-for="ImageUrl" class="control-label fw-bold">Ảnh sản phẩm</label>
+                    <input type="file" name="Image" class="form-control" id="image-upload" />
+                    <span asp-validation-for="ImageUrl" class="text-danger"></span>
+                </div>
+
+                <div class="form-group mt-3 text-center">
+                    <img id="preview-image" class="img-thumbnail" style="max-width: 100%; max-height: 300px;" src="#" alt="Chưa chọn ảnh" />
+                </div>
             </div>
-            <div class="d-flex justify-content-end gap-3 py-3 mt-3">
-                <a asp-action="Index" class="btn btn-secondary">Back to List</a>
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
-        </form>
-    </div>
+        </div>
+
+        <div class="d-flex justify-content-end gap-3 py-3 mt-4">
+            <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+            <input type="submit" value="Create" class="btn btn-primary" />
+        </div>
+    </form>
 </div>
+
 
 @section Scripts {
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+
+    <script>
+        document.getElementById('image-upload').addEventListener('change', function (e) {
+            const [file] = e.target.files;
+            if (file) {
+                const preview = document.getElementById('preview-image');
+                preview.src = URL.createObjectURL(file);
+            }
+        });
+    </script>
 
     <script>
         const form = $("#submit-form");
