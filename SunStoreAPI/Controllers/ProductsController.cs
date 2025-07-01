@@ -1,12 +1,11 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using BusinessObjects.Models;
 using BusinessObjects;
 using SunStoreAPI.Dtos.Requests;
+using SunStoreAPI.Services;
+using BusinessObjects.ApiResponses;
+using CategoryResponseModel = SunStoreAPI.Dtos.Requests.CategoryResponseModel;
 
 namespace SunStoreAPI.Controllers
 {
@@ -15,10 +14,12 @@ namespace SunStoreAPI.Controllers
     public class ProductsController : ControllerBase
     {
         private readonly SunStoreContext _context;
+        private readonly IWebHostEnvironment _env;
 
-        public ProductsController(SunStoreContext context)
+        public ProductsController(SunStoreContext context, IWebHostEnvironment env)
         {
             _context = context;
+            _env = env;
         }
 
         // GET: api/Products
@@ -88,7 +89,7 @@ namespace SunStoreAPI.Controllers
 
             var result = new PagedResult<ProductListResponseDto>
             {
-                CurrentPage = (int) page,
+                CurrentPage = (int)page,
                 PageSize = pageSize,
                 TotalItems = totalItems,
                 Items = products.Select(p => new ProductListResponseDto
@@ -162,14 +163,65 @@ namespace SunStoreAPI.Controllers
         }
 
         // POST: api/Products
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Product>> PostProduct(Product product)
+        public async Task<IActionResult> PostProduct([FromBody] CreateProductRequestDto dto)
         {
-            _context.Products.Add(product);
-            await _context.SaveChangesAsync();
+            try
+            {
+                var newProduct = new Product
+                {
+                    CategoryId = dto.CategoryId,
+                    Description = dto.Description,
+                    IsDeleted = dto.IsDeleted,
+                    Name = dto.Name,
+                    ReleaseDate = DateOnly.FromDateTime(DateTime.Now),
+                    Image = dto.ImageUrl,
+                };
 
-            return CreatedAtAction("GetProduct", new { id = product.Id }, product);
+                await _context.Products.AddAsync(newProduct);
+                await _context.SaveChangesAsync();
+
+                return Ok(new BaseApiResponse
+                {
+                    Message = "Thành công.",
+                    IsSuccessful = true,
+                });
+            }
+
+            catch (Exception ex)
+            {
+                return BadRequest(new BaseApiResponse
+                {
+                    IsSuccessful = false,
+                    Message = ex.Message
+                });
+            }
+        }
+
+        [HttpPost("image")]
+        public async Task<IActionResult> UploadImage(IFormFile file)
+        {
+            try
+            {
+                var imageHandlerService = new ImageHandlerService(_env);
+
+                var url = await imageHandlerService.HandleImageUpload(file, "ProductImg");
+
+                return Ok(new ApiResult<string>
+                {
+                    IsSuccessful = true,
+                    Data = url,
+                });
+            }
+
+            catch (Exception ex)
+            {
+                return BadRequest(new ApiResult<string>
+                {
+                    IsSuccessful = false,
+                    Message = ex.Message
+                });
+            }
         }
 
         // DELETE: api/Products/5

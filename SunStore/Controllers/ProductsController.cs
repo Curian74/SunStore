@@ -8,16 +8,19 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using BusinessObjects.Models;
 using SunStore.APIServices;
+using SunStore.ViewModel.RequestModels;
 
 namespace SunStore.Controllers
 {
     public class ProductsController : Controller
     {
         private readonly ProductAPIService _productAPIService;
+        private readonly CategoryAPIService _categoryAPIService;
 
-        public ProductsController(ProductAPIService productAPIService)
+        public ProductsController(ProductAPIService productAPIService, CategoryAPIService categoryAPIService)
         {
             _productAPIService = productAPIService;
+            _categoryAPIService = categoryAPIService;
         }
 
         // GET: Products
@@ -60,29 +63,65 @@ namespace SunStore.Controllers
         //    return View(product);
         //}
 
-        //// GET: Products/Create
-        //public IActionResult Create()
-        //{
-        //    ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name");
-        //    return View();
-        //}
+        // GET: Products/Create
+        public async Task<IActionResult> Create()
+        {
+            var categories = await _categoryAPIService.GetAllAsync();
+
+            var vm = new CreateProductRequestViewModel
+            {
+                Categories = categories.Select(c => new SelectListItem
+                {
+                    Text = c.Name,
+                    Value = c.Id.ToString(),
+                }).ToList()
+            };
+
+            return View(vm);
+        }
 
         //// POST: Products/Create
-        //// To protect from overposting attacks, enable the specific properties you want to bind to.
-        //// For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        //[HttpPost]
-        //[ValidateAntiForgeryToken]
-        //public async Task<IActionResult> Create([Bind("Id,Name,Image,Description,ReleaseDate,CategoryId,IsDeleted")] Product product)
-        //{
-        //    //if (ModelState.IsValid)
-        //    {
-        //        _context.Add(product);
-        //        await _context.SaveChangesAsync();
-        //        return RedirectToAction(nameof(Index));
-        //    }
-        //    ViewData["CategoryId"] = new SelectList(_context.Categories, "Id", "Name", product.CategoryId);
-        //    return View(product);
-        //}
+        [HttpPost]
+        public async Task<IActionResult> Create(CreateProductRequestViewModel model, IFormFile? image)
+        {
+            if (!ModelState.IsValid)
+            {
+                return RedirectToAction(nameof(Create), model);
+            }
+
+            try
+            {
+                if (image != null)
+                {
+                    var uploadImageResult = await _productAPIService.UploadImageAsync(image);
+
+                    if (uploadImageResult!.IsSuccessful)
+                    {
+                        model.ImageUrl = uploadImageResult.Data;
+                    }
+                }
+
+                var result = await _productAPIService.CreateAsync(model);
+
+                if (result!.IsSuccessful)
+                {
+                    TempData["success"] = result.Message;
+                }
+
+                else
+                {
+                    TempData["error"] = result.Message;
+                }
+
+                return RedirectToAction(nameof(Create));
+            }
+
+            catch (Exception ex)
+            {
+                TempData["error"] = ex.Message;
+                return RedirectToAction(nameof(Create));
+            }
+        }
 
         //// GET: Products/Edit/5
         //public async Task<IActionResult> Edit(int? id)

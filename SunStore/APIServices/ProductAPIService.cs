@@ -2,7 +2,9 @@
 using BusinessObjects.ApiResponses;
 using BusinessObjects.Models;
 using SunStore.ViewModel;
+using SunStore.ViewModel.RequestModels;
 using System.Drawing.Printing;
+using System.Net.Http.Headers;
 
 namespace SunStore.APIServices
 {
@@ -35,5 +37,31 @@ namespace SunStore.APIServices
             return pagedResult ?? new PagedResult<Product>();
         }
 
+        public async Task<ApiResult<string>?> UploadImageAsync(IFormFile file)
+        {
+            using var content = new MultipartFormDataContent();
+
+            if (file != null)
+            {
+                var streamContent = new StreamContent(file.OpenReadStream());
+                streamContent.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);
+                content.Add(streamContent, "file", file.FileName);
+            }
+
+            var response = await _httpClient.PostAsync("Products/image", content);
+
+            var result = await response.Content.ReadFromJsonAsync<ApiResult<string>>();
+
+            return result;
+        }
+
+        public async Task<BaseApiResponse?> CreateAsync(CreateProductRequestViewModel model)
+        {
+            var response = await _httpClient.PostAsJsonAsync("Products", model);
+
+            var result = await response.Content.ReadFromJsonAsync<BaseApiResponse>();
+
+            return result;
+        }
     }
 }
