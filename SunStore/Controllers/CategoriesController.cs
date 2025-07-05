@@ -8,6 +8,8 @@ using Microsoft.EntityFrameworkCore;
 using BusinessObjects.Models;
 using SunStore.ViewModel.RequestModels;
 using SunStore.APIServices;
+using BusinessObjects.Constants;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SunStore.Controllers
 {
@@ -47,6 +49,7 @@ namespace SunStore.Controllers
         }
 
         // GET: Categories/Create
+        [Authorize(Roles = UserRoleConstants.Admin)]
         public IActionResult Create()
         {
             return View();
@@ -54,6 +57,7 @@ namespace SunStore.Controllers
 
         // POST: Categories/Create
         [HttpPost]
+        [Authorize(Roles = UserRoleConstants.Admin)]
         public async Task<IActionResult> Create(CreateCategoryRequestViewModel viewModel)
         {
             if (!ModelState.IsValid)

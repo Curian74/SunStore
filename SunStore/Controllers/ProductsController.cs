@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using BusinessObjects.Constants;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using SunStore.APIServices;
 using SunStore.ViewModel.RequestModels;
@@ -20,6 +22,7 @@ namespace SunStore.Controllers
         }
 
         // GET: Products
+        [Authorize(Roles = UserRoleConstants.Admin)]
         public async Task<IActionResult> Index(string? keyword, int? categoryID, string? priceRange, int? page,
             int? pageSize = 8)
         {
@@ -57,6 +60,7 @@ namespace SunStore.Controllers
         }
 
         // GET: Products/Create
+        [Authorize(Roles = UserRoleConstants.Admin)]
         public async Task<IActionResult> Create()
         {
             var categories = await _categoryAPIService.GetAllAsync();
@@ -75,6 +79,7 @@ namespace SunStore.Controllers
 
         //// POST: Products/Create
         [HttpPost]
+        [Authorize(Roles = UserRoleConstants.Admin)]
         public async Task<IActionResult> Create(CreateProductRequestViewModel model, IFormFile? image)
         {
             if (!ModelState.IsValid)
@@ -117,6 +122,7 @@ namespace SunStore.Controllers
         }
 
         //// GET: Products/Edit/5
+        [Authorize(Roles = UserRoleConstants.Admin)]
         public async Task<IActionResult> Edit(int id)
         {
             var product = await _productAPIService.GetByIdAsync(id);
@@ -142,6 +148,7 @@ namespace SunStore.Controllers
 
         //// POST: Products/Edit/5
         [HttpPost]
+        [Authorize(Roles = UserRoleConstants.Admin)]
         public async Task<IActionResult> Edit(int id, EditProductRequestViewModel model, IFormFile? image)
         {
             if (!ModelState.IsValid)

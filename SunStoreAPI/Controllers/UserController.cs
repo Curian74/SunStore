@@ -152,6 +152,7 @@ namespace SunStoreAPI.Controllers
         }
 
         [HttpPost("create")]
+        [Authorize(Roles = UserRoleConstants.Admin)]
         public async Task<IActionResult> Create(CreateUserRequestDto dto)
         {
             var emailExisted = await _context.Users
@@ -237,6 +238,7 @@ namespace SunStoreAPI.Controllers
         }
 
         [HttpPut("status/{id}")]
+        [Authorize(Roles = UserRoleConstants.Admin)]
         public async Task<IActionResult> ToggleBan(int id)
         {
             var user = await _context.Users.FirstOrDefaultAsync(x => x.Id == id);

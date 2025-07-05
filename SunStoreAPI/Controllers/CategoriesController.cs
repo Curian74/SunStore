@@ -3,6 +3,8 @@ using Microsoft.EntityFrameworkCore;
 using BusinessObjects.Models;
 using BusinessObjects.ApiResponses;
 using SunStoreAPI.Dtos.Requests;
+using Microsoft.AspNetCore.Authorization;
+using BusinessObjects.Constants;
 
 namespace SunStoreAPI.Controllers
 {
@@ -71,6 +73,7 @@ namespace SunStoreAPI.Controllers
 
         // POST: api/Categories
         [HttpPost]
+        [Authorize(Roles = UserRoleConstants.Admin)]
         public async Task<ActionResult<Category>> PostCategory(CreateCategoryRequestDto dto)
         {
             try

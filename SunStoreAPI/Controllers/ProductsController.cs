@@ -7,6 +7,8 @@ using SunStoreAPI.Services;
 using BusinessObjects.ApiResponses;
 using CategoryResponseModel = SunStoreAPI.Dtos.Requests.CategoryResponseModel;
 using Humanizer;
+using BusinessObjects.Constants;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SunStoreAPI.Controllers
 {
@@ -134,6 +136,7 @@ namespace SunStoreAPI.Controllers
 
         // PUT: api/Products/5
         [HttpPut("{productId}")]
+        [Authorize(Roles = UserRoleConstants.Admin)]
         public async Task<IActionResult> PutProduct([FromRoute] int productId, [FromBody] EditProductRequestDto dto)
         {
             try
@@ -176,6 +179,7 @@ namespace SunStoreAPI.Controllers
 
         // POST: api/Products
         [HttpPost]
+        [Authorize(Roles = UserRoleConstants.Admin)]
         public async Task<IActionResult> PostProduct([FromBody] CreateProductRequestDto dto)
         {
             try
