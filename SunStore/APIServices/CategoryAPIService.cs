@@ -1,5 +1,7 @@
-﻿using BusinessObjects.Models;
+﻿using BusinessObjects.ApiResponses;
+using BusinessObjects.Models;
 using SunStore.Extensions;
+using SunStore.ViewModel.RequestModels;
 using System.Net.Http;
 using System.Text.Json;
 
@@ -23,6 +25,15 @@ namespace SunStore.APIServices
             var categories = JsonDeserializationExtension.Deserialize<List<Category>>(result);
 
             return categories;
+        }
+
+        public async Task<BaseApiResponse?> CreateAsync(CreateCategoryRequestViewModel viewModel)
+        {
+            var response = await _httpClient.PostAsJsonAsync("Categories", viewModel);
+
+            var result = await response.Content.ReadFromJsonAsync<BaseApiResponse>();
+
+            return result;
         }
     }
 }

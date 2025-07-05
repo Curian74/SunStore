@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using BusinessObjects.Models;
+using BusinessObjects.ApiResponses;
+using SunStoreAPI.Dtos.Requests;
 
 namespace SunStoreAPI.Controllers
 {
@@ -68,14 +70,38 @@ namespace SunStoreAPI.Controllers
         }
 
         // POST: api/Categories
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Category>> PostCategory(Category category)
+        public async Task<ActionResult<Category>> PostCategory(CreateCategoryRequestDto dto)
         {
-            _context.Categories.Add(category);
-            await _context.SaveChangesAsync();
+            try
+            {
+                var existingCategory = await _context.Categories.FirstOrDefaultAsync(x => x.Name == dto.Name);
 
-            return CreatedAtAction("GetCategory", new { id = category.Id }, category);
+                if (existingCategory != null)
+                {
+                    return BadRequest(new BaseApiResponse
+                    {
+                        IsSuccessful = false,
+                        Message = "Danh mục sản phẩm này đã tồn tại."
+                    });
+                }
+
+                var category = new Category { Name = dto.Name };
+
+                await _context.Categories.AddAsync(category);
+                await _context.SaveChangesAsync();
+
+                return Ok(new BaseApiResponse
+                {
+                    IsSuccessful = true,
+                    Message = "Thành công."
+                });
+            }
+
+            catch (Exception ex)
+            {
+                return Conflict(ex.Message);
+            }
         }
 
         // DELETE: api/Categories/5
