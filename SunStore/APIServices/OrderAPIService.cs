@@ -1,4 +1,5 @@
-﻿using BusinessObjects.Models;
+﻿using BusinessObjects.ApiResponses;
+using BusinessObjects.Models;
 
 namespace SunStore.APIServices
 {
@@ -45,6 +46,14 @@ namespace SunStore.APIServices
                 var errorContent = await response.Content.ReadAsStringAsync();
                 throw new HttpRequestException($"Request failed: {errorContent}");
             }
+        }
+
+        public async Task<ApiResult<Order>?> GetOrderForShipperAssigning(int orderId, int shipperId)
+        {
+            var response = await _httpClient.GetAsync($"Orders/assigning?orderId={orderId}&shipperId={shipperId}");
+            var result = await response.Content.ReadFromJsonAsync<ApiResult<Order>>();
+
+            return result;
         }
 
     }

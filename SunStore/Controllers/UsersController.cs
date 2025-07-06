@@ -309,7 +309,7 @@ namespace SunStore.Controllers
                 {
                     HttpOnly = true,
                     Secure = true,
-                    Expires = DateTime.UtcNow.AddHours(1)
+                    Expires = DateTime.UtcNow.AddHours(5)
                 };
 
                 // Append Jwt token to the cookie.
@@ -399,6 +399,10 @@ namespace SunStore.Controllers
         public IActionResult VerifyOTP(string email)
         {
             var modelData = new OTPVerificationRequestViewModel { Email = email };
+
+            TempData["otpNotiMessage"] = "Mã OTP đã được gửi đến email của bạn." +
+                " Vui lòng kiểm tra và nhập mã để tiếp tục đặt lại mật khẩu.";
+
             return View(modelData);
         }
 

@@ -6,16 +6,22 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using BusinessObjects.Models;
+using SunStore.ViewModel.RequestModels;
+using SunStore.APIServices;
+using BusinessObjects.Constants;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SunStore.Controllers
 {
     public class CategoriesController : Controller
     {
         private readonly SunStoreContext _context;
+        private readonly CategoryAPIService _categoryAPIService;
 
-        public CategoriesController(SunStoreContext context)
+        public CategoriesController(SunStoreContext context, CategoryAPIService categoryAPIService)
         {
             _context = context;
+            _categoryAPIService = categoryAPIService;
         }
 
         // GET: Categories
@@ -43,27 +49,45 @@ namespace SunStore.Controllers
         }
 
         // GET: Categories/Create
+        [Authorize(Roles = UserRoleConstants.Admin)]
         public IActionResult Create()
         {
             return View();
         }
 
         // POST: Categories/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Name")] Category category)
+        [Authorize(Roles = UserRoleConstants.Admin)]
+        public async Task<IActionResult> Create(CreateCategoryRequestViewModel viewModel)
         {
-            if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                _context.Add(category);
-                await _context.SaveChangesAsync();
-                ViewBag.Message = "Tạo mới thành công!";
-                return View(category);
-                //return RedirectToAction(nameof(Index));
+                return View(viewModel);
             }
-            return View(category);
+
+            try
+            {
+                var result = await _categoryAPIService.CreateAsync(viewModel);
+
+                if (result!.IsSuccessful)
+                {
+                    TempData["success"] = result.Message;
+                    return RedirectToAction(nameof(Create));
+                }
+
+                else
+                {
+                    TempData["error"] = result.Message;
+                    return View(viewModel);
+                }
+
+            }
+
+            catch (Exception ex)
+            {
+                TempData["error"] = ex.Message;
+                return View(viewModel);
+            }
         }
 
         // GET: Categories/Edit/5

@@ -1,59 +1,137 @@
-﻿@model BusinessObjects.Models.Product
+﻿@model EditProductRequestViewModel
 
 @{
     ViewData["Title"] = "Edit";
 }
 
-<h1>Edit</h1>
+<div class="container">
+    <h1 class="text-center">Edit Product</h1>
 
-<h4>Product</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="Edit">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <input type="hidden" asp-for="Id" />
-            <div class="form-group">
-                <label asp-for="Name" class="control-label"></label>
-                <input asp-for="Name" class="form-control" />
-                <span asp-validation-for="Name" class="text-danger"></span>
+    @if (TempData["error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <p>@TempData["error"]</p>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    else if (TempData["success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <p>@TempData["success"]</p>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <form asp-action="Edit" id="submit-form" method="post" enctype="multipart/form-data">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        <div class="row">
+            <!-- Left Column: Form Inputs -->
+            <div class="col-md-8">
+                <div class="form-group">
+                    <label asp-for="Name" class="control-label fw-bold"></label>
+                    <input asp-for="Name" class="form-control" />
+                    <span asp-validation-for="Name" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Description" class="control-label fw-bold"></label>
+                    <input asp-for="Description" class="form-control" />
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="CategoryId" class="control-label fw-bold">Danh mục</label>
+                    <br />
+                    <select asp-for="CategoryId" asp-items="Model.Categories" class="select2">
+                    </select>
+                    <span asp-validation-for="CategoryId" class="text-danger"></span>
+                </div>
+
+                <div class="form-group form-check mt-3">
+                    <label asp-for="IsDeleted" class="form-check-label fw-bold"></label>
+                    <br />
+                    <input name="IsDeleted" checked="@(Model.IsDeleted == false)" value="true" type="checkbox" class="form-check-input" />
+                    <input name="IsDeleted" type="hidden" value="false" />
+                    <br />
+                    <span asp-validation-for="IsDeleted" class="text-danger"></span>
+                </div>
             </div>
-            <div class="form-group">
-                <label asp-for="Image" class="control-label"></label>
-                <input asp-for="Image" class="form-control" />
-                <span asp-validation-for="Image" class="text-danger"></span>
+
+            <!-- Right Column: Image Upload + Preview -->
+            <div class="col-md-4">
+                <div class="form-group mt-3 text-center">
+                    <img id="preview-image" style="max-width: 100%; max-height: 300px;" src="@Model.ImageUrl" alt="Preview" class="img-thumbnail" />
+                </div>
+                <div class="form-group">
+                    <label asp-for="ImageUrl" class="control-label fw-bold">Ảnh sản phẩm</label>
+                    <input type="file" name="Image" class="form-control" />
+                    <span asp-validation-for="ImageUrl" class="text-danger"></span>
+                </div>
+
             </div>
-            <div class="form-group">
-                <label asp-for="Description" class="control-label"></label>
-                <input asp-for="Description" class="form-control" />
-                <span asp-validation-for="Description" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="ReleaseDate" class="control-label"></label>
-                <input asp-for="ReleaseDate" class="form-control" />
-                <span asp-validation-for="ReleaseDate" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="CategoryId" class="control-label"></label>
-                <select asp-for="CategoryId" class="form-control" asp-items="ViewBag.CategoryId"></select>
-                <span asp-validation-for="CategoryId" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="IsDeleted" class="control-label"></label>
-                <input asp-for="IsDeleted" class="form-control" />
-                <span asp-validation-for="IsDeleted" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
-        </form>
-    </div>
+        </div>
+
+        <div class="d-flex justify-content-end gap-3 py-3 mt-3">
+            <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+            <input type="submit" value="Edit" class="btn btn-primary" />
+        </div>
+    </form>
 </div>
 
-<div>
-    <a asp-action="Index">Back to List</a>
-</div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        $('select.select2').each(function () {
+            if ($(this).hasClass('select2-hidden-accessible')) {
+                $(this).select2('destroy');
+            }
+
+            $(this).select2({
+                placeholder: "Chọn 1 sản phẩm",
+                allowClear: true,
+                width: '25%'
+            });
+        });
+    </script>
+
+    <script>
+        document.querySelector('input[name="Image"]').addEventListener('change', function (e) {
+            const [file] = e.target.files;
+            if (file) {
+                const preview = document.getElementById('preview-image');
+                preview.src = URL.createObjectURL(file);
+            }
+        });
+    </script>
+
+    <script>
+        const form = $("#submit-form");
+        form.on("submit", function(e) {
+            e.preventDefault();
+
+            if (!$(form).valid()) {
+                return;
+            }
+
+            Swal.fire({
+                title: "Bạn có chắc chắn muốn cập nhật sản phẩm này không?",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#3085d6",
+                cancelButtonColor: "#d33",
+                cancelButtonText: "KHÔNG",
+                confirmButtonText: "CẬP NHẬT"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.off("submit");
+                    form.submit();
+                }
+            });
+        })
+    </script>
 }

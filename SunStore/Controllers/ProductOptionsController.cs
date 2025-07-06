@@ -7,16 +7,23 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using BusinessObjects.Models;
+using SunStore.ViewModel.RequestModels;
+using SunStore.APIServices;
 
 namespace SunStore.Controllers
 {
     public class ProductOptionsController : Controller
     {
         private readonly SunStoreContext _context;
+        private readonly ProductOptionAPIService _productOptionAPIService;
+        private readonly ProductAPIService _productAPIService;
 
-        public ProductOptionsController(SunStoreContext context)
+        public ProductOptionsController(SunStoreContext context, ProductOptionAPIService productOptionAPIService, 
+            ProductAPIService productAPIService)
         {
             _context = context;
+            _productOptionAPIService = productOptionAPIService;
+            _productAPIService = productAPIService;
         }
 
         // GET: ProductOptions
@@ -51,29 +58,53 @@ namespace SunStore.Controllers
         }
 
         // GET: ProductOptions/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            ViewData["ProductId"] = new SelectList(_context.Products, "Id", "Name");
-            return View();
+            var products = await _productAPIService.FilterAsync("", null, null, null, 1000);
+
+            return View(new CreateProductOptionRequestViewModel
+            {
+                Products = products.Items.Select(p => new SelectListItem
+                {
+                    Text = p.Name,
+                    Value = p.Id.ToString(),
+                }).ToList(),
+            });
         }
 
         // POST: ProductOptions/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,Size,Quantity,Price,Rating,Discount,ProductId")] ProductOption productOption)
+        public async Task<IActionResult> Create(CreateProductOptionRequestViewModel model)
         {
-            //if (ModelState.IsValid)
+            if (!ModelState.IsValid)
             {
-                _context.Add(productOption);
-                await _context.SaveChangesAsync();
-                ViewBag.Message = "Tạo mới thành công!";
-                return View(productOption);
-                //return RedirectToAction(nameof(Index));
+                return RedirectToAction(nameof(Create), model);
             }
-            ViewData["ProductId"] = new SelectList(_context.Products, "Id", "Name", productOption.ProductId);
-            return View(productOption);
+
+            try
+            {
+
+                var result = await _productOptionAPIService.CreateAsync(model);
+
+                if (result!.IsSuccessful)
+                {
+                    TempData["success"] = result.Message;
+                }
+
+                else
+                {
+                    TempData["error"] = result.Message;
+                }
+
+                return RedirectToAction(nameof(Create));
+            }
+
+            catch (Exception ex)
+            {
+                TempData["error"] = ex.Message;
+                return RedirectToAction(nameof(Create));
+            }
         }
 
         // GET: ProductOptions/Edit/5

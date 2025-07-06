@@ -188,9 +188,12 @@ namespace SunStoreAPI.Controllers
 
                 string randomVerificationCode = VerificationCodeGenerator.GenerateCode();
 
-                string mailContent = $"<p> Sử dụng mã sau để thiết lập lại mật khẩu mới:" +
+                string mailContent =
+                    $"<p> Chúng tôi vừa nhận được yêu cầu đặt lại mật khẩu cho tài khoản <strong>" +
+                    $" {user.Username} </strong>. </p>" +
+                    $"<p> Sử dụng mã sau để thiết lập lại mật khẩu mới: " +
                     $"<strong>{randomVerificationCode}</strong>. </p>" +
-                    $"<p> <i>Lưu ý: Mã OTP sẽ hết hạn sau {OTP_EXPIRATION_MINUTES} phút. </i>";
+                    $"<p> <i>Lưu ý: Mã OTP sẽ hết hạn sau {OTP_EXPIRATION_MINUTES} phút. </i> </p>";
 
                 await _emailService.SendEmailAsync(dto.Email, "Đặt lại mật khẩu", mailContent);
 

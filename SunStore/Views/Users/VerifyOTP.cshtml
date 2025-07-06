@@ -6,6 +6,15 @@
 <div style="width: 100%; display:flex; justify-content:center" class="">
     <div class="containerr">
         <div class="head">OTP Verification</div>
+
+        @if (TempData["otpNotiMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <p>@TempData["otpNotiMessage"]</p>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
         <form method="post" asp-action="VerifyOTP" asp-controller="Users" class="form">
             <input name="Email" value="@Model.Email" class="inp mb-3" type="hidden">
             <input asp-for="@Model.Otp" class="inp mb-3" placeholder="Mã OTP">

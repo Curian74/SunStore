@@ -1,12 +1,14 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using BusinessObjects.Models;
 using BusinessObjects;
 using SunStoreAPI.Dtos.Requests;
+using SunStoreAPI.Services;
+using BusinessObjects.ApiResponses;
+using CategoryResponseModel = SunStoreAPI.Dtos.Requests.CategoryResponseModel;
+using Humanizer;
+using BusinessObjects.Constants;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SunStoreAPI.Controllers
 {
@@ -15,10 +17,12 @@ namespace SunStoreAPI.Controllers
     public class ProductsController : ControllerBase
     {
         private readonly SunStoreContext _context;
+        private readonly IWebHostEnvironment _env;
 
-        public ProductsController(SunStoreContext context)
+        public ProductsController(SunStoreContext context, IWebHostEnvironment env)
         {
             _context = context;
+            _env = env;
         }
 
         // GET: api/Products
@@ -88,7 +92,7 @@ namespace SunStoreAPI.Controllers
 
             var result = new PagedResult<ProductListResponseDto>
             {
-                CurrentPage = (int) page,
+                CurrentPage = (int)page,
                 PageSize = pageSize,
                 TotalItems = totalItems,
                 Items = products.Select(p => new ProductListResponseDto
@@ -97,6 +101,8 @@ namespace SunStoreAPI.Controllers
                     Name = p.Name,
                     Description = p.Description,
                     Image = p.Image,
+                    ReleaseDate = p.ReleaseDate,
+                    IsDeleted = p.IsDeleted,
                     Category = p.Category == null ? null : new CategoryResponseModel
                     {
                         Id = p.Category.Id,
@@ -129,45 +135,129 @@ namespace SunStoreAPI.Controllers
         }
 
         // PUT: api/Products/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutProduct(int id, Product product)
+        [HttpPut("{productId}")]
+        [Authorize(Roles = UserRoleConstants.Admin)]
+        public async Task<IActionResult> PutProduct([FromRoute] int productId, [FromBody] EditProductRequestDto dto)
         {
-            if (id != product.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(product).State = EntityState.Modified;
-
             try
             {
+                var product = await _context.Products.FirstOrDefaultAsync(p => p.Id == productId);
+
+                if (product == null)
+                {
+                    return NotFound(new BaseApiResponse
+                    {
+                        IsSuccessful = false,
+                        Message = "Không tìm thấy sản phẩm."
+                    });
+                }
+
+                product.CategoryId = dto.CategoryId;
+                product.Description = dto.Description;
+                product.IsDeleted = !dto.IsDeleted;
+                product.Name = dto.Name;
+                product.Image = dto.ImageUrl == null ? product.Image : dto.ImageUrl;
+
                 await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!ProductExists(id))
+
+                return Ok(new BaseApiResponse
                 {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                    Message = "Thành công.",
+                    IsSuccessful = true,
+                });
             }
 
-            return NoContent();
+            catch (Exception ex)
+            {
+                return BadRequest(new BaseApiResponse
+                {
+                    IsSuccessful = false,
+                    Message = ex.Message
+                });
+            }
         }
 
         // POST: api/Products
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Product>> PostProduct(Product product)
+        [Authorize(Roles = UserRoleConstants.Admin)]
+        public async Task<IActionResult> PostProduct([FromBody] CreateProductRequestDto dto)
         {
-            _context.Products.Add(product);
+            try
+            {
+                var newProduct = new Product
+                {
+                    CategoryId = dto.CategoryId,
+                    Description = dto.Description,
+                    IsDeleted = !dto.IsDeleted,
+                    Name = dto.Name,
+                    ReleaseDate = DateOnly.FromDateTime(DateTime.Now),
+                    Image = dto.ImageUrl,
+                };
+
+                await _context.Products.AddAsync(newProduct);
+                await _context.SaveChangesAsync();
+
+                return Ok(new BaseApiResponse
+                {
+                    Message = "Thành công.",
+                    IsSuccessful = true,
+                });
+            }
+
+            catch (Exception ex)
+            {
+                return BadRequest(new BaseApiResponse
+                {
+                    IsSuccessful = false,
+                    Message = ex.Message
+                });
+            }
+        }
+
+        [HttpPost("image")]
+        public async Task<IActionResult> UploadImage(IFormFile file)
+        {
+            try
+            {
+                var imageHandlerService = new ImageHandlerService(_env);
+
+                var url = await imageHandlerService.HandleImageUpload(file, "ProductImg");
+
+                return Ok(new ApiResult<string>
+                {
+                    IsSuccessful = true,
+                    Data = url,
+                });
+            }
+
+            catch (Exception ex)
+            {
+                return BadRequest(new ApiResult<string>
+                {
+                    IsSuccessful = false,
+                    Message = ex.Message
+                });
+            }
+        }
+
+        [HttpPut("status/{productId}")]
+        public async Task<IActionResult> ToggleStatus(int productId)
+        {
+            var product = await _context.Products.FindAsync(productId);
+
+            if (product == null)
+            {
+                return NotFound();
+            }
+
+            product.IsDeleted = !product.IsDeleted;
+
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetProduct", new { id = product.Id }, product);
+            return Ok(new BaseApiResponse
+            {
+                IsSuccessful = true,
+            });
         }
 
         // DELETE: api/Products/5

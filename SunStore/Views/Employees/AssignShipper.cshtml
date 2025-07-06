@@ -52,13 +52,13 @@
             Swal.fire({
                 title: 'Chọn Shipper',
                 html: `
-                                <select id="shipperSelect" class="swal2-input">
-                                    <option value="">Chọn shipper</option>
-    @foreach (var shipper in ViewBag.Shippers)
-    {
-                                            <option value="@shipper.Id">@shipper.FullName</option>
-    }
-                                </select>
+                <select id="shipperSelect" class="swal2-input">
+                    <option value="">Chọn shipper</option>
+                        @foreach (var shipper in ViewBag.Shippers)
+                        {
+                                        <option value="@shipper.Id">@shipper.FullName</option>
+                        }
+                </select>                
                             `,
                 focusConfirm: false,
                 preConfirm: () => {
@@ -73,20 +73,19 @@
                     var orderId = result.value.orderId;
 
                     $.ajax({
-                        url: '@Url.Action("Assign", "Employees")',
+                        url: `https://localhost:7270/api/Orders/assign?orderId=${orderId}&shipperId=${selectedShipperId}`,
                         type: 'POST',
                         data: {
                             orderId: orderId,
                             shipperId: selectedShipperId
                         },
+                        xhrFields: {
+                            withCredentials: true
+                        },
                         success: function (response) {
-                            if (response.success) {
-                                Swal.fire('Thành công!', 'Shipper đã được gán.', 'success').then(() => {
-                                    location.reload();
-                                });
-                            } else {
-                                Swal.fire('Lỗi!', 'Không thể gán shipper.', 'error');
-                            }
+                            Swal.fire('Thành công!', 'Shipper đã được gán.', 'success').then(() => {
+                                location.reload();
+                            });
                         },
                         error: function (error) {
                             Swal.fire('Lỗi!', 'Có lỗi xảy ra.', 'error');
@@ -97,5 +96,3 @@
         });
     });
 </script>
-
-
