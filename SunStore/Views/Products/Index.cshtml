@@ -74,7 +74,9 @@
                                 @Html.DisplayFor(modelItem => item.Name)
                             </td>
                             <td style="width:10%;">
-                                <img style="width:100%;" src="@item.Image" />
+                                <img style="width:100%;" src="@(item.Image != null
+                                    ? item.Image
+                                    : Url.Content("~/ProductImg/default.jpg"))" />
                             </td>
                             <td>
                                 @Html.DisplayFor(modelItem => item.Description)

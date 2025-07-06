@@ -32,20 +32,20 @@ namespace SunStore.Controllers
         }
 
         // GET: Products/Details/5
-        public async Task<IActionResult> Details(int id)
+        public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
             {
                 return NotFound();
             }
 
-            var product = await _productAPIService.GetByIdAsync(id);
+            var product = await _productAPIService.GetByIdAsync((int)id);
 
             if (product == null)
             {
                 return NotFound();
             }
-            var productOption = await _optionAPIService.GetDetail(id);
+            var productOption = await _optionAPIService.GetDetail((int)id);
             if (productOption == null)
             {
                 return NotFound();

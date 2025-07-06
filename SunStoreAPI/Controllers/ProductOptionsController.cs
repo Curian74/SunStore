@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using BusinessObjects.Models;
 using BusinessObjects.ApiResponses;
+using SunStoreAPI.Dtos.Requests;
 
 namespace SunStoreAPI.Controllers
 {
@@ -49,7 +45,7 @@ namespace SunStoreAPI.Controllers
                 ProductImage = product.Image,
                 ProductDescription = product.Description,
                 ReleaseDate = product.ReleaseDate,
-                Category = new CategoryResponseModel
+                Category = new BusinessObjects.ApiResponses.CategoryResponseModel
                 {
                     Id = product.Category.Id,
                     Name = product.Category.Name
@@ -122,14 +118,38 @@ namespace SunStoreAPI.Controllers
         }
 
         // POST: api/ProductOptions
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<ProductOption>> PostProductOption(ProductOption productOption)
+        public async Task<IActionResult> PostProductOption(CreateProductOptionRequestDto dto)
         {
-            _context.ProductOptions.Add(productOption);
+            var existingOption = await _context.ProductOptions
+                .FirstOrDefaultAsync(opt => opt.ProductId == dto.ProductId
+                && opt.Size == dto.Size);
+
+            if (existingOption != null)
+            {
+                return BadRequest(new BaseApiResponse
+                {
+                    IsSuccessful = false,
+                    Message = "Sản phẩm hiện tại đã có size này. Vui lòng điền size khác!"
+                });
+            }
+
+            var newOption = new ProductOption
+            {
+                ProductId = dto.ProductId,
+                Size = dto.Size,
+                Price = dto.Price,
+                Quantity = dto.Quantity,
+            };
+
+            await _context.ProductOptions.AddAsync(newOption);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction("GetProductOption", new { id = productOption.Id }, productOption);
+            return Ok(new BaseApiResponse
+            {
+                IsSuccessful = true,
+                Message = "Thành công."
+            });
         }
 
         // DELETE: api/ProductOptions/5

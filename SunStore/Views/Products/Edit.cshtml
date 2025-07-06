@@ -41,17 +41,14 @@
                 </div>
 
                 <div class="form-group">
-                    <label asp-for="CategoryId" class="control-label fw-bold"></label>
+                    <label asp-for="CategoryId" class="control-label fw-bold">Danh mục</label>
                     <br />
-                    <select asp-for="CategoryId" asp-items="Model.Categories" class="form-control">
-                        <option value="">Chọn 1 danh mục</option>
+                    <select asp-for="CategoryId" asp-items="Model.Categories" class="select2">
                     </select>
                     <span asp-validation-for="CategoryId" class="text-danger"></span>
                 </div>
 
                 <div class="form-group form-check mt-3">
-                    <br />
-                    <br />
                     <label asp-for="IsDeleted" class="form-check-label fw-bold"></label>
                     <br />
                     <input name="IsDeleted" checked="@(Model.IsDeleted == false)" value="true" type="checkbox" class="form-check-input" />
@@ -87,6 +84,20 @@
     @{
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
+
+    <script>
+        $('select.select2').each(function () {
+            if ($(this).hasClass('select2-hidden-accessible')) {
+                $(this).select2('destroy');
+            }
+
+            $(this).select2({
+                placeholder: "Chọn 1 sản phẩm",
+                allowClear: true,
+                width: '25%'
+            });
+        });
+    </script>
 
     <script>
         document.querySelector('input[name="Image"]').addEventListener('change', function (e) {

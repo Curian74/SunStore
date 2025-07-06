@@ -18,6 +18,7 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/SunStore.styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/all.css" asp-append-version="true" />
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <!-- Bootstrap CSS -->
     <link rel="stylesheet" href="/css/bootstrap.min.css">
     <!-- font awesome CSS -->
@@ -183,6 +184,7 @@
 
     <!-- jquery plugins here-->
     <script src="/js/jquery-1.12.1.min.js"></script>
+    @* <script src="~/lib/jquery/dist/jquery.min.js"></script> *@
     <!-- easing js -->
     <script src="/js/jquery.magnific-popup.js"></script>
     <!-- swiper js -->
@@ -202,8 +204,7 @@
     <script src="/js/mail-script.js"></script>
     <!-- custom js -->
     <script src="/js/custom.js"></script>
-
-    @* <script src="~/lib/jquery/dist/jquery.min.js"></script> *@
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)

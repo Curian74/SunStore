@@ -1,6 +1,7 @@
 ﻿using BusinessObjects.Models;
 using BusinessObjects;
 using BusinessObjects.ApiResponses;
+using SunStore.ViewModel.RequestModels;
 
 namespace SunStore.APIServices
 {
@@ -27,6 +28,15 @@ namespace SunStore.APIServices
 
             var result = await _httpClient.GetFromJsonAsync<ProductDetailResponse>(url);
             return result ?? new ProductDetailResponse();
+        }
+
+        public async Task<BaseApiResponse?> CreateAsync(CreateProductOptionRequestViewModel model)
+        {
+            var response = await _httpClient.PostAsJsonAsync("ProductOptions", model);
+
+            var result = await response.Content.ReadFromJsonAsync<BaseApiResponse>();
+
+            return result;
         }
     }
 }
