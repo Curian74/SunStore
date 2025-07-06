@@ -1,8 +1,7 @@
-﻿@model IEnumerable<BusinessObjects.Models.OrderItem>
+﻿@model BillDetailResponse
 @inject IHttpContextAccessor HttpContextAccessor
 @{
-    var userId = HttpContextAccessor.HttpContext!.Session.GetString("UserId");
-    var userRole = HttpContextAccessor.HttpContext.Session.GetString("UserRole");
+    var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value.ToString();
 }
 
 @{
@@ -14,11 +13,11 @@
     <div class="container">
         <div class="row">
             <div class="col-lg-12" style="margin:40px 0;">
-                @if(userRole == "1")
+                @if (User.IsInRole(UserRoleConstants.Admin))
                 {
                     <a asp-controller="Orders" asp-action="Index" class="btn_3">Trở lại</a>
                 }
-                else if(userRole == "3")
+                else if (User.IsInRole(UserRoleConstants.Shipper))
                 {
                     <a asp-controller="Employees" asp-action="Order" class="btn_3">Trở lại</a>
                 }
@@ -28,23 +27,23 @@
                     <h4 style="font-family:Arial;font-weight:bold;">Thông tin giao hàng</h4>
                     <ul>
                         <li style="padding-left: 40%;">
-                            <p>Tên khách hàng</p><span>: @ViewBag.FullName</span>
+                            <p>Tên khách hàng</p><span>: @Model.CustomerName</span>
                         </li>
                         <li style="padding-left: 40%;">
-                            <p>Địa chỉ</p><span>: @ViewBag.Address</span>
+                            <p>Địa chỉ</p><span>: @Model.Address</span>
                         </li>
                         <li style="padding-left: 40%;">
-                            <p>Số điện thoại</p><span>: @ViewBag.Phone</span>
+                            <p>Số điện thoại</p><span>: @Model.Phone</span>
                         </li>
                         <li style="padding-left: 40%;">
-                            <p>Phương thức thanh toán</p><span>: @ViewBag.Payment</span>
+                            <p>Phương thức thanh toán</p><span>: @Model.Payment</span>
                         </li>
-                        @if (@ViewBag.Note != null)
+                        @if (@Model.Note != null)
                         {
                             <li style="padding-left: 40%;margin-top:20px;">
                                 <p>Lưu ý khi ship</p>
                             </li>
-                            <p style="padding-top:20px;width:75%;">@ViewBag.Note</p>
+                            <p style="padding-top:20px;width:75%;">@Model.Note</p>
                         }
 
                     </ul>
@@ -57,22 +56,22 @@
                         <div style="width:100%;display:flex;justify-content:center;margin-bottom:30px;">
                             <p style="color:white; background-color:red; font-weight:bold; padding: 10px auto; font-size:17px;
                                       border:none; border-radius:4px;text-align:center; width:55%;">
-                                @ViewBag.Status
+                                @Model.Status
                             </p>
                         </div>
                     </div>
 
                     <ul>
-                        @if (ViewBag.Voucher != "Không có")
+                        @if (Model.VoucherCode != "Không có")
                         {
                             <li style="padding-left: 40%;">
-                                <p>Voucher</p><span>: @ViewBag.Voucher</span>
+                                <p>Voucher</p><span>: @Model.VoucherCode</span>
                             </li>
                         }
-                        @if (ViewBag.Shipper != "Chưa có")
+                        @if (Model.Shipper != "Chưa có")
                         {
                             <li style="padding-left: 40%;">
-                                <p>Shipper</p><span>: @ViewBag.Shipper</span>
+                                <p>Shipper</p><span>: @Model.Shipper</span>
                             </li>
                         }
 
@@ -99,28 +98,14 @@
                             @{
                                 double? subtotal = 0;
                             }
-                            @foreach (var item in Model)
+                            @foreach (var item in Model.Items)
                             {
-                                string productName = "";
-                                string productImg = "";
-                                @foreach (var product in (IEnumerable<BusinessObjects.Models.Product>)ViewData["Product"])
-                                {
-                                    if (product != null && product.Id == item.ProductOption.ProductId)
-                                    {
-                                        productName = product.Name;
-                                        productImg = product.Image;
-                                        break;
-                                    }
-                                }
-                                var total = item.Price;
-                                subtotal += total;
-
                                 <tr>
-                                    <th colspan="2"><span>@productName (Size: @item.ProductOption.Size)</span></th>
+                                    <th colspan="2"><span>@item.ProductOptionName (Size: @item.ProductOptionSize)</span></th>
                                     <th>x @item.Quantity</th>
-                                    <th> <span>@($"{total:N0}đ")</span></th>
+                                    <th> <span>@($"{item.Price:N0}đ")</span></th>
                                 </tr>
-
+                                subtotal += item.Price;
                             }
 
 
@@ -137,14 +122,14 @@
                                 subtotal += 20000;
                             }
 
-                            @if (ViewBag.VoucherPercent != 0)
+                            @if (Model.VoucherPercent != 0)
                             {
-                                int vch = ViewBag.VoucherPercent;
+                                int vch = Model.VoucherPercent;
                                 var dis = subtotal * vch / 100;
                                 subtotal -= dis;
                                 <tr>
                                     <th colspan="3">Voucher</th>
-                                    <th><span>- (@vch %) @($"{dis:N0}đ")</span></th>
+                                    <th><span>- (@Model.VoucherPercent %) @($"{dis:N0}đ")</span></th>
                                 </tr>
                             }
 
@@ -153,7 +138,7 @@
                         <tfoot>
                             <tr>
                                 <th scope="col" colspan="3">Tổng cộng</th>
-                                <th scope="col">@($"{subtotal:N0}đ")</th>
+                                <th scope="col">@($"{Model.Order.TotalPrice:N0}đ")</th>
                             </tr>
                         </tfoot>
                     </table>
@@ -162,78 +147,3 @@
         </div>
     </div>
 </section>
-
-@*
-<h1>Details</h1>
-
-<div>
-    <h4>Order</h4>
-    <hr />
-    <dl class="row">
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.DateTime)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.DateTime)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.AdrDelivery)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.AdrDelivery)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.PhoneNumber)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.PhoneNumber)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Note)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Note)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.TotalPrice)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.TotalPrice)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Payment)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Payment)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Status)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Status)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.DenyReason)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.DenyReason)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Shipper)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Shipper.UserId)
-        </dd>
-        <dt class = "col-sm-2">
-            @Html.DisplayNameFor(model => model.Voucher)
-        </dt>
-        <dd class = "col-sm-10">
-            @Html.DisplayFor(model => model.Voucher.VoucherId)
-        </dd>
-    </dl>
-</div>
-<div>
-    <a asp-action="Edit" asp-route-id="@Model?.Id">Edit</a> |
-    <a asp-action="Index">Back to List</a>
-</div>
-*@
