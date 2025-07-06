@@ -240,6 +240,26 @@ namespace SunStoreAPI.Controllers
             }
         }
 
+        [HttpPut("status/{productId}")]
+        public async Task<IActionResult> ToggleStatus(int productId)
+        {
+            var product = await _context.Products.FindAsync(productId);
+
+            if (product == null)
+            {
+                return NotFound();
+            }
+
+            product.IsDeleted = !product.IsDeleted;
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new BaseApiResponse
+            {
+                IsSuccessful = true,
+            });
+        }
+
         // DELETE: api/Products/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteProduct(int id)

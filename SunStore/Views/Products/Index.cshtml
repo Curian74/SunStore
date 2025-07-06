@@ -102,9 +102,12 @@
                             </td>
                             <td>
                                 <div class="d-flex gap-3">
-                                    <a class="genric-btn warning radius" asp-action="Edit" asp-route-id="@item.Id">Edit</a>
-                                    @* <a class="genric-btn primary radius" asp-action="Details" asp-route-id="@item.Id">Details</a> *@
-                                    <a class="genric-btn danger radius toggle-status-btn" asp-action="Delete" asp-route-id="@item.Id">Delete</a>
+                                    <a class="btn btn-primary radius" asp-action="Edit" asp-route-id="@item.Id">Edit</a>
+                                    @* <a class="btn btn-success primary radius" asp-action="ProductDetail" asp-controller="Home" asp-route-id="@item.Id">Details</a> *@
+                                    <a class="btn radius text-white toggle-status-btn @(item.IsDeleted.Value ? "btn-success" : "btn-danger")"
+                                       data-id="@item.Id">
+                                        @(item.IsDeleted.Value ? "Restore" : "Delete")
+                                    </a>
                                 </div>
                             </td>
                         </tr>
@@ -135,13 +138,60 @@
         </nav>
     </div>
 </div>
+
 @section Scripts {
     <script>
-        $(document).ready(function() {
-            $(".toggle-status-btn").on("click", () => {
+        $(document).ready(function () {
+            $(".toggle-status-btn").on("click", function (e) {
+                e.preventDefault();
                 const button = $(this);
-                alert("Adixicala")
-            })
-        })
+                const productId = button.data("id");
+
+                const statusIcon = $(`.status-icon-${productId}`);
+                const isDeleted = statusIcon.hasClass("text-danger");
+
+                Swal.fire({
+                    title: `Bạn có muốn ${isDeleted ? "khôi phục" : "xóa"} sản phẩm này không?`,
+                    icon: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#3085d6",
+                    cancelButtonColor: "#d33",
+                    confirmButtonText: isDeleted ? "Khôi phục" : "Xóa"
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        toggleProductStatus(productId, button, isDeleted);
+                    }
+                });
+            });
+
+            function toggleProductStatus(productId, button, isDeleted) {
+                const statusIcon = $(`.status-icon-${productId}`);
+                $.ajax({
+                    type: "PUT",
+                    url: `https://localhost:7270/api/Products/status/${productId}`,
+                    xhrFields: {
+                        withCredentials: true
+                    },
+                    success: function (response) {
+                        if (response.isSuccessful) {
+                            if (isDeleted) {
+                                button.removeClass('btn-success').addClass('btn-danger').text("Delete");
+                                statusIcon
+                                    .removeClass("fa-rectangle-xmark text-danger")
+                                    .addClass("fa-square-check text-success");
+                            } else {
+                                button.removeClass('btn-danger').addClass('btn-success').text("Restore");
+                                statusIcon
+                                    .removeClass("fa-square-check text-success")
+                                    .addClass("fa-rectangle-xmark text-danger");
+                            }
+                        }
+                    },
+                    error: function () {
+                        alert("Failed");
+                    }
+                });
+            }
+        });
     </script>
 }
