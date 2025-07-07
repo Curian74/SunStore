@@ -1,5 +1,6 @@
-using BusinessObjects.Models;
+﻿using BusinessObjects.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using SunStoreAPI.Configs;
@@ -67,7 +68,26 @@ builder.Services.AddAuthentication(options =>
             return Task.CompletedTask;
         }
     };
-});
+})
+.AddGoogle("Google", googleOptions =>
+{
+    googleOptions.ClientId = builder.Configuration["Google:ClientId"]!;
+    googleOptions.ClientSecret = builder.Configuration["Google:ClientSecret"]!;
+    googleOptions.CallbackPath = "/api/Auth/signin-google";
+    googleOptions.SignInScheme = "Cookies";
+
+    googleOptions.Events = new OAuthEvents
+    {
+        OnAccessDenied = context =>
+        {
+            // Redirect to login page if user cancels the login process.
+            context.Response.Redirect("https://localhost:7127/Users/Login");
+            context.HandleResponse();
+            return Task.CompletedTask;
+        },
+    };
+})
+.AddCookie("Cookies");
 
 #endregion
 
@@ -105,6 +125,8 @@ app.UseCors(MyAllowSpecificOrigins);
 app.UseStaticFiles();
 
 app.UseHttpsRedirection();
+
+app.UseRouting();
 
 app.UseAuthentication();
 

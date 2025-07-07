@@ -16,15 +16,16 @@ CREATE TABLE Users (
 	ID INT IDENTITY(1,1) PRIMARY KEY,
 	FullName NVARCHAR(100) NOT NULL,
 	Username NVARCHAR(100) NOT NULL,
-	Password NVARCHAR(100) NOT NULL,
+	Password NVARCHAR(100) NULL,
 	Address NVARCHAR(200),
-	BirthDate Date NOT NULL,
+	BirthDate Date NULL,
 	Email NVARCHAR(100),
-    PhoneNumber NVARCHAR(11) NOT NULL,
+    PhoneNumber NVARCHAR(11) NULL,
 	Role INT NOT NULL,
 	VertificationCode NVARCHAR(200),
-	IsBanned INT
-)
+	IsBanned INT,
+	LoginProvider NVARCHAR(50) NULL,
+)	
 GO
 
 CREATE TABLE Employee (

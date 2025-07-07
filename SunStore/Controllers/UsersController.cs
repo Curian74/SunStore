@@ -301,7 +301,7 @@ namespace SunStore.Controllers
 
                 if (result.IsSuccessful == false)
                 {
-                    ViewBag.Error = result.ErrorMessage;
+                    TempData["Error"] = result.ErrorMessage;
                     return View();
                 }
 
@@ -339,7 +339,7 @@ namespace SunStore.Controllers
 
             catch (HttpRequestException ex)
             {
-                ViewBag.Error = ex.Message;
+                TempData["Error"] = ex.Message;
                 return View();
             }
         }
@@ -493,6 +493,29 @@ namespace SunStore.Controllers
                 ModelState.AddModelError("error", e.Message);
                 return View(model);
             }
+        }
+
+        [HttpGet]
+        public IActionResult GoogleLoginSuccess(string token)
+        {
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                Expires = DateTime.UtcNow.AddHours(5)
+            };
+
+            // Append Jwt token to the cookie.
+            Response.Cookies.Append(JWT_COOKIE_NAME, token, cookieOptions);
+
+            return RedirectToAction("Index", "Home");
+        }
+
+        [HttpGet]
+        public IActionResult GoogleLoginFailed(string message)
+        {
+            TempData["Error"] = message;
+            return RedirectToAction(nameof(Login));
         }
     }
 }
