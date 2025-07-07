@@ -11,21 +11,23 @@ public partial class User
 
     public string Username { get; set; } = null!;
 
-    public string Password { get; set; } = null!;
+    public string? Password { get; set; }
 
     public string? Address { get; set; }
 
-    public DateOnly BirthDate { get; set; }
+    public DateOnly? BirthDate { get; set; }
 
     public string? Email { get; set; }
 
-    public string PhoneNumber { get; set; } = null!;
+    public string? PhoneNumber { get; set; }
 
     public int Role { get; set; }
 
     public string? VertificationCode { get; set; }
 
     public int? IsBanned { get; set; }
+
+    public string? LoginProvider { get; set; }
 
     public virtual Customer? Customer { get; set; }
 

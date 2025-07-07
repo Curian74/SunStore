@@ -1,4 +1,4 @@
-using BusinessObjects.Models;
+﻿using BusinessObjects.Models;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -67,7 +67,15 @@ builder.Services.AddAuthentication(options =>
             return Task.CompletedTask;
         }
     };
-});
+})
+.AddGoogle("Google", googleOptions =>
+{
+    googleOptions.ClientId = builder.Configuration["Google:ClientId"]!;
+    googleOptions.ClientSecret = builder.Configuration["Google:ClientSecret"]!;
+    googleOptions.CallbackPath = "/api/Auth/signin-google";
+    googleOptions.SignInScheme = "Cookies";
+})
+.AddCookie("Cookies");
 
 #endregion
 
@@ -105,6 +113,8 @@ app.UseCors(MyAllowSpecificOrigins);
 app.UseStaticFiles();
 
 app.UseHttpsRedirection();
+
+app.UseRouting();
 
 app.UseAuthentication();
 

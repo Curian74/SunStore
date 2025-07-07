@@ -1,10 +1,10 @@
 ﻿using BusinessObjects.ApiResponses;
 using BusinessObjects.Constants;
 using BusinessObjects.Models;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
 using SunStoreAPI.Dtos;
 using SunStoreAPI.Dtos.Requests;
 using SunStoreAPI.Dtos.User;
@@ -79,7 +79,7 @@ namespace SunStoreAPI.Controllers
                 HttpOnly = true,
                 Secure = true,
                 SameSite = SameSiteMode.Strict,
-                Expires = DateTime.UtcNow.AddHours(1)
+                Expires = DateTime.UtcNow.AddHours(5)
             };
 
             Response.Cookies.Append(JWT_COOKIE_NAME, jwtToken, cookieOptions);
@@ -329,7 +329,96 @@ namespace SunStoreAPI.Controllers
                 IsSuccessful = true,
                 Data = userDto
             });
+        }
 
+        [HttpGet("google-login")]
+        public IActionResult GoogleLogin()
+        {
+            var properties = new AuthenticationProperties
+            {
+                RedirectUri = Url.Action("GoogleCallback", "Auth")
+            };
+            return Challenge(properties, "Google");
+        }
+
+        [HttpGet("GoogleCallback")]
+        public async Task<IActionResult> GoogleCallback()
+        {
+
+            var authenticateResult = await HttpContext.AuthenticateAsync("Cookies");
+
+            if (!authenticateResult.Succeeded)
+            {
+                return Unauthorized();
+            }
+
+            var email = authenticateResult.Principal.FindFirst(ClaimTypes.Email)?.Value;
+            var name = authenticateResult.Principal.FindFirst(ClaimTypes.Name)?.Value;
+            var givenName = authenticateResult.Principal.FindFirst(ClaimTypes.GivenName)?.Value;
+
+            if (email == null)
+            {
+                return BadRequest("No email received from Google.");
+            }
+
+            // Automatically bind the user account to the Google account,
+            // or create new user.
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+
+            if (user == null)
+            {
+                user = new User
+                {
+                    Email = email,
+                    Password = null,
+                    FullName = givenName!,
+                    Username = name!,
+                    PhoneNumber = null,
+                    BirthDate = null,
+                    LoginProvider = LoginProviderConstant.GoogleLogin,
+                    Role = int.Parse(UserRoleConstants.Customer),
+                    IsBanned = 0,
+                };
+
+                await _context.Users.AddAsync(user);
+                await _context.SaveChangesAsync();
+
+                var customer = new Customer
+                {
+                    UserId = user.Id,
+                    Ranking = "Đồng",
+                };
+                await _context.Customers.AddAsync(customer);
+            }
+
+            else
+            {
+                if (user.IsBanned == 1)
+                {
+                    var errorMessage = "Tài khoản của bạn đã bị chặn!";
+                    var url = $"https://localhost:7127/Users/GoogleLoginFailed?message={Uri.EscapeDataString(errorMessage)}";
+                    return Redirect(url);
+                }
+
+                user.LoginProvider = LoginProviderConstant.GoogleLogin;
+            }
+
+            await _context.SaveChangesAsync();
+
+            var jwtToken = _jwtTokenProvider.CreateToken(user);
+
+            var cookieOptions = new CookieOptions
+            {
+                HttpOnly = true,
+                Secure = true,
+                SameSite = SameSiteMode.Strict,
+                Expires = DateTime.UtcNow.AddHours(5)
+            };
+
+            Response.Cookies.Append(JWT_COOKIE_NAME, jwtToken, cookieOptions);
+
+            var redirectUrl = $"https://localhost:7127/Users/GoogleLoginSuccess?token={Uri.EscapeDataString(jwtToken)}";
+            return Redirect(redirectUrl);
         }
     }
 }

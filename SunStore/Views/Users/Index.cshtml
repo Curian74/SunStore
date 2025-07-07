@@ -9,131 +9,131 @@
 
 <main class="d-flex justify-content-center">
     <section>
-    <h1 style="text-align:center; font-family:Arial;font-weight:bolder">Quản lí tài khoản</h1>
+        <h1 style="text-align:center; font-family:Arial;font-weight:bolder">Quản lí tài khoản</h1>
 
-    <p>
-        <a class="genric-btn info radius" asp-action="Create">Tạo mới</a>
-    </p>
-    <table class="table table-hover mt-2">
-        <thead class="bg-info">
-            <tr>
-                <th>
-                    Id
-                </th>
-                <th>
-                    Full name
-                </th>
-                <th>
-                    Address
-                </th>
-                <th>
-                    BirthDate
-                </th>
-                <th>
-                    Email
-                </th>
-                <th>
-                    PhoneNumber
-                </th>
-                <th>
-                    Role
-                </th>
-                <th>
-                    IsActive
-                </th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model.Items)
-            {
+        <p>
+            <a class="genric-btn info radius" asp-action="Create">Tạo mới</a>
+        </p>
+        <table class="table table-hover mt-2">
+            <thead class="bg-info">
                 <tr>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Id)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.FullName)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Address)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.BirthDate)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.Email)
-                    </td>
-                    <td>
-                        @Html.DisplayFor(modelItem => item.PhoneNumber)
-                    </td>
-                    <td>
-                        @switch (item.Role)
-                        {
-                            case 1:
-                                @: Admin
-                                break;
-                            case 2:
-                                @: Customer
-                                break;
-                            case 3:
-                                @: Shipper
-                                break;
-                        }
-                    </td>
-                    <td>
-                        @if (item.IsBanned == 0)
-                        {
-                            <i class="fa-solid fa-square-check text-success fs-5 status-icon-@item.Id"></i>
-                        }
-                        else
-                        {
-                            <i class="fa-solid fa-rectangle-xmark text-danger fs-5 status-icon-@item.Id"></i>
-                        }
-                    </td>
-
-                    <td>
-                        @* Prevent doing actions on the current logged in account. *@
-                        @if (item.Id != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value))
-                        {
-                            <a class="btn btn-primary radius" asp-action="Edit" asp-route-id="@item.Id">Edit</a>
-                            
-                            <a class="btn radius text-white toggle-ban-btn @(item.IsBanned == 0 ? "btn-danger" : "btn-success")"
-                                data-user-id="@item.Id">
-                                @(item.IsBanned == 0 ? "Ban" : "Unban")
-                            </a>
-                        }
-                        else
-                        {
-                            <span class="text-muted fst-italic">Tài khoản của bạn</span>
-                        }
-                    </td>
-
+                    <th>
+                        Id
+                    </th>
+                    <th>
+                        Full name
+                    </th>
+                    <th>
+                        Address
+                    </th>
+                    <th>
+                        BirthDate
+                    </th>
+                    <th>
+                        Email
+                    </th>
+                    <th>
+                        PhoneNumber
+                    </th>
+                    <th>
+                        Role
+                    </th>
+                    <th>
+                        IsActive
+                    </th>
+                    <th></th>
                 </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.Items)
+                {
+                    <tr>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Id)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.FullName)
+                        </td>
+                        <td>
+                            @(item.Address == null ? "Không có" : item.Address)
+                        </td>
+                        <td>
+                            @(item.BirthDate == null ? "Không có" : item.BirthDate)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.Email)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.PhoneNumber)
+                        </td>
+                        <td>
+                            @switch (item.Role)
+                            {
+                                case 1:
+                                    @: Admin
+                                    break;
+                                case 2:
+                                    @: Customer
+                                    break;
+                                case 3:
+                                    @: Shipper
+                                    break;
+                            }
+                        </td>
+                        <td>
+                            @if (item.IsBanned == 0)
+                            {
+                                <i class="fa-solid fa-square-check text-success fs-5 status-icon-@item.Id"></i>
+                            }
+                            else
+                            {
+                                <i class="fa-solid fa-rectangle-xmark text-danger fs-5 status-icon-@item.Id"></i>
+                            }
+                        </td>
+
+                        <td>
+                            @* Prevent doing actions on the current logged in account. *@
+                            @if (item.Id != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value))
+                            {
+                                <a class="btn btn-primary radius" asp-action="Edit" asp-route-id="@item.Id">Edit</a>
+
+                                <a class="btn radius text-white toggle-ban-btn @(item.IsBanned == 0 ? "btn-danger" : "btn-success")"
+                                   data-user-id="@item.Id">
+                                    @(item.IsBanned == 0 ? "Ban" : "Unban")
+                                </a>
+                            }
+                            else
+                            {
+                                <span class="text-muted fst-italic">Tài khoản của bạn</span>
+                            }
+                        </td>
+
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <nav class="py-3">
+            @Html.PagedListPager(
+                     new StaticPagedList<UserViewModel>(Model.Items, Model.CurrentPage, PAGE_SIZE, Model.TotalItems),
+                     page => Url.Action("Index", new
+                     {
+                         currentPage = page,
+                         pageSize = PAGE_SIZE
+                     }),
+                     new PagedListRenderOptions
+            {
+                LiElementClasses = new List<string> { "page-item" },
+                PageClasses = new List<string> { "page-link" },
+
+                DisplayLinkToFirstPage = PagedListDisplayMode.Always,
+                DisplayLinkToLastPage = PagedListDisplayMode.Always,
+
+                LinkToFirstPageFormat = "«",
+                LinkToLastPageFormat = "»",
             }
-        </tbody>
-    </table>
-    <nav class="py-3">
-        @Html.PagedListPager(
-                 new StaticPagedList<UserViewModel>(Model.Items, Model.CurrentPage, PAGE_SIZE, Model.TotalItems),
-                 page => Url.Action("Index", new
-                 {
-                     currentPage = page,
-                     pageSize = PAGE_SIZE
-                 }),
-                 new PagedListRenderOptions
-        {
-            LiElementClasses = new List<string> { "page-item" },
-            PageClasses = new List<string> { "page-link" },
-
-            DisplayLinkToFirstPage = PagedListDisplayMode.Always,
-            DisplayLinkToLastPage = PagedListDisplayMode.Always,
-
-            LinkToFirstPageFormat = "«",
-            LinkToLastPageFormat = "»",
-        }
-                 )
-    </nav>
-    </section> 
+                     )
+        </nav>
+    </section>
 </main>
 @section Scripts {
     @{
@@ -162,7 +162,7 @@
             });
             });
         });
-        
+
         function toggleBanStatus(userId, button, isBanned) {
            const statusIcon = $(`.status-icon-${userId}`);
                 $.ajax({
@@ -183,7 +183,7 @@
                                 button.removeClass('btn-danger').addClass('btn-success').text("Unban");
                                 statusIcon
                                     .removeClass(`fa-square-check text-success`)
-                                    .addClass(`fa-rectangle-xmark text-danger`);    
+                                    .addClass(`fa-rectangle-xmark text-danger`);
                             }
                         }
                     },
@@ -191,8 +191,8 @@
                         alert('Failed');
                     }
                 });
-        }         
+        }
 
-    </script>    
+    </script>
 }
 

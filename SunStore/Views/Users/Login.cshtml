@@ -3,6 +3,35 @@
 
 <link rel="stylesheet" href="~/css/login.css" asp-append-version="true" />
 
+<style>
+    .btn-google {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background-color: #fff;
+        color: #444;
+        border: 1px solid #ccc;
+        padding: 8px 12px;
+        border-radius: 4px;
+        font-weight: 500;
+        font-family: Roboto, sans-serif;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        text-decoration: none;
+        transition: background-color 0.2s ease;
+    }
+
+        .btn-google:hover {
+            background-color: #f7f7f7;
+            text-decoration: none;
+            color: #222;
+        }
+
+        .btn-google img {
+            width: 20px;
+            height: 20px;
+        }
+</style>
+
 <div style="width: 100%; display:flex; justify-content:center" class="">
     <div class="containerr">
         <div class="head">Log In</div>
@@ -12,9 +41,9 @@
             <input asp-for="@Model.Password" class="inp mb-3" type="password" placeholder="Mật khẩu">
             <span asp-validation-for="@Model.Password" class="text-danger"></span>
 
-            @if (ViewBag.Error != null)
+            @if (TempData["Error"] != null)
             {
-                <p style="color:red; margin: 10px;">@ViewBag.Error</p>
+                <p style="color:red; margin: 10px;">@TempData["Error"]</p>
             }
 
             else if (ViewBag.ResetPassword != null)
@@ -27,6 +56,18 @@
 
             <span class="forgot-password"><a asp-action="ResetPassword">Forgot Password ?</a></span>
             <input class="login-button" type="submit" value="Đăng nhập">
+
+            <div class="text-center my-3">
+                <p style="font-size:15px;">Hoặc</p>
+            </div>
+
+            <div class="text-center mr-1">
+                <a href="https://localhost:7270/api/Auth/google-login" class="btn btn-google">
+                    <img src="~/img/google-logo.png" alt="Google Logo">
+                    Đăng nhập với Google    
+                </a>
+            </div>
+
         </form>
     </div>
 </div>
