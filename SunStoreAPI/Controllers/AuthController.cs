@@ -344,7 +344,6 @@ namespace SunStoreAPI.Controllers
         [HttpGet("GoogleCallback")]
         public async Task<IActionResult> GoogleCallback()
         {
-
             var authenticateResult = await HttpContext.AuthenticateAsync("Cookies");
 
             if (!authenticateResult.Succeeded)
