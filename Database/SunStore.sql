@@ -239,7 +239,7 @@ VALUES
     (3, NULL, '2025-03-11 15:00:00', N'456 Lê Lợi, TP. Hồ Chí Minh', '0912345678', N'Gọi trước khi giao', 1400000, 'COD', N'Đang giao hàng', NULL),
     (3, 2, '2025-03-12 09:15:00', N'789 Trần Hưng Đạo, Đà Nẵng', '0978563412', N'Giao nhanh trong ngày', 700000, 'COD', N'Đã giao hàng', NULL),
     (7, NULL, '2025-03-13 18:45:00', N'321 Phan Chu Trinh, Hải Phòng', '0962145789', N'Không giao vào buổi sáng', 1000000, 'VNP', N'Bị từ chối', N'Shop hiện tại không thể giao hàng, mong quý khách thông cảm.'),
-    (3, 3, '2025-03-14 14:20:00', N'654 Bạch Đằng, Cần Thơ', '0932154876', N'Giao hàng cẩn thận', 370000, 'VNP', N'Đang giao hàng', NULL)
+    (3, 3, '2025-03-14 14:20:00', N'654 Bạch Đằng, Cần Thơ', '0932154876', N'Giao hàng cẩn thận', 370000, 'VNPAY', N'Đang giao hàng', NULL)
 GO
 SET IDENTITY_INSERT Orders ON;
 INSERT INTO Orders (ID, DateTime) VALUES

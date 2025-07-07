@@ -5,287 +5,86 @@ using BusinessObjects.Models;
 using X.PagedList.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using BusinessObjects.Constants;
+using SunStore.APIServices;
+using X.PagedList;
+using static NuGet.Packaging.PackagingConstants;
 
 namespace SunStore.Controllers
 {
     public class OrdersController : Controller
     {
-        private readonly SunStoreContext _context;
+        private readonly OrderAPIService _orderService;
 
-        public OrdersController(SunStoreContext context)
+        public OrdersController(SunStoreContext context, OrderAPIService orderAPIService)
         {
-            _context = context;
+            _orderService = orderAPIService;
         }
-
-        // GET: Orders
-        //public async Task<IActionResult> Index()
-        //{
-        //    var sunStoreContext = _context.Orders.Include(o => o.Shipper).Include(o => o.Voucher);
-        //    return View(await sunStoreContext.ToListAsync());
-        //}
 
         [Authorize(Roles = UserRoleConstants.Admin)]
-        public IActionResult Index(int? page, DateTime? fromDate, DateTime? toDate)
+        public async Task<IActionResult> Index(DateTime? fromDate, DateTime? toDate, int? page)
         {
-            var orders = _context.Orders.ToList();
-
-            if (fromDate.HasValue)
-            {
-                orders = orders.Where(o => o.DateTime >= fromDate.Value).ToList();
-                ViewBag.From = fromDate.Value.ToString("yyyy-MM-dd");
-            }
-
-            if (toDate.HasValue)
-            {
-                orders = orders.Where(o => o.DateTime <= toDate.Value.AddDays(1)).ToList();
-                ViewBag.To = toDate.Value.ToString("yyyy-MM-dd");
-            }
-
-            var sum = orders.Where(o => o.Status == "Đã giao hàng").Sum(o => o.TotalPrice);
-            var count = orders.Where(o => o.Status == "Đã giao hàng").ToList().Count();
-            var today = DateTime.Now.ToShortDateString();
-
-            var temp = _context.Orders.ToList();
-            var rtd = temp.Where(o => {
-                var day = o.DateTime.Value.ToShortDateString();
-                return (day == today) && (o.Status == "Đã giao hàng");
-            })
-                            .Sum(o => o.TotalPrice);
-
             int pageSize = 6;
-            int pageNumber = (page ?? 1);
+            int currentPage = page ?? 1;
 
-            var od = orders.OrderByDescending(o => o.DateTime).ToPagedList(pageNumber, pageSize);
+            var ordersPaged = await _orderService.GetOrdersAsync(fromDate, toDate, currentPage, pageSize);
 
-            ViewBag.Revenue = sum;
-            ViewBag.NumberOrders = count;
-            ViewBag.RToday = rtd;
-            return View(od);
+            ViewBag.From = fromDate?.ToString("yyyy-MM-dd");
+            ViewBag.To = toDate?.ToString("yyyy-MM-dd");
+
+            // PagedList
+            var pagedList = new StaticPagedList<Order>(
+                ordersPaged.Items, currentPage, pageSize, ordersPaged.TotalItems
+            );
+
+            // Statistics
+            var orders = await _orderService.GetAllAsync();
+
+            // Tổng doanh thu
+            var totalRevenue = orders
+                .Where(o => o.Status == "Đã giao hàng")
+                .Sum(o => o.TotalPrice ?? 0);
+
+            // SL đơn hàng đã giao
+            var deliveredCount = orders.Count(o => o.Status == "Đã giao hàng");
+
+            // Doanh thu hôm nay
+            var today = DateTime.Now.Date;
+            var todayRevenue = orders
+                .Where(o => o.Status == "Đã giao hàng" && o.DateTime.HasValue && o.DateTime.Value.Date == today)
+                .Sum(o => o.TotalPrice ?? 0);
+
+            ViewBag.Revenue = totalRevenue;
+            ViewBag.NumberOrders = deliveredCount;
+            ViewBag.RToday = todayRevenue;
+
+            return View(pagedList);
         }
 
-        public IActionResult Details(int id)
+        public async Task<IActionResult> Details(int id)
         {
-            var items = _context.OrderItems.Include(o => o.ProductOption).Where(o => o.OrderId == id).ToList();
-            var order = _context.Orders.Find(id);
-
-            var uid = items.FirstOrDefault().CustomerId;
-
-            var user = _context.Users.Find(uid);
-            ViewBag.FullName = user.FullName;
-            ViewBag.Phone = order.PhoneNumber;
-            ViewBag.Address = order.AdrDelivery;
-            ViewBag.Status = order.Status;
-            ViewBag.Note = order.Note;
-            ViewBag.Payment = order.Payment;
-
-            var voucherPercent = 0;
-            if (order.VoucherId != null)
-            {
-                voucherPercent = _context.Vouchers.FirstOrDefault(v => v.VoucherId == order.VoucherId).Vpercent;
-            }
-            ViewBag.VoucherPercent = voucherPercent;
-
-            var shipper = _context.Users.FirstOrDefault(u => u.Id == order.ShipperId);
-            var voucher = _context.Vouchers.FirstOrDefault(v => v.VoucherId == order.VoucherId);
-            string staffName = "Chưa có", shipperName = "Chưa có", code = "Không có";
-            if (shipper != null)
-            {
-                shipperName = shipper.FullName;
-            }
-            if (voucher != null && voucher.Code != null)
-            {
-                code = voucher.Code;
-            }
-
-            ViewBag.Staff = staffName;
-            ViewBag.Shipper = shipperName;
-            ViewBag.Voucher = code;
-            ViewData["Product"] = _context.Products.ToList();
-            return View(items);
+            var orderDetail = await _orderService.GetOrderDetailAsync(id);
+            return View(orderDetail);
         }
 
-        public IActionResult Cancel(int id, string reason)
-        {
-            var items = _context.OrderItems.Include(o => o.ProductOption).Where(o => o.OrderId == id).ToList();
-
-            var order = _context.Orders.Find(id);
-            foreach (var item in items)
-            {
-                var product = _context.ProductOptions.FirstOrDefault(b => b.Id == item.ProductId);
-                product.Quantity += item.Quantity;
-                _context.ProductOptions.Update(product);
-                _context.SaveChanges();
-            }
-
-            if (reason == "default") reason = "Xin lỗi quý khách, hiện tại shop không thể ship hàng. Mong quý khách thông cảm.";
-
-            order.Status = "Bị từ chối";
-            order.DenyReason = reason;
-            _context.Orders.Update(order);
-            _context.SaveChanges();
-
-            var cusId = _context.OrderItems.FirstOrDefault(o => o.OrderId == id).CustomerId;
-            var email = _context.Users.FirstOrDefault(u => u.Id == cusId).Email;
-
-            return RedirectToAction("Index");
-        }
-
-        public JsonResult GetCancelReason(int id)
-        {
-            var mess = _context.Orders.FirstOrDefault(o => o.Id == id);
-            var reason = "Xin lỗi quý khách, hiện tại shop không thể ship hàng. Mong quý khách thông cảm.";
-            if (mess != null)
-            {
-                if (mess.DenyReason != null)
-                {
-                    reason = mess.DenyReason;
-                }
-            }
-            return Json(new
-            {
-                reason
-            });
-        }
-
-        //// GET: Orders/Details/5
-        //public async Task<IActionResult> Details(int? id)
-        //{
-        //    if (id == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    var order = await _context.Orders
-        //        .Include(o => o.Shipper)
-        //        .Include(o => o.Voucher)
-        //        .FirstOrDefaultAsync(m => m.Id == id);
-        //    if (order == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    return View(order);
-        //}
-
-        // GET: Orders/Create
-        public IActionResult Create()
-        {
-            ViewData["ShipperId"] = new SelectList(_context.Employees, "UserId", "UserId");
-            ViewData["VoucherId"] = new SelectList(_context.Vouchers, "VoucherId", "VoucherId");
-            return View();
-        }
-
-        // POST: Orders/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("Id,ShipperId,VoucherId,DateTime,AdrDelivery,PhoneNumber,Note,TotalPrice,Payment,Status,DenyReason")] Order order)
+        public async Task<IActionResult> Cancel(int id, string reason)
         {
-            if (ModelState.IsValid)
+            var result = await _orderService.CancelOrderAsync(id, reason);
+            if (result.IsSuccessful)
             {
-                _context.Add(order);
-                await _context.SaveChangesAsync();
-                return RedirectToAction(nameof(Index));
+                TempData["Success"] = "Đơn hàng đã được hủy thành công.";
+                return RedirectToAction("Index");
             }
-            ViewData["ShipperId"] = new SelectList(_context.Employees, "UserId", "UserId", order.ShipperId);
-            ViewData["VoucherId"] = new SelectList(_context.Vouchers, "VoucherId", "VoucherId", order.VoucherId);
-            return View(order);
+
+            TempData["Error"] = "Không thể hủy đơn hàng.";
+            return RedirectToAction("Details", new { id });
         }
 
-        // GET: Orders/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        [HttpGet]
+        public async Task<JsonResult> GetCancelReason(int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var order = await _context.Orders.FindAsync(id);
-            if (order == null)
-            {
-                return NotFound();
-            }
-            ViewData["ShipperId"] = new SelectList(_context.Employees, "UserId", "UserId", order.ShipperId);
-            ViewData["VoucherId"] = new SelectList(_context.Vouchers, "VoucherId", "VoucherId", order.VoucherId);
-            return View(order);
-        }
-
-        // POST: Orders/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,ShipperId,VoucherId,DateTime,AdrDelivery,PhoneNumber,Note,TotalPrice,Payment,Status,DenyReason")] Order order)
-        {
-            if (id != order.Id)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    _context.Update(order);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!OrderExists(order.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            ViewData["ShipperId"] = new SelectList(_context.Employees, "UserId", "UserId", order.ShipperId);
-            ViewData["VoucherId"] = new SelectList(_context.Vouchers, "VoucherId", "VoucherId", order.VoucherId);
-            return View(order);
-        }
-
-        // GET: Orders/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var order = await _context.Orders
-                .Include(o => o.Shipper)
-                .Include(o => o.Voucher)
-                .FirstOrDefaultAsync(m => m.Id == id);
-            if (order == null)
-            {
-                return NotFound();
-            }
-
-            return View(order);
-        }
-
-        // POST: Orders/Delete/5
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var order = await _context.Orders.FindAsync(id);
-            if (order != null)
-            {
-                _context.Orders.Remove(order);
-            }
-
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
-
-        private bool OrderExists(int id)
-        {
-            return _context.Orders.Any(e => e.Id == id);
+            var reason = await _orderService.GetCancelReasonAsync(id);
+            return Json(new { reason });
         }
     }
 }

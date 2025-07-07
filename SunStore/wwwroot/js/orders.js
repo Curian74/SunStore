@@ -6,7 +6,7 @@ $(".canc").click(function () {
     var val = $(payment).val();
     console.log(val);
     var mes = "";
-    if (val == "VNP") mes += "(Đơn đã thanh toán, shop cần phải HOÀN TIỀN!)";
+    if (val == "VNPAY") mes += "(Đơn đã thanh toán, shop cần phải HOÀN TIỀN!)";
     Swal.fire({
         title: "Nhập lí do",
         input: "text",
@@ -19,6 +19,7 @@ $(".canc").click(function () {
             }
             else {
                 $.ajax({
+                    method: "post",
                     url: "/Orders/Cancel",
                     data: {
                         id: id,
