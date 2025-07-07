@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using System.Collections.Generic;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 
 namespace BusinessObjects.Models;
@@ -48,7 +50,7 @@ public partial class SunStoreContext : DbContext
     {
         modelBuilder.Entity<Category>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Category__3214EC2799C1486D");
+            entity.HasKey(e => e.Id).HasName("PK__Category__3214EC2706358D74");
 
             entity.ToTable("Category");
 
@@ -58,7 +60,7 @@ public partial class SunStoreContext : DbContext
 
         modelBuilder.Entity<Customer>(entity =>
         {
-            entity.HasKey(e => e.UserId).HasName("PK__Customer__1788CCAC5E0904EC");
+            entity.HasKey(e => e.UserId).HasName("PK__Customer__1788CCAC2F2D14CA");
 
             entity.ToTable("Customer");
 
@@ -74,7 +76,7 @@ public partial class SunStoreContext : DbContext
 
         modelBuilder.Entity<Employee>(entity =>
         {
-            entity.HasKey(e => e.UserId).HasName("PK__Employee__1788CCAC0AF12A4E");
+            entity.HasKey(e => e.UserId).HasName("PK__Employee__1788CCACDF0B9FBB");
 
             entity.ToTable("Employee");
 
@@ -90,7 +92,7 @@ public partial class SunStoreContext : DbContext
 
         modelBuilder.Entity<Order>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Orders__3214EC2777CC1FEF");
+            entity.HasKey(e => e.Id).HasName("PK__Orders__3214EC276E8D7721");
 
             entity.Property(e => e.Id).HasColumnName("ID");
             entity.Property(e => e.AdrDelivery).HasMaxLength(300);
@@ -107,17 +109,17 @@ public partial class SunStoreContext : DbContext
 
             entity.HasOne(d => d.Shipper).WithMany(p => p.Orders)
                 .HasForeignKey(d => d.ShipperId)
-                .HasConstraintName("FK__Orders__ShipperI__45F365D3");
+                .HasConstraintName("FK__Orders__ShipperI__48CFD27E");
 
             entity.HasOne(d => d.Voucher).WithMany(p => p.Orders)
                 .HasForeignKey(d => d.VoucherId)
                 .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK__Orders__VoucherI__46E78A0C");
+                .HasConstraintName("FK__Orders__VoucherI__49C3F6B7");
         });
 
         modelBuilder.Entity<OrderItem>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__OrderIte__3214EC27386C16CC");
+            entity.HasKey(e => e.Id).HasName("PK__OrderIte__3214EC2703A0354B");
 
             entity.ToTable("OrderItem");
 
@@ -129,22 +131,22 @@ public partial class SunStoreContext : DbContext
             entity.HasOne(d => d.Customer).WithMany(p => p.OrderItems)
                 .HasForeignKey(d => d.CustomerId)
                 .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK__OrderItem__Custo__656C112C");
+                .HasConstraintName("FK__OrderItem__Custo__4CA06362");
 
             entity.HasOne(d => d.Order).WithMany(p => p.OrderItems)
                 .HasForeignKey(d => d.OrderId)
                 .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK__OrderItem__Order__6754599E");
+                .HasConstraintName("FK__OrderItem__Order__4E88ABD4");
 
             entity.HasOne(d => d.ProductOption).WithMany(p => p.OrderItems)
                 .HasForeignKey(d => d.ProductId)
                 .OnDelete(DeleteBehavior.Cascade)
-                .HasConstraintName("FK__OrderItem__Produ__66603565");
+                .HasConstraintName("FK__OrderItem__Produ__4D94879B");
         });
 
         modelBuilder.Entity<Product>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Product__3214EC27CE071CF4");
+            entity.HasKey(e => e.Id).HasName("PK__Product__3214EC27915DDF7A");
 
             entity.ToTable("Product");
 
@@ -164,7 +166,7 @@ public partial class SunStoreContext : DbContext
 
         modelBuilder.Entity<ProductOption>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__ProductO__3214EC27FC859C7B");
+            entity.HasKey(e => e.Id).HasName("PK__ProductO__3214EC27D6C1FD4A");
 
             entity.ToTable("ProductOption");
 
@@ -174,17 +176,18 @@ public partial class SunStoreContext : DbContext
 
             entity.HasOne(d => d.Product).WithMany(p => p.ProductOptions)
                 .HasForeignKey(d => d.ProductId)
-                .HasConstraintName("FK__ProductOp__Produ__628FA481");
+                .HasConstraintName("FK__ProductOp__Produ__440B1D61");
         });
 
         modelBuilder.Entity<User>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Users__3214EC2742313985");
+            entity.HasKey(e => e.Id).HasName("PK__Users__3214EC27E3D765EA");
 
             entity.Property(e => e.Id).HasColumnName("ID");
             entity.Property(e => e.Address).HasMaxLength(200);
             entity.Property(e => e.Email).HasMaxLength(100);
             entity.Property(e => e.FullName).HasMaxLength(100);
+            entity.Property(e => e.LoginProvider).HasMaxLength(50);
             entity.Property(e => e.Password).HasMaxLength(100);
             entity.Property(e => e.PhoneNumber).HasMaxLength(11);
             entity.Property(e => e.Username).HasMaxLength(100);
@@ -193,7 +196,7 @@ public partial class SunStoreContext : DbContext
 
         modelBuilder.Entity<Voucher>(entity =>
         {
-            entity.HasKey(e => e.VoucherId).HasName("PK__Vouchers__3AEE79C1D55F56C5");
+            entity.HasKey(e => e.VoucherId).HasName("PK__Vouchers__3AEE79C15255D993");
 
             entity.Property(e => e.VoucherId).HasColumnName("VoucherID");
             entity.Property(e => e.Code)
