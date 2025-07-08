@@ -47,6 +47,7 @@ namespace SunStore
             builder.Services.AddScoped<CheckoutAPIService>();
             builder.Services.AddScoped<BillAPIService>();
             builder.Services.AddScoped<CategoryAPIService>();
+            builder.Services.AddScoped<VoucherAPIService>();
 
             #endregion
 
