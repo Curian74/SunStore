@@ -110,10 +110,14 @@ namespace SunStoreAPI.Controllers
             }
 
             var emailExisted = await _context.Users
-                    .FirstOrDefaultAsync(x => x.Email == dto.Email && x.Id != dto.Id);
+                    .FirstOrDefaultAsync(x => x.Email != null
+                    && x.Email == dto.Email
+                    && x.Id != dto.Id);
 
             var phoneExisted = await _context.Users
-                    .FirstOrDefaultAsync(x => x.PhoneNumber == dto.PhoneNumber && x.Id != dto.Id);
+                    .FirstOrDefaultAsync(x => x.PhoneNumber != null
+                    && x.PhoneNumber == dto.PhoneNumber
+                    && x.Id != dto.Id);
 
             if (emailExisted != null)
             {

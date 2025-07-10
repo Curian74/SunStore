@@ -116,7 +116,7 @@ namespace SunStoreAPI.Controllers
             }
 
             var phoneExisted = await _context.Users
-                .FirstOrDefaultAsync(u => u.PhoneNumber == dto.PhoneNumber) != null;
+                .FirstOrDefaultAsync(u => u.PhoneNumber != null && u.PhoneNumber == dto.PhoneNumber) != null;
 
             if (phoneExisted)
             {

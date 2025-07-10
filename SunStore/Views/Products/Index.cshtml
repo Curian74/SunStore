@@ -107,7 +107,7 @@
                                     asp-controller="Home" asp-route-id="@item.ProductOptions.FirstOrDefault().Id">Details</a>
                                     <a class="btn radius text-white toggle-status-btn @(item.IsDeleted.Value ? "btn-success" : "btn-danger")"
                                        data-id="@item.Id">
-                                        @(item.IsDeleted.Value ? "Restore" : "Delete")
+                                        @(item.IsDeleted.Value ? "Restore" : "Deactivate")
                                     </a>
                                 </div>
                             </td>
@@ -152,12 +152,12 @@
                 const isDeleted = statusIcon.hasClass("text-danger");
 
                 Swal.fire({
-                    title: `Bạn có muốn ${isDeleted ? "khôi phục" : "xóa"} sản phẩm này không?`,
+                    title: `Bạn có muốn ${isDeleted ? "khôi phục" : "vô hiệu hóa"} sản phẩm này không?`,
                     icon: "warning",
                     showCancelButton: true,
                     confirmButtonColor: "#3085d6",
                     cancelButtonColor: "#d33",
-                    confirmButtonText: isDeleted ? "Khôi phục" : "Xóa"
+                    confirmButtonText: isDeleted ? "Khôi phục" : "Vô hiệu hóa"
                 }).then((result) => {
                     if (result.isConfirmed) {
                         toggleProductStatus(productId, button, isDeleted);

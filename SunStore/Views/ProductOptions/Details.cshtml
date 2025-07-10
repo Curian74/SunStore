@@ -196,8 +196,8 @@
             <p style="margin-bottom:50px;">Còn @Model.Quantity SP</p>
 
             @{
-                var userId = HttpContextAccessor.HttpContext!.Session.GetString("UserId");
-                var userRole = HttpContextAccessor.HttpContext.Session.GetString("UserRole");
+                var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value.ToString();
+                var userRole = User.FindFirst(ClaimTypes.Role)?.Value.ToString();
             }
 
 

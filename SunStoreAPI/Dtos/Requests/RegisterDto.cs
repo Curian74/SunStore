@@ -15,9 +15,9 @@ namespace SunStoreAPI.Dtos.Requests
         [EmailAddress]
         public string Email { get; set; } = null!;
         [Phone]
-        public string PhoneNumber { get; set; } = null!;
+        public string? PhoneNumber { get; set; } = null!;
 
-        public DateOnly BirthDate { get; set; }
+        public DateOnly? BirthDate { get; set; }
 
         public string Username { get; set; } = null!;
     }
