@@ -1,10 +1,12 @@
 ﻿using BusinessObjects.Constants;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SunStore.APIServices;
 using System.Security.Claims;
 
 namespace SunStore.Controllers
 {
+    [Authorize]
     public class NotificationController : Controller
     {
         private readonly NotificationAPIService _notificationAPIService;

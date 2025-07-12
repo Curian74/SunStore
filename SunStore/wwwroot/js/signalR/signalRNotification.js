@@ -50,7 +50,7 @@ connection.on("ReceiveNotification", function (message) {
     });
     Toast.fire({
         icon: "info",
-        title: "Có đơn hàng mới"
+        title: "Có thông báo mới"
     });
 
 });

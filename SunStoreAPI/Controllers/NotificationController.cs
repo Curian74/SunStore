@@ -1,6 +1,7 @@
 ﻿using BusinessObjects;
 using BusinessObjects.ApiResponses;
 using BusinessObjects.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,6 +9,7 @@ namespace SunStoreAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class NotificationController : ControllerBase
     {
         private readonly SunStoreContext _context;
@@ -28,6 +30,12 @@ namespace SunStoreAPI.Controllers
             if (userId != null)
             {
                 notifications = notifications.Where(x => x.UserId.ToString() == userId);
+            }
+
+            // For all admins' notifications.
+            else
+            {
+                notifications = notifications.Where(x => x.UserId.ToString() == null);
             }
 
             var skip = (pageIndex - 1) * pageSize;

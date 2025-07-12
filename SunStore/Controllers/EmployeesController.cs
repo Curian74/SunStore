@@ -1,4 +1,5 @@
 ﻿using System.Security.Claims;
+using BusinessObjects.Constants;
 using BusinessObjects.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -84,7 +85,7 @@ namespace SunStore.Controllers
                 return Json(new { success = false });
             }
 
-            order.Status = "Đang giao hàng"; // Cập nhật trạng thái từ "Đã đặt hàng" sang "Đang giao hàng"
+            order.Status = OrderStatusConstant.Shipping; // Cập nhật trạng thái từ "Đã đặt hàng" sang "Đang giao hàng"
             await _context.SaveChangesAsync();
 
             return Json(new { success = true });

@@ -1,16 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using BusinessObjects.Models;
 using Microsoft.AspNetCore.Authorization;
 using BusinessObjects.Constants;
 using BusinessObjects.ApiResponses;
-using System.Security.Claims;
 using BusinessObjects;
+using SunStoreAPI.Services;
 
 namespace SunStoreAPI.Controllers
 {
@@ -19,10 +14,12 @@ namespace SunStoreAPI.Controllers
     public class OrdersController : ControllerBase
     {
         private readonly SunStoreContext _context;
+        private readonly INotificationService _notificationService;
 
-        public OrdersController(SunStoreContext context)
+        public OrdersController(SunStoreContext context, INotificationService notificationService)
         {
             _context = context;
+            _notificationService = notificationService;
         }
 
         // GET: api/Orders
@@ -126,10 +123,10 @@ namespace SunStoreAPI.Controllers
             _context.Orders.Update(order);
 
             await _context.SaveChangesAsync();
-            return Ok(new BaseApiResponse 
-            { 
+            return Ok(new BaseApiResponse
+            {
                 IsSuccessful = true,
-                Message = "Order cancelled successfully." 
+                Message = "Order cancelled successfully."
             });
         }
 
@@ -165,14 +162,34 @@ namespace SunStoreAPI.Controllers
         [HttpPost("assign")]
         public async Task<IActionResult> Assign(int orderId, int shipperId)
         {
-            var order = await _context.Orders.FirstOrDefaultAsync(o => o.Id == orderId && o.ShipperId == null);
+            var order = await _context.Orders
+                .Include(o => o.OrderItems)
+                .FirstOrDefaultAsync(o => o.Id == orderId && o.ShipperId == null);
 
             if (order == null)
             {
                 return NotFound();
             }
 
+            // Update order info.
             order.ShipperId = shipperId;
+
+            // Notify the targeted shipper.
+            var notificationContentForShipper = $"Bạn đã được chỉ định giao hàng cho đơn hàng có mã: {order.Id}.";
+
+            await _notificationService.NotifyShipper(notificationContentForShipper, shipperId);
+
+            var notification = new Notification
+            {
+                Content = notificationContentForShipper,
+                CreatedAt = DateTime.Now,
+                IsDeleted = false,
+                IsRead = false,
+                OrderId = order.Id,
+                UserId = shipperId,
+            };
+
+            await _context.Notifications.AddAsync(notification);
 
             await _context.SaveChangesAsync();
 
