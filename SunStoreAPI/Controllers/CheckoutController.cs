@@ -5,9 +5,7 @@ using SunStoreAPI.Dtos;
 using SunStoreAPI.Dtos.Requests;
 using System.Security.Claims;
 using Microsoft.AspNetCore.WebUtilities;
-using Humanizer;
 using SunStoreAPI.Services;
-using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 
 namespace SunStoreAPI.Controllers
 {
@@ -18,11 +16,15 @@ namespace SunStoreAPI.Controllers
         private readonly SunStoreContext _context;
         private readonly IVnPayService _vnPayService;
         private readonly EmailService _emailService;
-        public CheckoutController(SunStoreContext context, IVnPayService vnPayService, EmailService emailService)
+        private readonly INotificationService _notificationService;
+
+        public CheckoutController(SunStoreContext context, IVnPayService vnPayService,
+            EmailService emailService, INotificationService notificationService)
         {
             _context = context;
             _vnPayService = vnPayService;
             _emailService = emailService;
+            _notificationService = notificationService;
         }
 
         [HttpGet("init-checkout/{userId}")]
@@ -146,6 +148,24 @@ namespace SunStoreAPI.Controllers
 
             await _emailService.SendEmailAsync(user.Email!, "[Sun Store] Đặt hàng thành công", mailContent);
 
+            var notiContent = $"Đơn hàng mới từ {user.Username}";
+
+            var notification = new Notification
+            {
+                Content = notiContent,
+                CreatedAt = DateTime.Now,
+                CreatedBy = user.Id,
+                IsDeleted = false,
+                IsRead = false,
+                OrderId = order.Id,
+                UserId = null,
+            };
+
+            await _context.Notifications.AddAsync(notification);
+            await _context.SaveChangesAsync();
+
+            await _notificationService.NotifyAdminsNewOrder(notiContent);
+
             return Ok(new { Message = "Đặt hàng thành công", OrderId = order.Id });
         }
 
@@ -220,8 +240,25 @@ namespace SunStoreAPI.Controllers
 
             await _emailService.SendEmailAsync(user.Email!, "[Sun Store] Đặt hàng thành công", mailContent);
 
-            return Redirect($"https://localhost:7127/Checkout/PaymentCallBack?success=true&orderId={order.Id}");
+            var notiContent = $"Đơn hàng mới từ {user.Username}";
 
+            var notification = new Notification
+            {
+                Content = notiContent,
+                CreatedAt = DateTime.Now,
+                CreatedBy = user.Id,
+                IsDeleted = false,
+                IsRead = false,
+                OrderId = order.Id,
+                UserId = null,
+            };
+
+            await _context.Notifications.AddAsync(notification);
+            await _context.SaveChangesAsync();
+
+            await _notificationService.NotifyAdminsNewOrder(notiContent);
+
+            return Redirect($"https://localhost:7127/Checkout/PaymentCallBack?success=true&orderId={order.Id}");
         }
 
         [HttpGet("use-voucher")]

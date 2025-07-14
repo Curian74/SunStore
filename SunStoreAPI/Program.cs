@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authentication.OAuth;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using SunStoreAPI.Configs;
+using SunStoreAPI.Hubs;
 using SunStoreAPI.Services;
 using SunStoreAPI.Utils;
 using System.Text;
@@ -29,6 +30,7 @@ builder.Services.AddScoped<EmailService>();
 builder.Services.AddScoped<CacheUtils>();
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddSingleton<IVnPayService, VnPayService>();
+builder.Services.AddScoped<INotificationService, NotificationService>();
 
 #endregion
 
@@ -111,6 +113,8 @@ builder.Services.AddMemoryCache();
 builder.Services.AddAuthentication();
 builder.Services.AddAuthorization();
 
+builder.Services.AddSignalR();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -131,6 +135,8 @@ app.UseRouting();
 app.UseAuthentication();
 
 app.UseAuthorization();
+
+app.MapHub<NotificationHub>("/notificationHub");
 
 app.MapControllers();
 

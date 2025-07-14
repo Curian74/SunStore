@@ -1,12 +1,4 @@
 ﻿@inject IHttpContextAccessor HttpContextAccessor
-@{
-    var cq = HttpContextAccessor.HttpContext.Session.GetString("CartQuantity");
-}
-
-@{
-    var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value.ToString();
-    var userName = User.FindFirst(ClaimTypes.Name)?.Value.ToString();
-}
 
 <!DOCTYPE html>
 <html lang="en">
@@ -40,146 +32,8 @@
 </head>
 <body>
 
-    <header class="main_menu home_menu">
-        <div class="container">
-            <div class="row align-items-center justify-content-center">
-                <div class="col-lg-12">
-                    <nav class="navbar navbar-expand-lg navbar-light">
-                        <a class="navbar-brand" asp-controller="Home" asp-action="Index"> <img style="height:86px;border-radius:15px;" src="~/img/logo.jpg" alt="logo"> </a>
-                        <button class="navbar-toggler" type="button" data-toggle="collapse"
-                                data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
-                                aria-expanded="false" aria-label="Toggle navigation">
-                            <span class="menu_icon"><i class="fas fa-bars"></i></span>
-                        </button>
-
-                        <div class="collapse navbar-collapse main-menu-item" id="navbarSupportedContent">
-                            <ul class="navbar-nav">
-                                <li class="nav-item">
-                                    <a class="nav-link" asp-controller="Home" asp-action="Index" style="white-space:nowrap">Trang chủ</a>
-                                </li>
-                                <li class="nav-item dropdown">
-                                    <a class="nav-link dropdown-toggle" asp-controller="Home" asp-action="Index" id="navbarDropdown_1"
-                                       role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                        Cửa hàng
-                                    </a>
-                                    <div class="dropdown-menu" aria-labelledby="navbarDropdown_1">
-                                        <a class="dropdown-item" asp-controller="Home" asp-action="ProductList"> Danh sách sản phẩm</a>
-                                    </div>
-                                </li>
-
-                                @if (User.IsInRole(UserRoleConstants.Customer))
-                                {
-                                    <li class="nav-item dropdown">
-                                        <a class="nav-link dropdown-toggle" asp-controller="Home" asp-action="Index" id="navbarDropdown_3"
-                                           role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            Chức năng
-                                        </a>
-                                        <div class="dropdown-menu" aria-labelledby="navbarDropdown_2">
-                                            <a class="dropdown-item" asp-action="Index" asp-controller="Cart">shopping cart</a>
-
-
-                                            @* <a class="dropdown-item" asp-controller="Home" asp-action="Vouchers">Vouchers</a> *@
-                                            <a asp-controller="Bills" asp-action="Index" class="dropdown-item">Lịch sử mua</a>
-
-                                        </div>
-                                    </li>
-                                }
-
-                                @if (User.IsInRole(UserRoleConstants.Admin))
-                                {
-                                    <li class="nav-item dropdown">
-                                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown_user"
-                                           role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            Quản lí cửa hàng
-                                        </a>
-                                        <div class="dropdown-menu" aria-labelledby="navbarDropdown_user">
-                                            <a class="dropdown-item" asp-controller="Orders" asp-action="Index">
-                                                Quản lí đơn hàng
-                                            </a>
-                                            <a class="dropdown-item" asp-controller="Users" asp-action="Index">
-                                                Quản lí người dùng
-                                            </a>
-                                            <a class="dropdown-item" asp-controller="Products" asp-action="Index">
-                                                Quản lí sản phẩm
-                                            </a>
-                                            <a class="dropdown-item" asp-controller="Vouchers" asp-action="Index">
-                                                Quản lí Voucher
-                                            </a>
-                                        </div>
-                                    </li>
-
-                                    <li class="nav-item">
-                                        <a class="nav-link" asp-controller="Employees" asp-action="AssignShipper" style="white-space:nowrap">Gán Shipper</a>
-                                    </li>
-                                }
-
-                                @if (User.IsInRole(UserRoleConstants.Shipper))
-                                {
-                                    <li class="nav-item">
-                                        <a class="nav-link" asp-controller="Employees" asp-action="Order" style="white-space:nowrap">Xem đơn hàng</a>
-                                    </li>
-                                }
-
-                                @if (User.Identity.IsAuthenticated)
-                                {
-                                    <li class="nav-item dropdown">
-                                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown_user"
-                                           role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                            @userName
-                                        </a>
-                                        <div class="dropdown-menu" aria-labelledby="navbarDropdown_user">
-                                            <a class="dropdown-item" asp-controller="Users" asp-action="Details" asp-route-id="@userId">
-                                                Thông tin tài khoản
-                                            </a>
-                                            <a class="dropdown-item" asp-controller="Users" asp-action="Logout">
-                                                Đăng xuất
-                                            </a>
-                                        </div>
-                                    </li>
-                                }
-                                else
-                                {
-                                    <li class="nav-item">
-                                        <a class="nav-link" asp-controller="Users" asp-action="Login" style="white-space:nowrap">
-                                            Đăng nhập
-                                        </a>
-                                    </li>
-
-                                    <li class="nav-item">
-                                        <a class="nav-link"
-                                           asp-controller="Users"
-                                           asp-action="Register" style="white-space:nowrap">
-                                            Đăng Ký
-                                        </a>
-                                    </li>
-                                }
-                            </ul>
-                        </div>
-                        <div class="hearer_icon d-flex align-items-center">
-                            @* <a id="search_1" href="javascript:void(0)"><i class="ti-search"></i></a> *@
-                            <a asp-action="Index" asp-controller="Cart" style="position:relative;">
-                                <i class="flaticon-shopping-cart-black-shape"></i>
-                                @if (cq != null && cq != "0")
-                                {
-                                    <span class="cart_quantity" id="c_quantity" style="position:absolute;top:-7px;right:-10px;z-index:100; border-radius:50%;
-                                                        text-align:center;background-color:#B08EAD;color:white;height:20px;width:20px;">
-                                        @cq
-                                    </span>
-                                }
-                                else
-                                {
-                                    <span class="cart_quantity" id="c_quantity" style="position:absolute;top:-7px;right:-10px;z-index:100;border-radius:50%;
-                                                        text-align:center;background-color:#B08EAD;color:white;height:20px;width:20px;display:none;">
-                                        @cq
-                                    </span>
-                                }
-                            </a>
-                        </div>
-                    </nav>
-                </div>
-            </div>
-        </div>
-    </header>
+    @* Invoke Header layout from Components. *@
+    @await Component.InvokeAsync("Header")
 
     <div style="padding:0" class="container-fluid">
         @RenderBody()
@@ -208,6 +62,8 @@
     <!-- custom js -->
     <script src="/js/custom.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
+    <script src="~/js/signalR/signalRNotification.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)

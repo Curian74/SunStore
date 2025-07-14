@@ -132,26 +132,45 @@
         </table>
         <div class="pagination-container">
             @Html.PagedListPager(
-                Model,
-                page => Url.Action("Index", new
-                {
-                    page,
-                    fromDate = ViewBag.From,
-                    toDate = ViewBag.To
-                }),
-                new PagedListRenderOptions
-                {
-                    LiElementClasses = new[] { "page-item" },
-                    PageClasses = new[] { "page-link" },
-                    UlElementClasses = new[] { "pagination", "justify-content-center" }
-                })
+                     Model,
+                     page => Url.Action("Index", new
+                     {
+                         page,
+                         fromDate = ViewBag.From,
+                         toDate = ViewBag.To
+                     }),
+                     new PagedListRenderOptions
+            {
+                LiElementClasses = new[] { "page-item" },
+                PageClasses = new[] { "page-link" },
+                UlElementClasses = new[] { "pagination", "justify-content-center" }
+            })
         </div>
 
     </div>
 </section>
 
 <!-- jquery plugins here-->
-<script src="/js/jquery-1.12.1.min.js"></script>
+@section Scripts{
+    <script src="/js/jquery-1.12.1.min.js"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="/js/orders.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="/js/orders.js"></script>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
+
+    <script>
+        const connection = new signalR.HubConnectionBuilder()
+            .withUrl("https://localhost:7270/notificationHub")
+            .build();
+
+        connection.on("ReceiveNotification", function (message) {
+            alert("Adi");
+            console.log("Thông báo mới: ", message);
+        });
+
+        connection.start().catch(function (err) {
+            return console.error("SignalR error: ", err.toString());
+        });
+    </script>
+}

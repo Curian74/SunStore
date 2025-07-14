@@ -115,6 +115,20 @@ CREATE TABLE OrderItem(
 )
 GO
 
+CREATE TABLE [Notification] (
+	ID INT IDENTITY(1,1) PRIMARY KEY,
+	UserID INT,
+	Content NVARCHAR(255) NOT NULL,
+	OrderID INT,
+	IsRead BIT,
+	IsDeleted BIT,
+	CreatedAt DATETIME,
+	CreatedBy INT,
+	FOREIGN KEY (OrderID) REFERENCES Orders(ID),
+	FOREIGN KEY (UserID) REFERENCES Users(ID),
+	FOREIGN KEY (CreatedBy) REFERENCES Users(ID)
+)
+
 -----INSERT DATA-----
 --Users
 INSERT INTO Users(FullName,UserName,Password,Address,BirthDate,Email,PhoneNumber,Role, VertificationCode, IsBanned)--*Role: 1_admin,2_cus,3_shipper

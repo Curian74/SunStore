@@ -32,4 +32,8 @@ public partial class User
     public virtual Customer? Customer { get; set; }
 
     public virtual Employee? Employee { get; set; }
+
+    public virtual ICollection<Notification> NotificationCreatedByNavigations { get; set; } = new List<Notification>();
+
+    public virtual ICollection<Notification> NotificationUsers { get; set; } = new List<Notification>();
 }

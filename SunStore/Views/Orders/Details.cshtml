@@ -15,11 +15,12 @@
             <div class="col-lg-12" style="margin:40px 0;">
                 @if (User.IsInRole(UserRoleConstants.Admin))
                 {
-                    <a asp-controller="Orders" asp-action="Index" class="btn_3">Trở lại</a>
+                    <a href="#" onclick="window.history.back()" class="btn_3 mr-3">Trở lại</a>
+                    <a asp-controller="Orders" asp-action="Index" class="btn_3">Danh sách đơn hàng</a>
                 }
                 else if (User.IsInRole(UserRoleConstants.Shipper))
                 {
-                    <a asp-controller="Employees" asp-action="Order" class="btn_3">Trở lại</a>
+                    <a href="#" onclick="window.history.back()" class="btn_3 mr-3">Trở lại</a>
                 }
             </div>
             <div class="col-lg-6 col-lx-4">

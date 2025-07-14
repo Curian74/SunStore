@@ -24,6 +24,7 @@ namespace SunStore.Controllers
         }
 
         // GET: Users
+        [Authorize]
         public async Task<IActionResult> Index(UserQueryObject userQueryObject)
         {
             var data = await _userAPIService.GetPagedUserAsync(userQueryObject);

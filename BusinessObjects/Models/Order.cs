@@ -27,6 +27,8 @@ public partial class Order
 
     public string? DenyReason { get; set; }
 
+    public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
+
     public virtual ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
 
     public virtual Employee? Shipper { get; set; }
