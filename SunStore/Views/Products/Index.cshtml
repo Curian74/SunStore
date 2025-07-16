@@ -104,7 +104,7 @@
                                 <div class="d-flex gap-3">
                                     <a class="btn btn-primary radius" asp-action="Edit" asp-route-id="@item.Id">Edit</a>
                                     <a class="btn btn-success primary radius" asp-action="ProductDetail"
-                                    asp-controller="Home" asp-route-id="@item.ProductOptions.FirstOrDefault().Id">Details</a>
+                                    asp-controller="Home" asp-route-id="@item.ProductOptions?.FirstOrDefault()?.Id">Details</a>
                                     <a class="btn radius text-white toggle-status-btn @(item.IsDeleted.Value ? "btn-success" : "btn-danger")"
                                        data-id="@item.Id">
                                         @(item.IsDeleted.Value ? "Restore" : "Deactivate")

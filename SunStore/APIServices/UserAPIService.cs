@@ -50,6 +50,7 @@ namespace SunStore.APIServices
 
             paramsList.Add($"CurrentPage={queryObject.CurrentPage.ToString()}");
             paramsList.Add($"PageSize={queryObject.PageSize.ToString()}");
+            paramsList.Add($"Role={queryObject.Role.ToString()}");
 
             if (paramsList.Count > 0)
             {
