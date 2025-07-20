@@ -38,5 +38,14 @@ namespace SunStore.APIServices
 
             return result;
         }
+
+        public async Task<List<ProductOption>> GetAllByProductIdAsync(int productId)
+        {
+            var response = await _httpClient.GetAsync($"ProductOptions/product/{productId}");
+
+            var result = await response.Content.ReadFromJsonAsync<List<ProductOption>>();
+
+            return result ?? new List<ProductOption>();
+        }
     }
 }

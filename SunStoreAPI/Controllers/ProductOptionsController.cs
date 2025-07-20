@@ -168,6 +168,16 @@ namespace SunStoreAPI.Controllers
             return NoContent();
         }
 
+        [HttpGet("product/{productId}")]
+        public async Task<IActionResult> GetAllByProductId(int productId)
+        {
+            var options = await _context.ProductOptions
+                .Where(x => x.ProductId == productId)
+                .ToListAsync();
+
+            return Ok(options);
+        }
+
         private bool ProductOptionExists(int id)
         {
             return _context.ProductOptions.Any(e => e.Id == id);

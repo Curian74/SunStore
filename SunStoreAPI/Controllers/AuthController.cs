@@ -47,7 +47,7 @@ namespace SunStoreAPI.Controllers
             if (user == null)
             {
                 loginResponseDto.ErrorMessage = "Không tìm thấy tài khoản.";
-                return BadRequest(loginResponseDto);
+                return Unauthorized(loginResponseDto);
             }
 
             // 2. Check if user is banned.
@@ -58,17 +58,17 @@ namespace SunStoreAPI.Controllers
             }
 
             // 3. Check password.
-            if (dto.Password != user.Password)
-            {
-                loginResponseDto.ErrorMessage = "Tên đăng nhập hoặc mật khẩu không chính xác!";
-                return Unauthorized(loginResponseDto);
-            }
-
-            //if (!BCrypt.Net.BCrypt.Verify(dto.Password, user.Password))
+            //if (dto.Password != user.Password)
             //{
             //    loginResponseDto.ErrorMessage = "Tên đăng nhập hoặc mật khẩu không chính xác!";
             //    return Unauthorized(loginResponseDto);
             //}
+
+            if (!BCrypt.Net.BCrypt.Verify(dto.Password, user.Password))
+            {
+                loginResponseDto.ErrorMessage = "Tên đăng nhập hoặc mật khẩu không chính xác!";
+                return Unauthorized(loginResponseDto);
+            }
 
             // 4. Create JWT.
             string jwtToken = _jwtTokenProvider.CreateToken(user);
@@ -139,7 +139,7 @@ namespace SunStoreAPI.Controllers
             var newUser = new User
             {
                 Email = dto.Email,
-                Password = dto.Password,
+                Password = BCryptPasswordHasher.HashPassword(dto.Password),
                 BirthDate = dto.BirthDate,
                 FullName = dto.FullName,
                 PhoneNumber = dto.PhoneNumber,
@@ -266,7 +266,7 @@ namespace SunStoreAPI.Controllers
                 }
 
                 // Update user's password.
-                user.Password = dto.Password;
+                user.Password = BCryptPasswordHasher.HashPassword(dto.Password);
                 await _context.SaveChangesAsync();
 
                 // Remove the OTP code from cache.

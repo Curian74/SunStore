@@ -62,6 +62,11 @@ namespace SunStoreAPI.Controllers
         {
             var users = _context.Users.AsQueryable();
 
+            if (userQueryObject.Role.HasValue)
+            {
+                users = users.Where(u => u.Role == userQueryObject.Role);
+            }
+
             var skip = (userQueryObject.CurrentPage - 1) * userQueryObject.PageSize;
 
             var filteredData = await users.Skip(skip).Take(userQueryObject.PageSize).ToListAsync();
