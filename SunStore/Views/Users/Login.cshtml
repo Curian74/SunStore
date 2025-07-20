@@ -34,7 +34,7 @@
 
 <div style="width: 100%; display:flex; justify-content:center" class="">
     <div class="containerr">
-        <div class="head">Log In</div>
+        <div class="head">Đăng nhập</div>
         <form method="post" asp-action="Login" asp-controller="Users" class="form">
             <input asp-for="@Model.Email" class="inp mb-3" placeholder="Email">
             <span asp-validation-for="@Model.Email" class="text-danger"></span>
@@ -55,6 +55,7 @@
             }
 
             <span class="forgot-password"><a asp-action="ResetPassword">Forgot Password ?</a></span>
+            <small class="forgot-password">Chưa có tài khoản? <a asp-action="Register">Đăng ký ngay</a></small>
             <input class="login-button" type="submit" value="Đăng nhập">
 
             <div class="text-center my-3">
