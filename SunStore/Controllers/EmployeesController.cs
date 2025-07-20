@@ -69,7 +69,7 @@ namespace SunStore.Controllers
         }
 
         //Shipper parts
-        public async Task<IActionResult> Order(int currentPage = 1, int pageSize = 6)
+        public async Task<IActionResult> Order(int currentPage = 1, int pageSize = 5)
         {
             string uid = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
             int shipperId = int.Parse(uid);

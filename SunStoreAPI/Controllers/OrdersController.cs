@@ -199,7 +199,7 @@ namespace SunStoreAPI.Controllers
 
         [HttpGet("shipper-pending/{shipperId}")]
         public async Task<IActionResult> GetShipperPendingOrder(int shipperId,
-            int? page = 1, int? pageSize = 7)
+            int? page = 1, int? pageSize = 5)
         {
             var orders = await _context.Orders
                 .Where(x => x.ShipperId == shipperId)

@@ -113,7 +113,7 @@ namespace SunStore.APIServices
         }
 
         public async Task<PagedResult<Order>> GetShipperPendingOrdersAsync(int shipperId, int page = 1,
-            int pageSize = 7)
+            int pageSize = 5)
         {
             var queryParams = new List<string>
             {
