@@ -76,6 +76,7 @@
                     <th scope="col">Trạng thái</th>
                     <th scope="col"></th>
                     <th scope="col"></th>
+                    <th scope="col"></th>
                 </tr>
             </thead>
             <tbody>
@@ -96,7 +97,7 @@
                             <td>@item.DateTime?.ToString("dd/MM/yyyy HH:mm:ss")</td>
                             <td style="position:relative;">
                                 <p style="color:white; background-color:@color; font-weight:bold; position:absolute; padding:auto 5px;
-                                          border:none; border-radius:4px;text-align:center; width:80%; height:40px; display:flex;align-items:center;">
+                                                  border:none; border-radius:4px;text-align:center; width:80%; height:40px; display:flex;align-items:center;">
                                     <span style="width:100%;text-align:center;" id="stt_@item.Id">@item.Status</span>
                                 </p>
                             </td>
@@ -104,13 +105,23 @@
                                 <a asp-controller="Orders" asp-action="Details" asp-route-id="@item.Id" class="genric-btn success-border radius">Xem chi tiết</a>
                             </td>
 
-                            @if (item.Status == "Đã đặt hàng" || item.Status == "Đang giao hàng")
+                            @if (item.Status == OrderStatusConstant.Ordered || item.Status == OrderStatusConstant.Shipping)
                             {
                                 <td style="text-align:center;width:160px;">
                                     <a href="javascript:void(0)" data-id="@item.Id" id="canc_@item.Id" class="genric-btn success-border radius canc">Từ chối đơn</a>
                                     <input type="hidden" id="payment_@item.Id" value="@item.Payment" />
                                 </td>
+
                             }
+
+                            @if (item.Status == OrderStatusConstant.Ordered && !item.ShipperId.HasValue)
+                            { 
+                                <td style="text-align:center;width:160px;">
+                                    <a href="javascript:void(0)" data-order-id="@item.Id" id="canc_@item.Id" class="genric-btn success-border radius canc assign-shipper-btn">Gán Shipper</a>
+                                    <input type="hidden" id="payment_@item.Id" value="@item.Payment" />
+                                </td>
+                            }
+
                             else
                             @if (item.Status == "Bị từ chối")
                             {
@@ -132,45 +143,82 @@
         </table>
         <div class="pagination-container">
             @Html.PagedListPager(
-                     Model,
-                     page => Url.Action("Index", new
-                     {
-                         page,
-                         fromDate = ViewBag.From,
-                         toDate = ViewBag.To
-                     }),
-                     new PagedListRenderOptions
+            Model,
+            page => Url.Action("Index", new
             {
-                LiElementClasses = new[] { "page-item" },
-                PageClasses = new[] { "page-link" },
-                UlElementClasses = new[] { "pagination", "justify-content-center" }
-            })
+                page,
+                fromDate = ViewBag.From,
+                toDate = ViewBag.To
+            }),
+                        new PagedListRenderOptions
+                        {
+                            LiElementClasses = new[] { "page-item" },
+                            PageClasses = new[] { "page-link" },
+                            UlElementClasses = new[] { "pagination", "justify-content-center" }
+                        })
         </div>
 
     </div>
 </section>
 
 <!-- jquery plugins here-->
-@section Scripts{
+@section Scripts {
     <script src="/js/jquery-1.12.1.min.js"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="/js/orders.js"></script>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js"></script>
-
     <script>
-        const connection = new signalR.HubConnectionBuilder()
-            .withUrl("https://localhost:7270/notificationHub")
-            .build();
+        $(document).ready(function () {
+            // Event listener for assign shipper button click
+            $('.assign-shipper-btn').click(function () {
+                var orderId = $(this).data('order-id');
 
-        connection.on("ReceiveNotification", function (message) {
-            alert("Adi");
-            console.log("Thông báo mới: ", message);
-        });
+                Swal.fire({
+                    title: 'Chọn Shipper',
+                    html: `
+                    <select id="shipperSelect" class="swal2-input">
+                        <option value="">Chọn shipper</option>
+                            @foreach (var shipper in ViewBag.Shippers)
+                            {
+                                <option value="@shipper.Id">@shipper.FullName</option>
+                            }
+                    </select>
+                                `,
+                    focusConfirm: false,
+                    preConfirm: () => {
+                        return {
+                            shipperId: document.getElementById('shipperSelect').value,
+                            orderId: orderId
+                        }
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        var selectedShipperId = result.value.shipperId;
+                        var orderId = result.value.orderId;
 
-        connection.start().catch(function (err) {
-            return console.error("SignalR error: ", err.toString());
+                        $.ajax({
+                            url: `https://localhost:7270/api/Orders/assign?orderId=${orderId}&shipperId=${selectedShipperId}`,
+                            type: 'POST',
+                            data: {
+                                orderId: orderId,
+                                shipperId: selectedShipperId
+                            },
+                            xhrFields: {
+                                withCredentials: true
+                            },
+                            success: function (response) {
+                                Swal.fire('Thành công!', 'Shipper đã được gán.', 'success').then(() => {
+                                    location.reload();
+                                });
+                            },
+                            error: function (error) {
+                                Swal.fire('Lỗi!', 'Có lỗi xảy ra.', 'error');
+                            }
+                        });
+                    }
+                });
+            });
         });
     </script>
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using BusinessObjects.Models;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
 
@@ -23,5 +24,7 @@ namespace SunStore.ViewModel.RequestModels
 
         [DisplayName("Còn bán?")]
         public bool? IsDeleted { get; set; }
+
+        public List<ProductOption>? ProductOptions { get; set; }
     }
 }

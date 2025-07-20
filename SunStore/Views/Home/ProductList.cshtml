@@ -192,14 +192,15 @@
 
                 <div class="product_list">
                     <div class="row justify-content-center">
-                        @foreach (var product in Model.Items)
+                        @* Displays only active products with at least 1 option available. *@
+                        @foreach (var product in Model.Items.Where(x => x.IsDeleted == false && x.ProductOptions.Count > 0))
                         {
                             @if (product.IsDeleted == false || product.IsDeleted == null)
                             {
                                 var minPrice = product.ProductOptions.Any() ? product.ProductOptions.Min(bo => bo.Price) : 0;
 
                                 <div class="product col-lg-4">
-                                    <a asp-controller="Home" asp-action="ProductDetail" asp-route-id="@product.ProductOptions.FirstOrDefault().Id" style="text-decoration: none;">
+                                    <a asp-controller="Home" asp-action="ProductDetail" asp-route-id="@product.ProductOptions?.FirstOrDefault()?.Id" style="text-decoration: none;">
                                         <div class="pr-image">
                                             <img src="@product.Image" alt="">
                                         </div>

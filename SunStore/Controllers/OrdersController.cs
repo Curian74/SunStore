@@ -1,23 +1,22 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.EntityFrameworkCore;
 using BusinessObjects.Models;
-using X.PagedList.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using BusinessObjects.Constants;
 using SunStore.APIServices;
 using X.PagedList;
-using static NuGet.Packaging.PackagingConstants;
+using BusinessObjects.Queries;
 
 namespace SunStore.Controllers
 {
     public class OrdersController : Controller
     {
         private readonly OrderAPIService _orderService;
+        private readonly UserAPIService _userAPIService;
 
-        public OrdersController(SunStoreContext context, OrderAPIService orderAPIService)
+        public OrdersController(SunStoreContext context, OrderAPIService orderAPIService, UserAPIService userAPIService)
         {
             _orderService = orderAPIService;
+            _userAPIService = userAPIService;
         }
 
         [Authorize(Roles = UserRoleConstants.Admin)]
@@ -53,9 +52,20 @@ namespace SunStore.Controllers
                 .Where(o => o.Status == "Đã giao hàng" && o.DateTime.HasValue && o.DateTime.Value.Date == today)
                 .Sum(o => o.TotalPrice ?? 0);
 
+            // Get Shippers.
+            var queryObj = new UserQueryObject
+            {
+                CurrentPage = 1,
+                PageSize = int.MaxValue,
+                Role = int.Parse(UserRoleConstants.Shipper)
+            };
+
+            var shippers = await _userAPIService.GetPagedUserAsync(queryObj);
+
             ViewBag.Revenue = totalRevenue;
             ViewBag.NumberOrders = deliveredCount;
             ViewBag.RToday = todayRevenue;
+            ViewBag.Shippers = shippers!.Data!.Items;
 
             return View(pagedList);
         }
