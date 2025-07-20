@@ -6,6 +6,7 @@ using System.Security.Claims;
 using BusinessObjects.DTOs;
 using SunStore.APIServices;
 using BusinessObjects.RequestModel;
+using Microsoft.AspNetCore.Authorization;
 
 namespace SunStore.Controllers
 {
@@ -18,6 +19,7 @@ namespace SunStore.Controllers
             _cartAPIService = cartAPIService;
         }
 
+        [Authorize]
         public async Task<IActionResult> Index()
         {
             var userId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value.ToString();

@@ -1,7 +1,7 @@
 ﻿@inject IHttpContextAccessor HttpContextAccessor
 
 @{
-    var cq = HttpContextAccessor.HttpContext.Session.GetString("CartQuantity");
+    //var cq = HttpContextAccessor.HttpContext.Session.GetString("CartQuantity");
 }
 
 @{
@@ -141,7 +141,7 @@
                         @* <a id="search_1" href="javascript:void(0)"><i class="ti-search"></i></a> *@
                         <a asp-action="Index" asp-controller="Cart" style="position:relative;">
                             <i class="flaticon-shopping-cart-black-shape"></i>
-                            @if (cq != null && cq != "0")
+                            @* @if (cq != null && cq != "0")
                             {
                                 <span class="cart_quantity" id="c_quantity" style="position:absolute;top:-7px;right:-10px;z-index:100; border-radius:50%;
                                                         text-align:center;background-color:#B08EAD;color:white;height:20px;width:20px;">
@@ -154,7 +154,7 @@
                                                         text-align:center;background-color:#B08EAD;color:white;height:20px;width:20px;display:none;">
                                     @cq
                                 </span>
-                            }
+                            } *@
                         </a>
                     </div>
                 </nav>
