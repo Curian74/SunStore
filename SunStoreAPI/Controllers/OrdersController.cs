@@ -6,6 +6,7 @@ using BusinessObjects.Constants;
 using BusinessObjects.ApiResponses;
 using BusinessObjects;
 using SunStoreAPI.Services;
+using System.Threading.Tasks;
 
 namespace SunStoreAPI.Controllers
 {
@@ -196,6 +197,32 @@ namespace SunStoreAPI.Controllers
             return NoContent();
         }
 
+        [HttpGet("shipper-pending/{shipperId}")]
+        public async Task<IActionResult> GetShipperPendingOrder(int shipperId,
+            int? page = 1, int? pageSize = 7)
+        {
+            var orders = await _context.Orders
+                .Where(x => x.ShipperId == shipperId)
+                .OrderByDescending(x => x.DateTime)
+                .ToListAsync();
+
+            var skip = (page - 1) * pageSize;
+
+            var totalOrder = orders.Count;
+
+            var pagedOrders = orders.Skip((int)skip!).Take((int) pageSize!).ToList();
+
+            var returnData = new PagedResult<Order>
+            {
+                Items = pagedOrders,
+                CurrentPage = (int) page!,
+                PageSize = (int) pageSize, 
+                TotalItems = totalOrder,
+            };
+
+            return Ok(returnData);
+        }
+
         [HttpGet]
         [Route("unassigned")]
         [Authorize(Roles = UserRoleConstants.Admin)]
@@ -221,7 +248,6 @@ namespace SunStoreAPI.Controllers
         }
 
         // PUT: api/Orders/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         public async Task<IActionResult> PutOrder(int id, Order order)
         {
@@ -251,8 +277,6 @@ namespace SunStoreAPI.Controllers
             return NoContent();
         }
 
-        // POST: api/Orders
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         public async Task<ActionResult<Order>> PostOrder(Order order)
         {

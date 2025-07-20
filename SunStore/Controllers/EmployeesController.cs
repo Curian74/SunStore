@@ -69,11 +69,11 @@ namespace SunStore.Controllers
         }
 
         //Shipper parts
-        public async Task<IActionResult> Order()
+        public async Task<IActionResult> Order(int currentPage = 1, int pageSize = 6)
         {
             string uid = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
             int shipperId = int.Parse(uid);
-            var orders = await _context.Orders.Where(o => o.ShipperId == shipperId).ToListAsync();
+            var orders = await _orderAPIService.GetShipperPendingOrdersAsync(shipperId, currentPage, pageSize);
             return View(orders);
         }
 

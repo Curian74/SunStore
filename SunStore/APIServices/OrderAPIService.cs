@@ -112,5 +112,26 @@ namespace SunStore.APIServices
             return "Không có lý do";
         }
 
+        public async Task<PagedResult<Order>> GetShipperPendingOrdersAsync(int shipperId, int page = 1,
+            int pageSize = 7)
+        {
+            var queryParams = new List<string>
+            {
+                $"page={page}",
+                $"pageSize={pageSize}"
+            };
+
+            string url = $"Orders/shipper-pending/{shipperId}?{string.Join("&", queryParams)}";
+
+            var result = await _httpClient.GetFromJsonAsync<PagedResult<Order>>(url);
+
+            return result ?? new PagedResult<Order>
+            {
+                CurrentPage = page,
+                PageSize = pageSize,
+                TotalItems = 0,
+                Items = new List<Order>()
+            };
+        }
     }
 }
