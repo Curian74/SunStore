@@ -316,24 +316,24 @@ namespace SunStore.Controllers
                 // Append Jwt token to the cookie.
                 Response.Cookies.Append(JWT_COOKIE_NAME, result.Token!, cookieOptions);
 
-                #region temporary code
+                //#region temporary code
 
-                var user = _context.Users
-                    .Where(e => e.Email == model.Email && e.Password == model.Password)
-                    .FirstOrDefault();
+                //var user = _context.Users
+                //    .Where(e => e.Email == model.Email && e.Password == model.Password)
+                //    .FirstOrDefault();
 
-                // Store account info in session or cookie
-                HttpContext.Session.SetString("UserId", user.Id.ToString());
-                HttpContext.Session.SetString("UserRole", user.Role.ToString()!);
-                HttpContext.Session.SetString("UserName", user.FullName!.ToString()!);
-                HttpContext.Session.SetString("UserEmail", user.Email!.ToString()!);
+                //// Store account info in session or cookie
+                //HttpContext.Session.SetString("UserId", user.Id.ToString());
+                //HttpContext.Session.SetString("UserRole", user.Role.ToString()!);
+                //HttpContext.Session.SetString("UserName", user.FullName!.ToString()!);
+                //HttpContext.Session.SetString("UserEmail", user.Email!.ToString()!);
 
-                int uid = user.Id;
+                //int uid = user.Id;
 
-                var cartQuantity = _context.OrderItems.Where(o => o.OrderId == 0 && o.CustomerId == uid).Count();
-                HttpContext.Session.SetString("CartQuantity", cartQuantity.ToString());
+                //var cartQuantity = _context.OrderItems.Where(o => o.OrderId == 0 && o.CustomerId == uid).Count();
+                //HttpContext.Session.SetString("CartQuantity", cartQuantity.ToString());
 
-                #endregion
+                //#endregion
 
                 return RedirectToAction("Index", "Home");
             }
