@@ -6,7 +6,6 @@ using SunStoreAPI.Dtos.Requests;
 using SunStoreAPI.Services;
 using BusinessObjects.ApiResponses;
 using CategoryResponseModel = SunStoreAPI.Dtos.Requests.CategoryResponseModel;
-using Humanizer;
 using BusinessObjects.Constants;
 using Microsoft.AspNetCore.Authorization;
 
@@ -274,11 +273,6 @@ namespace SunStoreAPI.Controllers
             await _context.SaveChangesAsync();
 
             return NoContent();
-        }
-
-        private bool ProductExists(int id)
-        {
-            return _context.Products.Any(e => e.Id == id);
         }
     }
 }

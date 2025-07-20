@@ -75,17 +75,17 @@
                             </td>
                             <td style="width:10%;">
                                 <img style="width:100%;" src="@(item.Image != null
-                                    ? item.Image
-                                    : Url.Content("~/ProductImg/default.jpg"))" />
-                            </td>
-                            <td>
-                                @Html.DisplayFor(modelItem => item.Description)
-                            </td>
-                            <td>
-                                @Html.DisplayFor(modelItem => item.ReleaseDate)
-                            </td>
-                            <td>
-                                @if (item.IsDeleted.HasValue)
+                                                                                                                                                      ? item.Image
+                                                                                                                                                      : Url.Content("~/ProductImg/default.jpg"))" />
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.Description)
+                    </td>
+                    <td>
+                        @Html.DisplayFor(modelItem => item.ReleaseDate)
+                    </td>
+                    <td>
+                        @if (item.IsDeleted.HasValue)
                                 {
                                     @if (item.IsDeleted.Value)
                                     {
@@ -103,8 +103,27 @@
                             <td>
                                 <div class="d-flex gap-3">
                                     <a class="btn btn-primary radius" asp-action="Edit" asp-route-id="@item.Id">Edit</a>
-                                    <a class="btn btn-success primary radius" asp-action="ProductDetail"
-                                    asp-controller="Home" asp-route-id="@item.ProductOptions?.FirstOrDefault()?.Id">Details</a>
+
+                                    @if (item.ProductOptions?.FirstOrDefault() != null)
+                                    {
+                                        <a class="btn btn-success primary radius"
+                                           asp-action="ProductDetail"
+                                           asp-controller="Home"
+                                           asp-route-id="@item.ProductOptions?.FirstOrDefault()?.Id">
+                                            Details
+                                        </a>
+                                    }
+
+                                    else
+                                    {
+                                        <a class="btn btn-secondary radius"
+                                        href="#"
+                                        title="Không thể xem chi tiết sản phẩm chưa có option nào."
+                                        onclick="return false;">
+                                            Details
+                                        </a>
+                                    }
+
                                     <a class="btn radius text-white toggle-status-btn @(item.IsDeleted.Value ? "btn-success" : "btn-danger")"
                                        data-id="@item.Id">
                                         @(item.IsDeleted.Value ? "Restore" : "Deactivate")
@@ -118,24 +137,24 @@
         </table>
         <nav class="pb-4 pt-2">
             @Html.PagedListPager(
-                     new StaticPagedList<Product>(Model.Items, Model.CurrentPage, 9, Model.TotalPages * 9),
-                     page => Url.Action("Index", "Products", new
-                     {
-                         page = page,
-                         keyword = Context.Request.Query["keyword"],
-                     }),
-                     new PagedListRenderOptions()
-            {
-                LiElementClasses = new List<String> { "page-item" },
-                PageClasses = new List<String> { "page-link" },
+            new StaticPagedList<Product>(Model.Items, Model.CurrentPage, 9, Model.TotalPages * 9),
+                        page => Url.Action("Index", "Products", new
+                        {
+                            page = page,
+                            keyword = Context.Request.Query["keyword"],
+                        }),
+                        new PagedListRenderOptions()
+                        {
+                            LiElementClasses = new List<String> { "page-item" },
+                            PageClasses = new List<String> { "page-link" },
 
-                DisplayLinkToFirstPage = PagedListDisplayMode.Always,
-                DisplayLinkToLastPage = PagedListDisplayMode.Always,
+                            DisplayLinkToFirstPage = PagedListDisplayMode.Always,
+                            DisplayLinkToLastPage = PagedListDisplayMode.Always,
 
-                LinkToFirstPageFormat = "«",
-                LinkToLastPageFormat = "»",
-            }
-                     )
+                            LinkToFirstPageFormat = "«",
+                            LinkToLastPageFormat = "»",
+                        }
+                        )
         </nav>
     </div>
 </div>

@@ -129,6 +129,8 @@ namespace SunStore.Controllers
 
             var categories = await _categoryAPIService.GetAllAsync();
 
+            var options = await _optionAPIService.GetAllByProductIdAsync(product.Id);
+
             var vm = new EditProductRequestViewModel
             {
                 Categories = categories.Select(c => new SelectListItem
@@ -141,6 +143,7 @@ namespace SunStore.Controllers
                 ImageUrl = product.Image,
                 IsDeleted = product.IsDeleted,
                 Name = product.Name,
+                ProductOptions = options,
             };
 
             return View(vm);
