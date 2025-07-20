@@ -41,9 +41,14 @@ namespace SunStore.Controllers
         {
             if (ModelState.IsValid)
             {
-                var success = await _voucherService.CreateAsync(voucher);
-                if (success) return RedirectToAction(nameof(Index));
-                ModelState.AddModelError("", "Tạo voucher thất bại.");
+                var response = await _voucherService.CreateAsync(voucher);
+                if (response.IsSuccess) return RedirectToAction(nameof(Index));
+                string message = "Tạo voucher thất bại.";
+                if(response.ErrorMessage == "Voucher code has existed.")
+                {
+                    message = "Tạo voucher thất bại do Voucher Code đã tồn tại";
+                }
+                ModelState.AddModelError("", message);
             }
             return View(voucher);
         }

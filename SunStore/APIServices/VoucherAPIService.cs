@@ -1,5 +1,6 @@
 ﻿using BusinessObjects.Models;
 using System.Net.Http.Json;
+using System.Text.Json;
 
 namespace SunStore.APIServices
 {
@@ -23,10 +24,25 @@ namespace SunStore.APIServices
             return await _httpClient.GetFromJsonAsync<Voucher>($"Vouchers/{id}");
         }
 
-        public async Task<bool> CreateAsync(Voucher voucher)
+        public async Task<(bool IsSuccess, string? ErrorMessage)> CreateAsync(Voucher voucher)
         {
             var response = await _httpClient.PostAsJsonAsync("Vouchers", voucher);
-            return response.IsSuccessStatusCode;
+
+            if (response.IsSuccessStatusCode)
+            {
+                return (true, null);
+            }
+            else
+            {
+                var content = await response.Content.ReadAsStringAsync();
+
+                var errorObj = JsonSerializer.Deserialize<Dictionary<string, string>>(content);
+                if (errorObj != null && errorObj.TryGetValue("message", out var msg))
+                {
+                    return (false, msg);
+                }
+            }
+            return (false, "Unknown error occurred while creating voucher.");
         }
 
         public async Task<bool> UpdateAsync(int id, Voucher voucher)

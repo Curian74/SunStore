@@ -40,6 +40,11 @@ namespace SunStoreAPI.Controllers
         [HttpPost]
         public async Task<ActionResult<Voucher>> CreateVoucher(Voucher voucher)
         {
+            if(_context.Vouchers.Any(v => v.Code == voucher.Code))
+            {
+                return BadRequest(new { message = "Voucher code has existed." });
+
+            }
             _context.Vouchers.Add(voucher);
             await _context.SaveChangesAsync();
 
