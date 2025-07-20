@@ -44,7 +44,7 @@ namespace SunStoreAPI.Controllers
             {
                 CurrentPage = page ?? 1,
                 PageSize = pageSize,
-                TotalItems = orders.Count,
+                TotalItems = orders.Count-1,
                 Items = orders.OrderByDescending(o => o.DateTime)
                                 .Skip(((page ?? 1) - 1) * pageSize)
                                 .Take(pageSize)

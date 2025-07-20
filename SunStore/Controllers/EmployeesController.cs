@@ -71,7 +71,8 @@ namespace SunStore.Controllers
         //Shipper parts
         public async Task<IActionResult> Order()
         {
-            int shipperId = int.Parse(HttpContext!.Session.GetString("UserId"));
+            string uid = User.FindFirst(ClaimTypes.NameIdentifier)!.Value;
+            int shipperId = int.Parse(uid);
             var orders = await _context.Orders.Where(o => o.ShipperId == shipperId).ToListAsync();
             return View(orders);
         }
