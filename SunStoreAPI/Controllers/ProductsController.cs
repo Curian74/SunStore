@@ -53,12 +53,13 @@ namespace SunStoreAPI.Controllers
             var productQuery = _context.Products
                 .Include(b => b.Category)
                 .Include(b => b.ProductOptions)
+                .Where(p => p.ProductOptions != null && p.ProductOptions.Count > 0)
                 .AsQueryable();
 
             if (!string.IsNullOrEmpty(keyword))
             {
                 productQuery = productQuery.Where(p =>
-        p.Name != null && p.Name.ToLower().Contains(keyword.ToLower()));
+                p.Name != null && p.Name.ToLower().Contains(keyword.ToLower()));
             }
 
             if (categoryID.HasValue)
