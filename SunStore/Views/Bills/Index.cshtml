@@ -67,7 +67,7 @@
                             <td>@item.DateTime?.ToString("dd/MM/yyyy HH:mm:ss")</td>
                             <td style="position:relative;">
                                 <p style="color:white; background-color:@color; font-weight:bold; position:absolute; padding:auto 5px;
-                                          border:none; border-radius:4px;text-align:center; width:80%; height:40px; display:flex;align-items:center;">
+                                                  border:none; border-radius:4px;text-align:center; width:80%; height:40px; display:flex;align-items:center;">
                                     <span style="width:100%;text-align:center;" id="stt_@item.Id">@item.Status</span>
                                 </p>
                             </td>
@@ -75,14 +75,24 @@
                                 <a asp-controller="Bills" asp-action="Detail" asp-route-id="@item.Id" class="genric-btn success-border radius">Xem chi tiết</a>
                             </td>
 
-                            @if (item.Status == "Đã đặt hàng")
+                            @if (item.Status == OrderStatusConstant.Ordered)
                             {
                                 <td style="text-align:center;width:160px;">
                                     <a href="javascript:void(0)" data-id="@item.Id" id="canc_@item.Id" class="genric-btn success-border radius canc">Huỷ đơn hàng</a>
                                 </td>
                             }
+
+                            @if (item.Status == OrderStatusConstant.Shipped)
+                            {
+                                <td style="text-align:center;width:160px;">
+                                    <a href="javascript:void(0)" data-id="@item.Id" id="received_@item.Id" class="genric-btn success-border radius received">
+                                        Xác nhận đơn
+                                    </a>
+                                </td>
+                            }
+
                             else
-                            @if (item.Status == "Bị từ chối")
+                            @if (item.Status == OrderStatusConstant.Denied)
                             {
                                 <td style="text-align:center;width:160px;">
                                     <a href="javascript:void(0)" data-id="@item.Id" class="genric-btn success-border radius reason" style="width:100%;">Xem lí do</a>
@@ -99,19 +109,19 @@
 
         <div class="pagination-container">
             @Html.PagedListPager(
-                Model, 
-                page => Url.Action("Index", new
-                {
-                    page,
-                    fromDate = ViewBag.From,
-                    toDate = ViewBag.To
-                }),
-                new PagedListRenderOptions
-                {
-                    LiElementClasses = new[] { "page-item" },
-                    PageClasses = new[] { "page-link" },
-                    UlElementClasses = new[] { "pagination", "justify-content-center" }
-                })
+            Model,
+            page => Url.Action("Index", new
+            {
+                page,
+                fromDate = ViewBag.From,
+                toDate = ViewBag.To
+            }),
+                        new PagedListRenderOptions
+                        {
+                            LiElementClasses = new[] { "page-item" },
+                            PageClasses = new[] { "page-link" },
+                            UlElementClasses = new[] { "pagination", "justify-content-center" }
+                        })
         </div>
 
 

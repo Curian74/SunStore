@@ -366,5 +366,21 @@ namespace SunStoreAPI.Controllers
             }
             return Ok(new { success = false });
         }
+
+        [HttpPost("received/{orderId}")]
+        public async Task<IActionResult> ConfirmReceived(int orderId)
+        {
+            var order = await _context.Orders.FindAsync(orderId);
+
+            if (order == null)
+            {
+                return BadRequest(new { success = false });
+            }
+
+            order.Status = OrderStatusConstant.Received;
+            await _context.SaveChangesAsync();
+
+            return Ok(new { success = true });
+        }
     }
 }

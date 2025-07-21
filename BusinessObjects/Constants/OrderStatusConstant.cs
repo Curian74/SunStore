@@ -7,5 +7,6 @@
         public const string Shipping = "Đang giao hàng";
         public const string Shipped = "Đã giao hàng";
         public const string Canceled = "Đã hủy";
+        public const string Received = "Đã nhận hàng";
     }
 }

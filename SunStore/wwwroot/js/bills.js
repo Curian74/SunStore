@@ -44,6 +44,47 @@ $(document).ready(function () {
         });
     });
 
+    $(".received").click(function () {
+        var id = $(this).data("id");
+        Swal.fire({
+            title: "Xác nhận là đã nhận hàng?",
+            text: "Bạn sẽ không thể hoàn tác!",
+            icon: "info",
+            showCancelButton: true,
+            showCloseButton: true,
+            confirmButtonColor: "#3085d6",
+            cancelButtonColor: "#d33",
+            cancelButtonText: "Hủy",
+            confirmButtonText: "Xác nhận"
+        }).then((result) => {
+            if (result.isConfirmed) {
+
+                $.ajax({
+                    url: `https://localhost:7270/api/Orders/received/${id}`,
+                    method: "post",
+                    success: function () {
+                        Swal.fire({
+                            title: "Thành công!",
+                            text: "Xác nhận nhận hàng thành công.",
+                            confirmButtonText: "Đồng ý"
+                        });
+                        var cancelSelector = "#stt_" + id;
+                        var cancSelector = "#received_" + id;
+                        $(cancelSelector).text("Đã nhận hàng");
+                        $(cancSelector).css("display", "none");
+                    },
+                    error: function () {
+                        Swal.fire({
+                            icon: "error",
+                            title: "Ôi...",
+                            text: "Đã có lỗi xảy ra!"
+                        });
+                    }
+                });
+            }
+        });
+    });
+
     $(".reason").click(function () {
         var id = $(this).data("id");
         $.ajax({
