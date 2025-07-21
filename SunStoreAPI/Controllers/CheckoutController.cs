@@ -103,7 +103,7 @@ namespace SunStoreAPI.Controllers
                     Description = $"{request.Address}_{request.PhoneNumber}",
                     FullName = user.FullName,
                     OrderId = new Random().Next(100000, 999999),
-                    ReturnUrl = returnUrl 
+                    ReturnUrl = returnUrl
                 });
 
                 return Ok(new { VnpUrl = vnPayUrl });
@@ -133,10 +133,13 @@ namespace SunStoreAPI.Controllers
                 _context.OrderItems.Update(item);
             }
 
-            if (voucher != null && voucher.Quantity > 0)
+            if (voucher != null && (voucher.Quantity == null || voucher.Quantity > 0))
             {
                 order.TotalPrice = finalTotal;
-                voucher.Quantity--;
+                if(voucher.Quantity != null)
+                {
+                    voucher.Quantity--;
+                }
                 _context.Vouchers.Update(voucher);
             }
 
@@ -224,7 +227,10 @@ namespace SunStoreAPI.Controllers
             {
                 var voucher = await _context.Vouchers.FindAsync(voucherId);
                 total -= (total * voucher.Vpercent / 100);
-                voucher.Quantity--;
+                if (voucher.Quantity != null)
+                {
+                    voucher.Quantity--;
+                }
                 _context.Vouchers.Update(voucher);
             }
 
@@ -277,7 +283,7 @@ namespace SunStoreAPI.Controllers
                 percent = voucher.Vpercent;
 
                 var now = DateTime.Now;
-                if (voucher.Quantity > 0 && voucher.StartDate <= now && voucher.EndDate >= now)
+                if ((voucher.Quantity == null || voucher.Quantity > 0) && voucher.StartDate <= now && voucher.EndDate >= now)
                 {
                     remain = true;
                 }
@@ -298,13 +304,13 @@ namespace SunStoreAPI.Controllers
                     }
                 }
 
-                if (voucher.UserId != null && voucher.UserId != userId)
+                if (voucher.VoucherCustomers != null && !voucher.VoucherCustomers.Any(v => v.CustomerId == userId))
                 {
                     inuse = true;
                 }
             }
 
-            return Ok(new 
+            return Ok(new
             {
                 exist,
                 remain,

@@ -12,4 +12,6 @@ public partial class Customer
     public virtual ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
 
     public virtual User User { get; set; } = null!;
+
+    public virtual ICollection<VoucherCustomer> VoucherCustomers { get; set; } = new List<VoucherCustomer>();
 }
