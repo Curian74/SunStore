@@ -422,10 +422,23 @@ namespace SunStoreAPI.Controllers
 
             Response.Cookies.Append(JWT_COOKIE_NAME, jwtToken, cookieOptions);
 
-            var returnUrl = authenticateResult.Properties?.Items["returnUrl"];
+            string? returnUrl = null;
 
-            var redirectUrl = $"https://localhost:7127/Users/GoogleLoginSuccess?token={Uri.EscapeDataString(jwtToken)}&returnUrl={returnUrl}";
+            if (authenticateResult.Properties != null &&
+                authenticateResult.Properties.Items.TryGetValue("returnUrl", out var rawReturnUrl))
+            {
+                returnUrl = rawReturnUrl;
+            }
+
+            var redirectUrl = $"https://localhost:7127/Users/GoogleLoginSuccess?token={Uri.EscapeDataString(jwtToken)}";
+
+            if (!string.IsNullOrEmpty(returnUrl))
+            {
+                redirectUrl += $"&returnUrl={Uri.EscapeDataString(returnUrl)}";
+            }
+
             return Redirect(redirectUrl);
+
         }
     }
 }
