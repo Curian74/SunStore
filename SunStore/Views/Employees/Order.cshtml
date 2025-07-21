@@ -35,7 +35,7 @@
                             <td>@item.AdrDelivery</td>
                             <td style="position:relative;min-width:150px;">
                                 <p style="color:white; background-color:red; font-weight:bold; position:absolute; padding:auto 5px;
-                                      border:none; border-radius:4px;text-align:center; width:80%; height:40px; display:flex;align-items:center; cursor:pointer;">
+                                              border:none; border-radius:4px;text-align:center; width:80%; height:40px; display:flex;align-items:center; cursor:pointer;">
                                     <span style="width:100%;text-align:center;" id="stt_@item.Id">@item.Status</span>
                                 </p>
                             </td>
@@ -100,9 +100,8 @@
 <script>
     function acceptOrder(orderId) {
         $.ajax({
-            url: '/Employees/Accept',
+            url: `https://localhost:7270/api/Orders/accept/${orderId}`,
             method: 'POST',
-            data: { orderId: orderId },
             success: function (response) {
                 if (response.success) {
                     $('#stt_' + orderId).text('Đang giao hàng'); // Cập nhật trạng thái ngay sau khi chấp nhận
@@ -136,9 +135,8 @@
 
     function rejectOrder(orderId) {
         $.ajax({
-            url: '/Employees/Reject',
+            url: `https://localhost:7270/api/Orders/reject/${orderId}`,
             method: 'POST',
-            data: { orderId: orderId },
             success: function (response) {
                 if (response.success) {
                     $('#stt_' + orderId).text('Bị từ chối');
@@ -172,9 +170,8 @@
 
     function completeOrder(orderId) {
         $.ajax({
-            url: '/Employees/Complete',
+            url: `https://localhost:7270/api/Orders/complete/${orderId}`,
             method: 'POST',
-            data: { orderId: orderId },
             success: function (response) {
                 if (response.success) {
                     $('#stt_' + orderId).text('Đã giao hàng'); // Cập nhật trạng thái từ "Đang giao hàng" thành "Đã giao hàng"
@@ -215,9 +212,8 @@
         }
 
         $.ajax({
-            url: '/Employees/UpdateStatus',
+            url: `https://localhost:7270/api/Orders/status/${orderId}?status=${newStatus}`,
             method: 'POST',
-            data: { orderId: orderId, status: newStatus },
             success: function (response) {
                 if (response.success) {
                     $('#stt_' + orderId).text(newStatus);

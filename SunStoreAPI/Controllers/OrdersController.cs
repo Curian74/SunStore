@@ -306,5 +306,65 @@ namespace SunStoreAPI.Controllers
         {
             return _context.Orders.Any(e => e.Id == id);
         }
+
+        [HttpPost("accept/{orderId}")]
+        public async Task<IActionResult> Accept(int orderId)
+        {
+            var order = await _context.Orders.FindAsync(orderId);
+            if (order == null)
+            {
+                return Ok(new { success = false });
+            }
+
+            order.Status = OrderStatusConstant.Shipping; // Cập nhật trạng thái từ "Đã đặt hàng" sang "Đang giao hàng"
+            await _context.SaveChangesAsync();
+
+            return Ok(new { success = true });
+        }
+
+        [HttpPost("reject/{orderId}")]
+        public async Task<IActionResult> Reject(int orderId)
+        {
+            var order = await _context.Orders.FindAsync(orderId);
+            var items = _context.OrderItems.Include(o => o.ProductOption).Where(o => o.OrderId == orderId).ToList();
+            if (order == null)
+            {
+                return Ok(new { success = false });
+            }
+            order.Status = OrderStatusConstant.Ordered;
+            order.ShipperId = null;
+            _context.Orders.Update(order);
+            await _context.SaveChangesAsync();
+
+            return Ok(new { success = true });
+        }
+
+        [HttpPost("complete/{orderId}")]
+        public async Task<IActionResult> Complete(int orderId)
+        {
+            var order = await _context.Orders.FindAsync(orderId);
+            if (order == null)
+            {
+                return Ok(new { success = false });
+            }
+
+            order.Status = OrderStatusConstant.Shipped; // Cập nhật trạng thái từ "Đang giao hàng" sang "Đã giao hàng"
+            await _context.SaveChangesAsync();
+
+            return Ok(new { success = true });
+        }
+
+        [HttpPost("status/{orderId}")]
+        public async Task<IActionResult> UpdateStatus(int orderId, string status)
+        {
+            var order = await _context.Orders.FindAsync(orderId);
+            if (order != null)
+            {
+                order.Status = status;
+                _context.SaveChanges();
+                return Ok(new { success = true });
+            }
+            return Ok(new { success = false });
+        }
     }
 }
