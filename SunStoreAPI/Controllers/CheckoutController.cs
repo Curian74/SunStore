@@ -270,7 +270,9 @@ namespace SunStoreAPI.Controllers
         [HttpGet("use-voucher")]
         public async Task<IActionResult> UseVoucher([FromQuery] string code, [FromQuery] int userId)
         {
-            var voucher = await _context.Vouchers.FirstOrDefaultAsync(v => v.Code == code);
+            var voucher = await _context.Vouchers
+                .Include(v => v.VoucherCustomers)
+                .FirstOrDefaultAsync(v => v.Code == code);
 
             bool inuse = false;
             bool exist = false;
@@ -304,10 +306,16 @@ namespace SunStoreAPI.Controllers
                     }
                 }
 
-                if (voucher.VoucherCustomers != null && !voucher.VoucherCustomers.Any(v => v.CustomerId == userId))
+                if (voucher.VoucherCustomers?.Count == 0)
+                {
+                    inuse = false;
+                }
+
+                else if (voucher.VoucherCustomers != null && !voucher.VoucherCustomers.Any(v => v.CustomerId == userId))
                 {
                     inuse = true;
                 }
+
             }
 
             return Ok(new

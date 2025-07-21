@@ -1,16 +1,22 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using BusinessObjects.Models;
 using SunStore.APIServices;
+using System.Threading.Tasks;
+using BusinessObjects.Queries;
+using SunStore.ViewModel.DataModels;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace SunStore.Controllers
 {
     public class VouchersController : Controller
     {
         private readonly VoucherAPIService _voucherService;
+        private readonly UserAPIService _userAPIService;
 
-        public VouchersController(VoucherAPIService voucherService)
+        public VouchersController(VoucherAPIService voucherService, UserAPIService userAPIService)
         {
             _voucherService = voucherService;
+            _userAPIService = userAPIService;
         }
 
         // GET: Vouchers
@@ -29,28 +35,83 @@ namespace SunStore.Controllers
         }
 
         // GET: Vouchers/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            return View();
+            var queryObjectMock = new UserQueryObject
+            {
+                CurrentPage = 1,
+                PageSize = int.MaxValue,
+            };
+
+            var users = await _userAPIService.GetPagedUserAsync(queryObjectMock);
+
+            var vm = new CreateVoucherViewModel
+            {
+                Users = users!.Data!.Items.Select(x => new SelectListItem
+                {
+                    Text = x.Username,
+                    Value = x.Id.ToString(),
+                })
+                .ToList(),
+            };
+
+            return View(vm);
         }
 
         // POST: Vouchers/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(Voucher voucher)
+        public async Task<IActionResult> Create(CreateVoucherViewModel model)
         {
-            if (ModelState.IsValid)
+            try
             {
-                var response = await _voucherService.CreateAsync(voucher);
-                if (response.IsSuccess) return RedirectToAction(nameof(Index));
-                string message = "Tạo voucher thất bại.";
-                if(response.ErrorMessage == "Voucher code has existed.")
+                if (ModelState.IsValid)
                 {
-                    message = "Tạo voucher thất bại do Voucher Code đã tồn tại";
+                    var response = await _voucherService.CreateAsync(model);
+                    if (response!.IsSuccessful)
+                        return RedirectToAction(nameof(Index));
+
+                    var message = response.Message;
+
+                    ModelState.AddModelError(string.Empty, message!);
                 }
-                ModelState.AddModelError("", message);
+
+                var queryObjectMock = new UserQueryObject
+                {
+                    CurrentPage = 1,
+                    PageSize = int.MaxValue,
+                };
+
+                var users = await _userAPIService.GetPagedUserAsync(queryObjectMock);
+
+                model.Users = users!.Data!.Items.Select(x => new SelectListItem
+                {
+                    Text = x.Username,
+                    Value = x.Id.ToString(),
+                }).ToList();
+
+                return View(model);
             }
-            return View(voucher);
+            catch (Exception)
+            {
+                ModelState.AddModelError(string.Empty, "Đã xảy ra lỗi không xác định khi tạo voucher.");
+
+                var queryObjectMock = new UserQueryObject
+                {
+                    CurrentPage = 1,
+                    PageSize = int.MaxValue,
+                };
+
+                var users = await _userAPIService.GetPagedUserAsync(queryObjectMock);
+
+                model.Users = users!.Data!.Items.Select(x => new SelectListItem
+                {
+                    Text = x.Username,
+                    Value = x.Id.ToString(),
+                }).ToList();
+
+                return View(model);
+            }
         }
 
         // GET: Vouchers/Edit/5

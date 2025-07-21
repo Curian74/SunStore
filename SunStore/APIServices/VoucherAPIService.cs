@@ -1,4 +1,6 @@
-﻿using BusinessObjects.Models;
+﻿using BusinessObjects.ApiResponses;
+using BusinessObjects.Models;
+using SunStore.ViewModel.DataModels;
 using System.Net.Http.Json;
 using System.Text.Json;
 
@@ -24,25 +26,13 @@ namespace SunStore.APIServices
             return await _httpClient.GetFromJsonAsync<Voucher>($"Vouchers/{id}");
         }
 
-        public async Task<(bool IsSuccess, string? ErrorMessage)> CreateAsync(Voucher voucher)
+        public async Task<BaseApiResponse?> CreateAsync(CreateVoucherViewModel model)
         {
-            var response = await _httpClient.PostAsJsonAsync("Vouchers", voucher);
+            var response = await _httpClient.PostAsJsonAsync("Vouchers", model);
 
-            if (response.IsSuccessStatusCode)
-            {
-                return (true, null);
-            }
-            else
-            {
-                var content = await response.Content.ReadAsStringAsync();
+            var result = await response.Content.ReadFromJsonAsync<BaseApiResponse>();
 
-                var errorObj = JsonSerializer.Deserialize<Dictionary<string, string>>(content);
-                if (errorObj != null && errorObj.TryGetValue("message", out var msg))
-                {
-                    return (false, msg);
-                }
-            }
-            return (false, "Unknown error occurred while creating voucher.");
+            return result;
         }
 
         public async Task<bool> UpdateAsync(int id, Voucher voucher)

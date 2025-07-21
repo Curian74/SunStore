@@ -1,6 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+﻿using BusinessObjects.ApiResponses;
 using BusinessObjects.Models;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using SunStoreAPI.Dtos.Requests;
 
 namespace SunStoreAPI.Controllers
 {
@@ -38,17 +40,49 @@ namespace SunStoreAPI.Controllers
 
         // POST: api/Vouchers
         [HttpPost]
-        public async Task<ActionResult<Voucher>> CreateVoucher(Voucher voucher)
+        public async Task<ActionResult<Voucher>> CreateVoucher(CreateVoucherRequestDto dto)
         {
-            if(_context.Vouchers.Any(v => v.Code == voucher.Code))
+            if (_context.Vouchers.Any(v => v.Code == dto.Code))
             {
-                return BadRequest(new { message = "Voucher code has existed." });
-
+                return BadRequest(new BaseApiResponse
+                {
+                    IsSuccessful = false,
+                    Message = "Voucher đã tồn tại."
+                });
             }
-            _context.Vouchers.Add(voucher);
+
+            var voucher = new Voucher
+            {
+                Code = dto.Code,
+                EndDate = dto.EndDate,
+                Quantity = dto.Quantity,
+                StartDate = dto.StartDate,
+                Vpercent = dto.Vpercent,
+            };
+
+            await _context.Vouchers.AddAsync(voucher);
             await _context.SaveChangesAsync();
 
-            return CreatedAtAction(nameof(GetVoucher), new { id = voucher.VoucherId }, voucher);
+            if (dto.UserIds != null)
+            {
+                foreach (var v in dto.UserIds)
+                {
+                    var customerVoucher = new VoucherCustomer
+                    {
+                        VoucherId = voucher.VoucherId,
+                        CustomerId = v
+                    };
+                    await _context.VoucherCustomers.AddAsync(customerVoucher);
+                }
+            }
+
+            await _context.SaveChangesAsync();
+
+            return Ok(new BaseApiResponse
+            {
+                IsSuccessful = true,
+                Message = "Thành công."
+            });
         }
 
         // PUT: api/Vouchers/5
