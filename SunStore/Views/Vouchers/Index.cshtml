@@ -29,9 +29,9 @@
                     <th>
                         @Html.DisplayNameFor(model => model.EndDate)
                     </th>
-                    <th>
+                    @* <th>
                         @Html.DisplayNameFor(model => model.UserId)
-                    </th>
+                    </th> *@
                     <th></th>
                 </tr>
             </thead>
@@ -58,9 +58,9 @@
                         <td>
                             @Html.DisplayFor(modelItem => item.EndDate)
                         </td>
-                        <td>
+                        @* <td>
                             @Html.DisplayFor(modelItem => item.UserId)
-                        </td>
+                        </td> *@
                         <td>
                             <a class="genric-btn warning radius" style="width: 90px;height: 38px;margin-bottom: 4px;" asp-action="Edit" asp-route-id="@item.VoucherId">Edit</a>
                             <a class="genric-btn primary radius" style="width: 90px;height: 38px;margin-bottom: 4px;" asp-action="Details" asp-route-id="@item.VoucherId">Details</a>
