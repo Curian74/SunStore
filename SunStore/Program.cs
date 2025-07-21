@@ -147,8 +147,11 @@ namespace SunStore
 
                 if (response.StatusCode == 401)
                 {
-                    response.Redirect("/Users/Login");
+                    var request = context.HttpContext.Request;
+                    var returnUrl = request.Path + request.QueryString;
+                    response.Redirect($"/Users/Login?returnUrl={Uri.EscapeDataString(returnUrl)}");
                 }
+
                 else if (response.StatusCode == 403)
                 {
                     response.Redirect("/Users/AccessDenied");

@@ -129,6 +129,13 @@
                     <button type="submit" class="btn_3" disabled>Thêm vào giỏ hàng</button>
                 </div>
                 <p style="color:red;font-style:italic">Vui lòng đăng nhập để mua hàng.</p>
+
+                <a class="font-italic"
+                   asp-action="Login"
+                   asp-controller="Users"
+                   asp-route-returnUrl="@(Context.Request.Path + Context.Request.QueryString)">
+                    Đăng nhập ngay
+                </a>
             }
 
         </div>

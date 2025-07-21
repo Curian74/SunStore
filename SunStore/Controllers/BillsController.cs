@@ -1,4 +1,5 @@
 ﻿using BusinessObjects.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SunStore.APIServices;
 using System.Security.Claims;
@@ -15,6 +16,7 @@ namespace SunStore.Controllers
             _billService = billService;
         }
 
+        [Authorize]
         public async Task<IActionResult> Index(DateTime? fromDate, DateTime? toDate, int? page)
         {
             var result = await _billService.GetBillsAsync(fromDate, toDate, page ?? 1);

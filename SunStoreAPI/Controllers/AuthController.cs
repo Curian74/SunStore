@@ -332,12 +332,18 @@ namespace SunStoreAPI.Controllers
         }
 
         [HttpGet("google-login")]
-        public IActionResult GoogleLogin()
+        public IActionResult GoogleLogin([FromQuery] string? returnUrl)
         {
             var properties = new AuthenticationProperties
             {
                 RedirectUri = Url.Action("GoogleCallback", "Auth")
             };
+
+            if (!string.IsNullOrEmpty(returnUrl))
+            {
+                properties.Items["returnUrl"] = returnUrl;
+            }
+
             return Challenge(properties, "Google");
         }
 
@@ -416,7 +422,9 @@ namespace SunStoreAPI.Controllers
 
             Response.Cookies.Append(JWT_COOKIE_NAME, jwtToken, cookieOptions);
 
-            var redirectUrl = $"https://localhost:7127/Users/GoogleLoginSuccess?token={Uri.EscapeDataString(jwtToken)}";
+            var returnUrl = authenticateResult.Properties?.Items["returnUrl"];
+
+            var redirectUrl = $"https://localhost:7127/Users/GoogleLoginSuccess?token={Uri.EscapeDataString(jwtToken)}&returnUrl={returnUrl}";
             return Redirect(redirectUrl);
         }
     }
