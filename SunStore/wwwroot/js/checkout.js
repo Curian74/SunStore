@@ -75,6 +75,69 @@ $(document).ready(function () {
         var phone = $(".pho").val();
         var note = $(".note").val();
         var voucher = $("#ipv").val();
+        var payment = "COD";
+
+        var mess = "Không được để trống ";
+        var valid = true;
+
+        if (!address) {
+            mess += "Địa chỉ";
+            valid = false;
+        }
+
+        if (!phone) {
+            mess += valid ? "SĐT" : " và SĐT";
+            valid = false;
+        }
+
+        if (!valid) {
+            Swal.fire(mess + "!");
+            return;
+        }
+
+        Swal.fire({
+            title: "Xác nhận đặt cọc",
+            text: "Bạn cần thanh toán trước 30% giá trị đơn hàng để đặt cọc. Tiếp tục thanh toán?",
+            icon: "info",
+            showCancelButton: true,
+            confirmButtonText: "Thanh toán cọc",
+            cancelButtonText: "Huỷ"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    type: "POST",
+                    url: "/Checkout/CreateDeposit",
+                    data: {
+                        address,
+                        number: phone,
+                        note,
+                        voucher,
+                        payment
+                    },
+                    success: function (data) {
+                        if (data && data.vnpUrl) {
+                            window.location.href = data.vnpUrl;
+                        } else {
+                            Swal.fire("Có lỗi xảy ra khi khởi tạo thanh toán cọc.");
+                        }
+                    },
+                    error: function () {
+                        Swal.fire("Có lỗi xảy ra khi tạo đơn hàng.");
+                    }
+                });
+            }
+        });
+    });
+
+
+
+
+    /* COD cũ không cọc
+    $(".order").click(function () {
+        var address = $(".adr").val();
+        var phone = $(".pho").val();
+        var note = $(".note").val();
+        var voucher = $("#ipv").val();
         var payment = "COD"
         console.log(address); console.log(phone); console.log(note); console.log(voucher);
         var checkad = true, checkph = true;
@@ -137,5 +200,9 @@ $(document).ready(function () {
             });
         }
     });
+    */
+
+
+
 });
 
