@@ -141,6 +141,17 @@
                                 <th scope="col" colspan="3">Tổng cộng</th>
                                 <th scope="col">@($"{Model.Order.TotalPrice:N0}đ")</th>
                             </tr>
+                            @if (Model.Payment == "COD" && Model.Status != "Đã giao hàng")
+                            {
+                                <tr>
+                                    <th scope="col" colspan="3">Đặt cọc (30%)</th>
+                                    <th scope="col">@($"{Model.Order.TotalPrice * 0.3:N0}đ")</th>
+                                </tr>
+                                <tr>
+                                    <th scope="col" colspan="3">Số tiền còn phải thanh toán</th>
+                                    <th scope="col">@($"{Model.Order.TotalPrice * 0.7:N0}đ")</th>
+                                </tr>
+                            }
                         </tfoot>
                     </table>
                 </div>

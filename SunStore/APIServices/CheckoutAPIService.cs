@@ -43,6 +43,19 @@ namespace SunStore.APIServices
             return result;
         }
 
+        public async Task<(bool IsSuccessful, JsonElement Data)> CreateDepositVNPayAsync(OrderRequestViewModel model)
+        {
+            var response = await _httpClient.PostAsJsonAsync("Checkout/Deposit", model);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadFromJsonAsync<JsonElement>();
+                return (true, json);
+            }
+
+            return (false, default);
+        }
+
 
         // Gọi API thanh toán VNPay
         public async Task<string> GetVnPayUrlAsync(VnPayRequestViewModel model)
