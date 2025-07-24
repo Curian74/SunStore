@@ -75,10 +75,13 @@ namespace SunStore.Controllers
                 if (ModelState.IsValid)
                 {
                     var response = await _voucherService.CreateAsync(model);
-                    if (response!.IsSuccessful)
-                        return RedirectToAction(nameof(Index));
+                    var message = response!.Message;
 
-                    var message = response.Message;
+                    if (response!.IsSuccessful)
+                    {
+                        TempData["voucherSuccess"] = message;
+                        return RedirectToAction(nameof(Index));
+                    }
 
                     ModelState.AddModelError(string.Empty, message!);
                 }
@@ -180,10 +183,13 @@ namespace SunStore.Controllers
                 if (ModelState.IsValid)
                 {
                     var response = await _voucherService.UpdateAsync(model);
-                    if (response!.IsSuccessful)
-                        return RedirectToAction(nameof(Index));
+                    var message = response!.Message;
 
-                    var message = response.Message;
+                    if (response!.IsSuccessful)
+                    {
+                        TempData["voucherSuccess"] = message;
+                        return RedirectToAction(nameof(Index));
+                    }
 
                     ModelState.AddModelError(string.Empty, message!);
                 }

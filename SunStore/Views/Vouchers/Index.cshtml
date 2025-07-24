@@ -11,6 +11,15 @@
         <p style="margin-right: 30px; margin-bottom: 20px">
             <a class="genric-btn info radius" asp-action="Create">Tạo Voucher</a>
         </p>
+
+        @if (TempData["voucherSuccess"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <p>@TempData["voucherSuccess"]</p>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
         <table class="table table-hover">
             <thead class="bg-info">
                 <tr>
