@@ -64,6 +64,33 @@ namespace SunStore.Controllers
             return RedirectToAction("Index");
         }
 
+        [HttpPost]
+        public async Task<IActionResult> CreateDeposit(string address, string number, string note, string voucher, string payment)
+        {
+            var userIdStr = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+            var userId = int.Parse(userIdStr);
+
+            var model = new OrderRequestViewModel
+            {
+                UserId = userId,
+                Address = address,
+                PhoneNumber = number,
+                Note = note,
+                VoucherCode = voucher,
+                PaymentMethod = payment
+            };
+
+            var result = await _checkoutService.CreateDepositVNPayAsync(model);
+
+            if (result.IsSuccessful && result.Data.TryGetProperty("vnpUrl", out var url))
+            {
+                return Json(new { vnpUrl = url.GetString() });
+            }
+
+            return BadRequest("Không tạo được thanh toán cọc.");
+        }
+
+
 
         [HttpGet]
         public async Task<JsonResult> UseVoucher(string code)
