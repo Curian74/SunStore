@@ -1,6 +1,7 @@
 ﻿using BusinessObjects.ApiResponses;
 using BusinessObjects.Models;
 using SunStore.ViewModel.DataModels;
+using SunStore.ViewModel.RequestModels;
 using System.Net.Http.Json;
 using System.Text.Json;
 
@@ -35,10 +36,13 @@ namespace SunStore.APIServices
             return result;
         }
 
-        public async Task<bool> UpdateAsync(int id, Voucher voucher)
+        public async Task<BaseApiResponse?> UpdateAsync(EditVoucherViewModel model)
         {
-            var response = await _httpClient.PutAsJsonAsync($"Vouchers/{id}", voucher);
-            return response.IsSuccessStatusCode;
+            var response = await _httpClient.PutAsJsonAsync($"Vouchers/{model.VoucherId}", model);
+
+            var result = await response.Content.ReadFromJsonAsync<BaseApiResponse>();
+
+            return result;
         }
 
         public async Task<bool> DeleteAsync(int id)

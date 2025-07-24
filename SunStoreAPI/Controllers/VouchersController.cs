@@ -87,32 +87,55 @@ namespace SunStoreAPI.Controllers
 
         // PUT: api/Vouchers/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateVoucher(int id, Voucher voucher)
+        public async Task<IActionResult> UpdateVoucher(int id, EditVoucherRequestDto dto)
         {
-            if (id != voucher.VoucherId)
+            var voucher = await _context.Vouchers.FirstOrDefaultAsync(x => x.VoucherId == id);
+
+            if (voucher == null)
             {
-                return BadRequest();
+                return NotFound();
             }
 
-            _context.Entry(voucher).State = EntityState.Modified;
-
-            try
+            if (_context.Vouchers.Any(v => v.Code == dto.Code && v.Code != dto.Code))
             {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!VoucherExists(id))
+                return BadRequest(new BaseApiResponse
                 {
-                    return NotFound();
-                }
-                else
+                    IsSuccessful = false,
+                    Message = "Voucher đã tồn tại."
+                });
+            }
+
+            voucher.Code = dto.Code;
+            voucher.StartDate = dto.StartDate;
+            voucher.EndDate = dto.EndDate;
+            voucher.Quantity = dto.Quantity;
+            voucher.Vpercent = dto.Vpercent;
+
+            if (dto.UserIds != null)
+            {
+                // Remove old records.
+                var oldCustomers = _context.VoucherCustomers.Where(vc => vc.VoucherId == voucher.VoucherId);
+                _context.VoucherCustomers.RemoveRange(oldCustomers);
+
+                // Add.
+                foreach (var userId in dto.UserIds)
                 {
-                    throw;
+                    var newVoucherCustomer = new VoucherCustomer
+                    {
+                        VoucherId = voucher.VoucherId,
+                        CustomerId = userId
+                    };
+                    await _context.VoucherCustomers.AddAsync(newVoucherCustomer);
                 }
             }
 
-            return NoContent();
+            await _context.SaveChangesAsync();
+
+            return Ok(new BaseApiResponse
+            {
+                IsSuccessful = true,
+                Message = "Thành công."
+            });
         }
 
         // DELETE: api/Vouchers/5

@@ -1,12 +1,15 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using BusinessObjects.Models;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using System.ComponentModel.DataAnnotations;
 
-namespace SunStore.ViewModel.DataModels
+namespace SunStore.ViewModel.RequestModels
 {
-    public class CreateVoucherViewModel
+    public class EditVoucherViewModel
     {
         public List<SelectListItem>? Users { get; set; }
         public int UserId { get; set; }
+
+        public int VoucherId { get; set; }
 
         [Required]
         public string? Code { get; set; }

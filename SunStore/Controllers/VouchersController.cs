@@ -1,10 +1,13 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using BusinessObjects.Constants;
 using BusinessObjects.Models;
-using SunStore.APIServices;
-using System.Threading.Tasks;
 using BusinessObjects.Queries;
-using SunStore.ViewModel.DataModels;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.EntityFrameworkCore;
+using SunStore.APIServices;
+using SunStore.ViewModel.DataModels;
+using SunStore.ViewModel.RequestModels;
+using System.Threading.Tasks;
 
 namespace SunStore.Controllers
 {
@@ -12,11 +15,14 @@ namespace SunStore.Controllers
     {
         private readonly VoucherAPIService _voucherService;
         private readonly UserAPIService _userAPIService;
+        private readonly SunStoreContext _context;
 
-        public VouchersController(VoucherAPIService voucherService, UserAPIService userAPIService)
+        public VouchersController(VoucherAPIService voucherService, UserAPIService userAPIService,
+            SunStoreContext context)
         {
             _voucherService = voucherService;
             _userAPIService = userAPIService;
+            _context = context;
         }
 
         // GET: Vouchers
@@ -41,6 +47,7 @@ namespace SunStore.Controllers
             {
                 CurrentPage = 1,
                 PageSize = int.MaxValue,
+                Role = int.Parse(UserRoleConstants.Customer),
             };
 
             var users = await _userAPIService.GetPagedUserAsync(queryObjectMock);
@@ -80,6 +87,7 @@ namespace SunStore.Controllers
                 {
                     CurrentPage = 1,
                     PageSize = int.MaxValue,
+                    Role = int.Parse(UserRoleConstants.Customer),
                 };
 
                 var users = await _userAPIService.GetPagedUserAsync(queryObjectMock);
@@ -100,6 +108,7 @@ namespace SunStore.Controllers
                 {
                     CurrentPage = 1,
                     PageSize = int.MaxValue,
+                    Role = int.Parse(UserRoleConstants.Customer),
                 };
 
                 var users = await _userAPIService.GetPagedUserAsync(queryObjectMock);
@@ -119,23 +128,104 @@ namespace SunStore.Controllers
         {
             var voucher = await _voucherService.GetByIdAsync(id);
             if (voucher == null) return NotFound();
-            return View(voucher);
+
+            var queryObjectMock = new UserQueryObject
+            {
+                CurrentPage = 1,
+                PageSize = int.MaxValue,
+                Role = int.Parse(UserRoleConstants.Customer),
+            };
+
+            var voucherCustomer = _context.VoucherCustomers
+                .Where(x => x.VoucherId == voucher.VoucherId)
+                .Select(x => x.CustomerId!.Value)
+                .ToList();
+
+            var users = await _userAPIService.GetPagedUserAsync(queryObjectMock);
+
+            var vm = new EditVoucherViewModel
+            {
+                Users = users!.Data!.Items.Select(x => new SelectListItem
+                {
+                    Text = x.Username,
+                    Value = x.Id.ToString(),
+                })
+                .ToList(),
+                UserIds = voucherCustomer,
+                Code = voucher.Code,
+                EndDate = voucher.EndDate,
+                StartDate = voucher.StartDate,
+                Quantity = voucher.Quantity,
+                Vpercent = voucher.Vpercent,
+                VoucherId = voucher.VoucherId,
+            };
+
+            return View(vm);
         }
 
         // POST: Vouchers/Edit/5
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, Voucher voucher)
+        public async Task<IActionResult> Edit(int id, EditVoucherViewModel model)
         {
-            if (id != voucher.VoucherId) return NotFound();
+            var voucher = await _voucherService.GetByIdAsync(id);
 
-            if (ModelState.IsValid)
+            if (voucher == null)
             {
-                var success = await _voucherService.UpdateAsync(id, voucher);
-                if (success) return RedirectToAction(nameof(Index));
-                ModelState.AddModelError("", "Cập nhật voucher thất bại.");
+                return NotFound();
             }
-            return View(voucher);
+
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    var response = await _voucherService.UpdateAsync(model);
+                    if (response!.IsSuccessful)
+                        return RedirectToAction(nameof(Index));
+
+                    var message = response.Message;
+
+                    ModelState.AddModelError(string.Empty, message!);
+                }
+
+                var queryObjectMock = new UserQueryObject
+                {
+                    CurrentPage = 1,
+                    PageSize = int.MaxValue,
+                    Role = int.Parse(UserRoleConstants.Customer),
+                };
+
+                var users = await _userAPIService.GetPagedUserAsync(queryObjectMock);
+
+                model.Users = users!.Data!.Items.Select(x => new SelectListItem
+                {
+                    Text = x.Username,
+                    Value = x.Id.ToString(),
+                }).ToList();
+
+                return View(model);
+            }
+            catch (Exception ex)
+            {
+                ModelState.AddModelError(string.Empty, "Đã xảy ra lỗi không xác định khi cập nhật voucher." + ex.Message);
+
+                var queryObjectMock = new UserQueryObject
+                {
+                    CurrentPage = 1,
+                    PageSize = int.MaxValue,
+                    Role = int.Parse(UserRoleConstants.Customer),
+                };
+
+                var users = await _userAPIService.GetPagedUserAsync(queryObjectMock);
+
+                model.Users = users!.Data!.Items.Select(x => new SelectListItem
+                {
+                    Text = x.Username,
+                    Value = x.Id.ToString(),
+                }).ToList();
+
+                return View(model);
+            }
         }
 
         // GET: Vouchers/Delete/5
