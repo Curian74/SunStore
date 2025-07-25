@@ -14,8 +14,6 @@ namespace SunStore.ViewModel.DataModels
         [Required]
         public int Vpercent { get; set; }
 
-        [Range(0, int.MaxValue)]
-        [Required]
         public int? Quantity { get; set; }
 
         [Required]
