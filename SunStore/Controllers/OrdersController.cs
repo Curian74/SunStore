@@ -40,16 +40,16 @@ namespace SunStore.Controllers
 
             // Tổng doanh thu
             var totalRevenue = orders
-                .Where(o => o.Status == "Đã giao hàng")
+                .Where(o => o.Status == OrderStatusConstant.Received)
                 .Sum(o => o.TotalPrice ?? 0);
 
             // SL đơn hàng đã giao
-            var deliveredCount = orders.Count(o => o.Status == "Đã giao hàng");
+            var deliveredCount = orders.Count(o => o.Status == OrderStatusConstant.Received);
 
             // Doanh thu hôm nay
             var today = DateTime.Now.Date;
             var todayRevenue = orders
-                .Where(o => o.Status == "Đã giao hàng" && o.DateTime.HasValue && o.DateTime.Value.Date == today)
+                .Where(o => o.Status == OrderStatusConstant.Received && o.DateTime.HasValue && o.DateTime.Value.Date == today)
                 .Sum(o => o.TotalPrice ?? 0);
 
             // Get Shippers.
