@@ -1,4 +1,5 @@
-﻿using BusinessObjects.ApiResponses;
+﻿using BusinessObjects;
+using BusinessObjects.ApiResponses;
 using BusinessObjects.Models;
 using SunStore.ViewModel.DataModels;
 using SunStore.ViewModel.RequestModels;
@@ -20,6 +21,17 @@ namespace SunStore.APIServices
         {
             return await _httpClient.GetFromJsonAsync<List<Voucher>>("Vouchers")
                    ?? new List<Voucher>();
+        }
+
+        public async Task<PagedResult<Voucher>?> GetPagedAsync(int? page = 1, int? pageSize = 7)
+        {
+            var url = $"Vouchers/filtered?page={page}&pageSize={pageSize}";
+
+            var response = await _httpClient.GetAsync(url);
+
+            var result = await response.Content.ReadFromJsonAsync<PagedResult<Voucher>>();
+
+            return result;
         }
 
         public async Task<Voucher?> GetByIdAsync(int id)

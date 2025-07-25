@@ -26,9 +26,9 @@ namespace SunStore.Controllers
         }
 
         // GET: Vouchers
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(int? page = 1, int? pageSize = 6)
         {
-            var vouchers = await _voucherService.GetAllAsync();
+            var vouchers = await _voucherService.GetPagedAsync(page, pageSize);
             return View(vouchers);
         }
 
