@@ -1,4 +1,5 @@
-﻿using BusinessObjects.ApiResponses;
+﻿using BusinessObjects;
+using BusinessObjects.ApiResponses;
 using BusinessObjects.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -22,6 +23,26 @@ namespace SunStoreAPI.Controllers
         public async Task<ActionResult<IEnumerable<Voucher>>> GetVouchers()
         {
             return await _context.Vouchers.ToListAsync();
+        }
+
+        [HttpGet("filtered")]
+        public async Task<IActionResult> GetFiltered(int? page = 1, int? pageSize = 7)
+        {
+            var vouchers = _context.Vouchers.AsQueryable();
+
+            var skip = (page - 1) * pageSize;
+
+            var pagedData = vouchers.Skip((int)skip!).Take((int)pageSize!).ToList();
+
+            var returnData = new PagedResult<Voucher>
+            {
+                Items = pagedData,
+                TotalItems = await vouchers.CountAsync(),
+                CurrentPage = (int)page!,
+                PageSize = (int)pageSize
+            };
+
+            return Ok(returnData);
         }
 
         // GET: api/Vouchers/5
