@@ -132,13 +132,13 @@ namespace SunStoreAPI.Controllers
             voucher.Quantity = dto.Quantity;
             voucher.Vpercent = dto.Vpercent;
 
+            // Remove old records.
+            var oldCustomers = _context.VoucherCustomers.Where(vc => vc.VoucherId == voucher.VoucherId);
+            _context.VoucherCustomers.RemoveRange(oldCustomers);
+
+            // Add new records if UserIds is provided.
             if (dto.UserIds != null)
             {
-                // Remove old records.
-                var oldCustomers = _context.VoucherCustomers.Where(vc => vc.VoucherId == voucher.VoucherId);
-                _context.VoucherCustomers.RemoveRange(oldCustomers);
-
-                // Add.
                 foreach (var userId in dto.UserIds)
                 {
                     var newVoucherCustomer = new VoucherCustomer
